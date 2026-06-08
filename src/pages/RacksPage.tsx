@@ -7,7 +7,6 @@ import {
   useWmsData,
   type UnidadMovimiento,
   type EstadoPallet,
-  type OrdenTrabajo,
 } from '../context/WmsDataContext';
 
 type Rack = (typeof racks)[number];
@@ -54,7 +53,6 @@ function RacksPage() {
     agregarMovimiento,
     ordenesTrabajo,
     setOrdenesTrabajo,
-    avanzarEstadoOrdenTrabajo,
   } = useWmsData();
 
   function obtenerRotacionDemoSalubrite(descripcion: string) {
@@ -737,10 +735,6 @@ function RacksPage() {
 
   const zoneRacks = racks.filter((rack) => rack.zone === activeZone);
 
-  const ordenesTrabajoCompletadas = ordenesTrabajo.filter(
-    (orden) => orden.estado === 'completada'
-  );
-
   function getRackStats(rack: Rack) {
     const positions = Array.from(
       { length: rack.capacity },
@@ -1088,7 +1082,7 @@ function RacksPage() {
     const resultadoScore =
       calcularScoreInteligente(
         grupo,
-        grupo.porcentajeOcupacion ?? 0,
+        0
       );
     
     const nuevaOrden = {
@@ -1109,7 +1103,7 @@ function RacksPage() {
       score: resultadoScore.score,
       motivosScore: resultadoScore.motivos,
       fecha: new Date().toLocaleString(),
-      estado: 'pendiente' as EstadoOrdenTrabajo,
+      estado: 'pendiente' as const,
       responsable: null,
       fechaAsignacion: null,
       fechaInicio: null,
@@ -1117,27 +1111,6 @@ function RacksPage() {
     };
 
     setOrdenesTrabajo((prev) => [nuevaOrden, ...prev]);
-  }
-
-  function obtenerTextoEstadoOT(estado: EstadoOrdenTrabajo) {
-    if (estado === 'pendiente') return 'Pendiente';
-    if (estado === 'asignada') return 'Asignada';
-    if (estado === 'en_proceso') return 'En proceso';
-    return 'Completada';
-  }
-
-  function obtenerColorEstadoOT(estado: EstadoOrdenTrabajo) {
-    if (estado === 'pendiente') return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-    if (estado === 'asignada') return 'bg-blue-100 text-blue-700 border-blue-200';
-    if (estado === 'en_proceso') return 'bg-purple-100 text-purple-700 border-purple-200';
-    return 'bg-green-100 text-green-700 border-green-200';
-  }
-
-  function obtenerTextoBotonEstadoOT(estado: EstadoOrdenTrabajo) {
-    if (estado === 'pendiente') return 'Asignar OT';
-    if (estado === 'asignada') return 'Iniciar ejecución';
-    if (estado === 'en_proceso') return 'Completar OT';
-    return 'Completada';
   }
   
   return (

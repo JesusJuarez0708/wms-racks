@@ -42,15 +42,6 @@ function obtenerTextoBotonEstadoOT(estado: EstadoOrdenTrabajo) {
   return 'Completada';
 }
 
-function obtenerNivelScore(score: number) {
-  if (score >= 90) return 'Crítico';
-  if (score >= 80) return 'Muy alto';
-  if (score >= 70) return 'Alto';
-  if (score >= 50) return 'Medio';
-
-  return 'Bajo';
-}
-
 export default function OrdenesTrabajoPage() {
   const {
     ordenesTrabajo,
