@@ -13,6 +13,8 @@ import {
 
 import { getPallets } from './palletService';
 
+import { registerOperationalMemory } from './operationalMemoryService';
+
 type ExecuteMovementInput = CreateMovementInput;
 
 export async function executeMovementWorkflow(
@@ -95,6 +97,27 @@ export async function executeMovementWorkflow(
   }
 
   const createdMovement = await createMovement(movementToCreate);
+
+  await registerOperationalMemory({
+    memoryType: 'movement',
+    entityId: createdMovement.id,
+    entityType: 'movement',
+    title: `Movimiento ${createdMovement.movement_type} ejecutado`,
+    description: `Movimiento ${createdMovement.movement_type} registrado correctamente en CJWMS.`,
+    score: createdMovement.decision_score ?? 75,
+    metadata: {
+      phase: '12.6',
+      source: 'movementWorkflowService',
+      warehouseId: createdMovement.warehouse_id,
+      movementType: createdMovement.movement_type,
+      palletId: createdMovement.pallet_id,
+      productId: createdMovement.product_id,
+      originPositionId: createdMovement.origin_position_id,
+      destinationPositionId: createdMovement.destination_position_id,
+      status: createdMovement.status,
+      reason: createdMovement.reason,
+    },
+  });
 
   return createdMovement;
 }

@@ -7,7 +7,30 @@ import { getRacks } from '../services/rackService';
 import { getRackPositions } from '../services/rackPositionService';
 import { getInventory } from '../services/inventoryService';
 import { getMovements } from '../services/movementService';
-import { registerOperationalMemory } from '../services/operationalMemoryService';
+import {
+  getOperationalMemories,
+  registerOperationalMemory,
+} from '../services/operationalMemoryService';
+
+import {
+  detectMemoryPatterns,
+  type MemoryPattern,
+} from '../services/memoryPatternService';
+
+import {
+  generateRecommendationsFromPatterns,
+  type IntelligenceRecommendation,
+} from '../services/recommendationIntelligenceService';
+
+import type { OperationalMemoryRecord } from '../repositories/operationalMemoryRepository';
+
+import {
+  analyzeOperationalMemories,
+  type MemoryInsight,
+} from '../services/memoryIntelligenceService';
+
+import type { OperationalDecision } from '../services/decisionEngineService';
+import { generateOperationalDecisions } from '../services/decisionEngineService';
 
 import { executeMovementWorkflow } from '../services/movementWorkflowService';
 
@@ -24,6 +47,27 @@ function IntegrationLabPage() {
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
   const [stats, setStats] = useState<LabStats | null>(null);
+  const [memories, setMemories] = useState<OperationalMemoryRecord[]>([]);
+  const [memoryFilter, setMemoryFilter] = useState('all');
+  const [memoryInsights, setMemoryInsights] = useState<MemoryInsight[]>([]);
+  const [patterns, setPatterns] = useState<MemoryPattern[]>([]);
+
+  const [decisions, setDecisions] = useState<OperationalDecision[]>([]);
+
+  const [recommendations, setRecommendations] = useState<
+    IntelligenceRecommendation[]
+  >([]);
+
+  const filteredMemories =
+    memoryFilter === 'all'
+      ? [...memories]
+      : memories.filter(
+          (memory) => memory.memory_type === memoryFilter
+        );
+
+  filteredMemories.sort(
+    (a, b) => (b.score ?? 0) - (a.score ?? 0)
+  );
 
   function addLog(message: string) {
     const time = new Date().toLocaleTimeString();
@@ -64,6 +108,51 @@ function IntegrationLabPage() {
     } catch (error) {
       console.error(error);
       addLog('Error al cargar estadísticas.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadOperationalMemories() {
+    setLoading(true);
+
+    try {
+      const data = await getOperationalMemories();
+
+      setMemories(data);
+      setMemoryInsights(analyzeOperationalMemories(data));
+
+      const detectedPatterns = await detectMemoryPatterns();
+
+      setPatterns(detectedPatterns);
+
+      const generatedRecommendations =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      setRecommendations(generatedRecommendations);
+
+      const generatedDecisions =
+        generateOperationalDecisions(
+          detectedPatterns,
+          generatedRecommendations
+        );
+
+      setDecisions(generatedDecisions);
+
+      addLog(
+        `Decisiones generadas: ${generatedDecisions.length}.`
+      );
+
+      addLog(`Patrones detectados: ${detectedPatterns.length}.`);
+
+      addLog(
+        `Recomendaciones generadas: ${generatedRecommendations.length}.`
+      );
+
+      addLog(`Memorias cargadas: ${data.length} registros.`);
+    } catch (error) {
+      console.error(error);
+      addLog('Error al cargar Memoria Operativa.');
     } finally {
       setLoading(false);
     }
@@ -162,6 +251,7 @@ function IntegrationLabPage() {
       });
 
       addLog('Memoria Operativa OK: primera memoria registrada.');
+            await loadOperationalMemories();
     } catch (error) {
       console.error(error);
       addLog('Error al registrar Memoria Operativa.');
@@ -172,7 +262,26 @@ function IntegrationLabPage() {
 
   useEffect(() => {
     loadStats();
+    loadOperationalMemories();
   }, []);
+
+  function getScoreBadge(score?: number | null) {
+    const value = score ?? 0;
+
+    if (value >= 90) {
+      return 'bg-emerald-100 text-emerald-700';
+    }
+
+    if (value >= 70) {
+      return 'bg-blue-100 text-blue-700';
+    }
+
+    if (value >= 40) {
+      return 'bg-amber-100 text-amber-700';
+    }
+
+    return 'bg-slate-100 text-slate-700';
+  }
 
   return (
     <div className="space-y-6">
@@ -187,7 +296,7 @@ function IntegrationLabPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-6">
         <button
           onClick={loadStats}
           disabled={loading}
@@ -226,6 +335,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-amber-600 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Registrar primera memoria
+        </button>
+
+        <button
+          onClick={loadOperationalMemories}
+          disabled={loading}
+          className="rounded-xl bg-cyan-600 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Cargar memorias
         </button>
 
       </div>
@@ -271,6 +388,263 @@ function IntegrationLabPage() {
           <p className="mt-4 text-slate-500">
             Ejecuta una prueba para ver el estado.
           </p>
+        )}
+      </div>
+
+      <div className="rounded-2xl bg-white p-8 shadow-sm">
+        <h2 className="text-xl font-bold">
+          Inteligencia de Memoria
+        </h2>
+
+        {memoryInsights.length === 0 ? (
+          <p className="mt-4 text-slate-500">
+            Aún no hay inteligencia generada.
+          </p>
+        ) : (
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {memoryInsights.map((insight) => (
+              <div
+                key={insight.id}
+                className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+              >
+                <p className="text-sm font-semibold text-slate-500">
+                  {insight.severity.toUpperCase()}
+                </p>
+
+                <h3 className="mt-2 font-bold text-slate-900">
+                  {insight.title}
+                </h3>
+
+                <p className="mt-2 text-sm text-slate-600">
+                  {insight.description}
+                </p>
+
+                <p className="mt-4 text-2xl font-bold">
+                  {insight.score}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-2xl bg-white p-8 shadow-sm">
+        <h2 className="text-xl font-bold">
+          Patrones Detectados
+        </h2>
+
+        {patterns.length === 0 ? (
+          <p className="mt-4 text-slate-500">
+            Aún no hay patrones detectados.
+          </p>
+        ) : (
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {patterns.map((pattern) => (
+              <div
+                key={pattern.id}
+                className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+              >
+                <p className="text-sm font-semibold text-slate-500">
+                  PATRÓN
+                </p>
+
+                <h3 className="mt-2 font-bold text-slate-900">
+                  {pattern.title}
+                </h3>
+
+                <p className="mt-2 text-sm text-slate-600">
+                  {pattern.description}
+                </p>
+
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-700">
+                    Score {pattern.score}
+                  </span>
+
+                  <span className="text-sm text-slate-500">
+                    {pattern.occurrences} eventos
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-2xl bg-white p-8 shadow-sm">
+        <h2 className="text-xl font-bold">
+          Recomendaciones Inteligentes
+        </h2>
+
+        {recommendations.length === 0 ? (
+          <p className="mt-4 text-slate-500">
+            Aún no hay recomendaciones generadas.
+          </p>
+        ) : (
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {recommendations.map((recommendation) => (
+              <div
+                key={recommendation.id}
+                className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+              >
+                <p className="text-sm font-semibold uppercase text-slate-500">
+                  {recommendation.priority}
+                </p>
+
+                <h3 className="mt-2 font-bold text-slate-900">
+                  {recommendation.title}
+                </h3>
+
+                <p className="mt-2 text-sm text-slate-600">
+                  {recommendation.description}
+                </p>
+
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-700">
+                    Score {recommendation.score}
+                  </span>
+
+                  <span className="text-sm text-slate-500">
+                    Patrón: {recommendation.sourcePatternId}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h2 className="mb-8 text-3xl font-bold text-slate-900">
+          Decisiones Operativas
+        </h2>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          {decisions.map((decision) => (
+            <div
+              key={decision.id}
+              className="rounded-2xl border border-slate-200 p-6"
+            >
+              <p className="mb-3 text-sm font-bold uppercase text-slate-500">
+                {decision.priority}
+              </p>
+
+              <h3 className="mb-3 text-2xl font-bold text-slate-900">
+                {decision.title}
+              </h3>
+
+              <p className="mb-6 text-slate-600">
+                {decision.description}
+              </p>
+
+              <div className="flex items-center justify-between">
+                <span className="rounded-full bg-green-100 px-4 py-1 font-semibold text-green-700">
+                  Confianza {decision.confidence}
+                </span>
+
+                <span className="text-sm text-slate-500">
+                  {decision.action}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="rounded-2xl bg-white p-8 shadow-sm">
+
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">
+            Memoria Operativa
+          </h2>
+
+          <select
+            value={memoryFilter}
+            onChange={(event) => setMemoryFilter(event.target.value)}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            <option value="all">Todas</option>
+            <option value="system">System</option>
+            <option value="movement">Movement</option>
+            <option value="optimization">Optimization</option>
+            <option value="decision">Decision</option>
+          </select>
+        </div>
+
+        {filteredMemories.length === 0 ? (
+          <p className="mt-4 text-slate-500">
+            Aún no hay memorias registradas.
+          </p>
+        ) : (
+          <div className="mt-6 overflow-auto rounded-xl border border-slate-200">
+            <table className="min-w-full text-left text-sm">
+              <thead className="bg-slate-50 text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">Tipo</th>
+                  <th className="px-4 py-3">Entidad</th>
+                  <th className="px-4 py-3">Título</th>
+                  <th className="px-4 py-3">Score</th>
+                  <th className="px-4 py-3">Metadata</th>
+                  <th className="px-4 py-3">Fecha</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredMemories.map((memory) => (
+                  <tr
+                    key={memory.id}
+                    className="border-t border-slate-100"
+                  >
+                    <td className="px-4 py-3 font-medium">
+                      {memory.memory_type}
+                    </td>
+
+                    <td className="px-4 py-3 text-slate-600">
+                      {memory.entity_type ?? '—'}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <p className="font-semibold text-slate-900">
+                        {memory.title}
+                      </p>
+
+                      {memory.description ? (
+                        <p className="mt-1 text-xs text-slate-500">
+                          {memory.description}
+                        </p>
+                      ) : null}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-bold ${getScoreBadge(
+                          memory.score
+                        )}`}
+                      >
+                        {memory.score ?? 0}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-3 text-xs text-slate-500">
+                      {memory.metadata ? (
+                        <pre className="max-w-xs overflow-auto whitespace-pre-wrap">
+                          {JSON.stringify(memory.metadata, null, 2)}
+                        </pre>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+
+                    <td className="px-4 py-3 text-slate-500">
+                      {memory.created_at
+                        ? new Date(memory.created_at).toLocaleString()
+                        : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

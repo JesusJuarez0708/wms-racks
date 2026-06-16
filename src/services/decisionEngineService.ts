@@ -467,3 +467,82 @@ export function evaluateRelocationDecision(
     },
   };
 }
+
+import type { MemoryPattern } from './memoryPatternService';
+import type { IntelligenceRecommendation } from './recommendationIntelligenceService';
+
+export type OperationalDecision = {
+  id: string;
+  title: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high';
+  confidence: number;
+  action: string;
+  sourcePatternId: string;
+};
+
+export function generateOperationalDecisions(
+  patterns: MemoryPattern[],
+  recommendations: IntelligenceRecommendation[]
+): OperationalDecision[] {
+  const decisions: OperationalDecision[] = [];
+
+  patterns.forEach((pattern) => {
+    switch (pattern.id) {
+      case 'movement-activity':
+        decisions.push({
+          id: 'decision-review-movements',
+          title: 'Analizar reubicaciones operativas',
+          description:
+            'Existe actividad operativa recurrente. Revisar si las reubicaciones son necesarias.',
+          priority: 'medium',
+          confidence: pattern.score,
+          action: 'review_movements',
+          sourcePatternId: pattern.id,
+        });
+        break;
+
+      case 'high-value-pattern':
+        decisions.push({
+          id: 'decision-prioritize-high-value',
+          title: 'Priorizar memorias de alto valor',
+          description:
+            'Las memorias con score alto deben utilizarse como referencia para decisiones futuras.',
+          priority: 'high',
+          confidence: pattern.score,
+          action: 'prioritize_high_value',
+          sourcePatternId: pattern.id,
+        });
+        break;
+
+      case 'system-stability':
+        decisions.push({
+          id: 'decision-maintain-monitoring',
+          title: 'Mantener monitoreo continuo',
+          description:
+            'El sistema presenta estabilidad operativa. Mantener observación activa.',
+          priority: 'low',
+          confidence: pattern.score,
+          action: 'monitor_system',
+          sourcePatternId: pattern.id,
+        });
+        break;
+    }
+  });
+
+  recommendations.forEach((recommendation) => {
+    if (recommendation.priority === 'high') {
+      decisions.push({
+        id: `recommendation-${recommendation.id}`,
+        title: recommendation.title,
+        description: recommendation.description,
+        priority: 'high',
+        confidence: recommendation.score,
+        action: 'execute_recommendation',
+        sourcePatternId: recommendation.sourcePatternId,
+      });
+    }
+  });
+
+  return decisions.sort((a, b) => b.confidence - a.confidence);
+}
