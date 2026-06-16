@@ -13,7 +13,10 @@ import MontacargasPage from './pages/MontacargasPage';
 
 import { WmsDataProvider } from './context/WmsDataContext';
 
+import IntegrationLabPage from './pages/IntegrationLabPage';
+
 function App() {
+
   return (
     <WmsDataProvider>
       <BrowserRouter>
@@ -58,6 +61,11 @@ function App() {
                 <Route
                   path="/montacargas"
                   element={<MontacargasPage />}
+                />
+
+                <Route
+                  path="/integration-lab"
+                  element={<IntegrationLabPage />}
                 />
 
               </Routes>

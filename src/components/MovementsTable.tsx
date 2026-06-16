@@ -1,35 +1,69 @@
-import { movements as initialMovements } from '../data/movements';
+import { useEffect, useState } from 'react';
 
-import type { Movement } from '../types/movement';
+import {
+  getMovements,
+  type MovementItem,
+} from '../services/movementService';
 
-function getStatusClass(status: Movement['status']) {
-  switch (status) {
-    case 'Pendiente':
-      return 'bg-yellow-100 text-yellow-700';
-
-    case 'En proceso':
-      return 'bg-blue-100 text-blue-700';
-
-    case 'Completado':
+function getTypeClass(type: MovementItem['movement_type']) {
+  switch (type) {
+    case 'entrada':
       return 'bg-green-100 text-green-700';
+
+    case 'salida':
+      return 'bg-red-100 text-red-700';
+
+    case 'reubicacion':
+      return 'bg-blue-100 text-blue-700';
 
     default:
       return 'bg-gray-100 text-gray-700';
   }
 }
 
-function MovementsTable() {
-  const movements: Movement[] = (() => {
-    const savedMovements = localStorage.getItem('wms-movements');
+function getMovementLabel(type: MovementItem['movement_type']) {
+  switch (type) {
+    case 'entrada':
+      return 'Entrada';
 
-    if (savedMovements) {
-      return JSON.parse(savedMovements);
+    case 'salida':
+      return 'Salida';
+
+    case 'reubicacion':
+      return 'Reubicación';
+
+    case 'ajuste':
+      return 'Ajuste';
+
+    case 'bloqueo':
+      return 'Bloqueo';
+
+    case 'desbloqueo':
+      return 'Desbloqueo';
+
+    default:
+      return 'Movimiento';
+  }
+}
+
+function MovementsTable() {
+  const [movements, setMovements] = useState<MovementItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function cargarMovimientos() {
+      try {
+        const data = await getMovements();
+        setMovements(data.slice(0, 5));
+      } catch (error) {
+        console.error('Error cargando movimientos recientes:', error);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    return initialMovements;
-  })();
-
-  const recentMovements = [...movements].slice(0, 5);
+    cargarMovimientos();
+  }, []);
 
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 xl:col-span-2">
@@ -39,58 +73,72 @@ function MovementsTable() {
         </h2>
 
         <p className="mt-1 text-slate-500">
-          Últimos movimientos registrados en el sistema.
+          Últimos movimientos registrados en Supabase.
         </p>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse">
-          <thead>
-            <tr className="border-b border-slate-300 text-left text-slate-500">
-              <th className="pb-3 pr-4 font-semibold">ID</th>
-              <th className="pb-3 pr-4 font-semibold">Rack</th>
-              <th className="pb-3 pr-4 font-semibold">Ubicación</th>
-              <th className="pb-3 pr-4 font-semibold">Producto</th>
-              <th className="pb-3 pr-4 font-semibold">Estado</th>
-            </tr>
-          </thead>
+      {loading && (
+        <p className="text-sm text-slate-500">
+          Cargando movimientos desde Supabase...
+        </p>
+      )}
 
-          <tbody>
-            {recentMovements.map((movement) => (
-              <tr
-                key={movement.id}
-                className="border-b border-slate-200 text-slate-700"
-              >
-                <td className="py-4 pr-4 font-semibold">
-                  {movement.id}
-                </td>
+      {!loading && movements.length === 0 && (
+        <p className="text-sm text-slate-500">
+          No hay movimientos registrados.
+        </p>
+      )}
 
-                <td className="py-4 pr-4">
-                  {movement.rack}
-                </td>
-
-                <td className="py-4 pr-4">
-                  {movement.location}
-                </td>
-
-                <td className="py-4 pr-4">
-                  {movement.product}
-                </td>
-
-                <td className="py-4 pr-4">
-                  <span
-                    className={`rounded-full px-3 py-1 text-sm font-semibold ${getStatusClass(
-                      movement.status
-                    )}`}
-                  >
-                    {movement.status}
-                  </span>
-                </td>
+      {!loading && movements.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse">
+            <thead>
+              <tr className="border-b border-slate-300 text-left text-slate-500">
+                <th className="pb-3 pr-4 font-semibold">Tipo</th>
+                <th className="pb-3 pr-4 font-semibold">Origen</th>
+                <th className="pb-3 pr-4 font-semibold">Destino</th>
+                <th className="pb-3 pr-4 font-semibold">Cantidad</th>
+                <th className="pb-3 pr-4 font-semibold">Estado</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+
+            <tbody>
+              {movements.map((movement) => (
+                <tr
+                  key={movement.id}
+                  className="border-b border-slate-200 text-slate-700"
+                >
+                  <td className="py-4 pr-4">
+                    <span
+                      className={`rounded-full px-3 py-1 text-sm font-semibold ${getTypeClass(
+                        movement.movement_type
+                      )}`}
+                    >
+                      {getMovementLabel(movement.movement_type)}
+                    </span>
+                  </td>
+
+                  <td className="py-4 pr-4">
+                    {movement.origin_position_id ?? '-'}
+                  </td>
+
+                  <td className="py-4 pr-4">
+                    {movement.destination_position_id ?? '-'}
+                  </td>
+
+                  <td className="py-4 pr-4">
+                    {movement.quantity ?? '-'} {movement.unit ?? ''}
+                  </td>
+
+                  <td className="py-4 pr-4">
+                    {movement.status}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

@@ -33,6 +33,10 @@ const menuItems = [
     label: 'Montacargas',
     path: '/montacargas',
   },
+  {
+    label: '🧪 Integration Lab',
+    path: '/integration-lab',
+  },
 ];
 
 function Sidebar() {

@@ -1,51 +1,56 @@
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
 import DashboardHeader from '../components/DashboardHeader';
 import KpiCard from '../components/KpiCard';
 import MovementsTable from '../components/MovementsTable';
 import RackStatusPanel from '../components/RackStatusPanel';
 
-import { movements as initialMovements } from '../data/movements';
-
-import type { Movement } from '../types/movement';
-
-import { getDashboardStats } from '../utils/dashboard';
+import {
+  getSupabaseDashboardStats,
+  type DashboardStats,
+} from '../services/dashboardService';
 
 function DashboardPage() {
-  const movements: Movement[] = (() => {
-    const savedMovements = localStorage.getItem('wms-movements');
+  const [stats, setStats] = useState<DashboardStats>({
+    totalPositions: 0,
+    occupiedPositions: 0,
+    freePositions: 0,
+    activeRacks: 0,
+  });
 
-    if (savedMovements) {
-      return JSON.parse(savedMovements);
-    }
+  const [loading, setLoading] = useState(true);
 
-    return initialMovements;
-  })();
-
-  const stats = useMemo(() => {
-    return getDashboardStats(movements);
-  }, [movements]);
+  useEffect(() => {
+    getSupabaseDashboardStats()
+      .then(setStats)
+      .catch((error) => {
+        console.error('Error al cargar Dashboard desde Supabase:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
   const kpis = [
     {
-      label: 'Movimientos',
-      value: String(stats.totalMovements),
-      detail: 'Movimientos registrados',
+      label: 'Posiciones',
+      value: loading ? '...' : String(stats.totalPositions),
+      detail: 'Posiciones registradas en Supabase',
     },
     {
-      label: 'Pendientes',
-      value: String(stats.pendingMovements),
-      detail: 'Pendientes por ejecutar',
+      label: 'Ocupadas',
+      value: loading ? '...' : String(stats.occupiedPositions),
+      detail: 'Posiciones con inventario',
     },
     {
-      label: 'En proceso',
-      value: String(stats.inProgressMovements),
-      detail: 'Movimientos activos',
+      label: 'Libres',
+      value: loading ? '...' : String(stats.freePositions),
+      detail: 'Posiciones disponibles',
     },
     {
-      label: 'Completados',
-      value: String(stats.completedMovements),
-      detail: `${stats.activeRacks} racks activos`,
+      label: 'Racks activos',
+      value: loading ? '...' : String(stats.activeRacks),
+      detail: 'Racks cargados desde Supabase',
     },
   ];
 
