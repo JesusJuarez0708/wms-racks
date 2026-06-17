@@ -161,23 +161,70 @@ function DashboardPage() {
                   key={recommendation.id}
                   className="rounded-xl border border-slate-200 bg-slate-50 p-3"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-slate-900">
-                      {recommendation.title}
-                    </p>
 
-                    <span className="rounded-full bg-blue-600 px-2 py-1 text-xs font-medium text-white">
-                      Optimización
-                    </span>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-slate-900">
+                      {recommendation.title}
+                    </h3>
+
+                    <div className="flex items-center gap-2">
+
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                          recommendation.level === 'critical'
+                            ? 'bg-red-100 text-red-700'
+                            : recommendation.level === 'high'
+                            ? 'bg-orange-100 text-orange-700'
+                            : recommendation.level === 'medium'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-emerald-100 text-emerald-700'
+                        }`}
+                      >
+                        {
+                          recommendation.level === 'critical'
+                            ? 'CRÍTICA'
+                            : recommendation.level === 'high'
+                            ? 'ALTA'
+                            : recommendation.level === 'medium'
+                            ? 'MEDIA'
+                            : 'BAJA'
+                        } · {recommendation.score}
+                      </span>
+
+                      <span className="rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
+                        Optimización
+                      </span>
+                    </div>
                   </div>
 
                   <p className="mt-2 text-sm text-slate-600">
                     {recommendation.description}
                   </p>
 
+                  {recommendation.reasons?.length ? (
+                    <div className="mt-2">
+                      <p className="text-xs font-semibold text-slate-700">
+                        Motivos de la recomendación:
+                      </p>
+
+                      <ul className="mt-1 space-y-1 text-xs text-slate-600">
+                        {recommendation.reasons.map((reason, index) => (
+                          <li key={index}>• {reason}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+
                   <p className="mt-2 text-xs font-medium text-blue-700">
                     Impacto esperado: {recommendation.expectedImpact}
                   </p>
+
+                  {recommendation.action && (
+                    <p className="mt-1 text-xs font-medium text-emerald-700">
+                      Acción sugerida: {recommendation.action}
+                    </p>
+                  )}
+
                 </div>
               ))
             )}
