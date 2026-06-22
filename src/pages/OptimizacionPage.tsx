@@ -28,6 +28,26 @@ import {
   type ActionPlanItem,
 } from '../services/operationalActionPlanService';
 
+import {
+  simulateOperationalImpact,
+  type OperationalImpactSimulation,
+} from '../services/operationalImpactSimulatorService';
+
+import {
+  generateExecutivePriorities,
+  type ExecutivePriority,
+} from '../services/executivePriorityService';
+
+import {
+  trackOperationalExecution,
+  type OperationalExecutionTracking,
+} from '../services/operationalExecutionTrackingService';
+
+import {
+  calculateOperationalCompliance,
+  type OperationalCompliance,
+} from '../services/operationalComplianceService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -43,6 +63,18 @@ export default function OptimizacionPage() {
 
   const [actionPlan, setActionPlan] =
     useState<ActionPlanItem[]>([]);
+
+  const [_impactSimulation, setImpactSimulation] =
+    useState<OperationalImpactSimulation | null>(null);
+
+  const [executivePriorities, setExecutivePriorities] =
+    useState<ExecutivePriority[]>([]);
+
+  const [executionTracking, setExecutionTracking] =
+    useState<OperationalExecutionTracking | null>(null);
+
+  const [compliance, setCompliance] =
+  useState<OperationalCompliance | null>(null);
 
   const [executiveMetrics, setExecutiveMetrics] = useState({
     alerts: 0,
@@ -78,6 +110,26 @@ export default function OptimizacionPage() {
         await generateActionPlan();
 
       setActionPlan(planData);
+
+      const impactData =
+        await simulateOperationalImpact();
+
+      setImpactSimulation(impactData);
+
+      const prioritiesData =
+        await generateExecutivePriorities();
+
+      setExecutivePriorities(prioritiesData);
+
+      const executionData =
+        await trackOperationalExecution();
+
+      setExecutionTracking(executionData);
+
+      const complianceData =
+        await calculateOperationalCompliance();
+
+      setCompliance(complianceData);
 
       const alerts = await generateOperationalAlerts();
 
@@ -252,6 +304,217 @@ export default function OptimizacionPage() {
                 {forecast.preventiveAction}
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {_impactSimulation && (
+        <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Simulador de Impacto Operativo
+          </p>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <div>
+              <p className="text-xs uppercase text-slate-500">
+                Salud Operativa
+              </p>
+
+              <p className="mt-2 text-2xl font-bold text-emerald-600">
+                {_impactSimulation.currentHealth}
+                {' → '}
+                {_impactSimulation.projectedHealth}
+              </p>
+
+              <p className="text-sm text-slate-500">
+                Mejora estimada:
+                {' +'}
+                {_impactSimulation.healthDelta}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-xs uppercase text-slate-500">
+                Posiciones Liberadas
+              </p>
+
+              <p className="mt-2 text-2xl font-bold text-blue-600">
+                {_impactSimulation.estimatedPositionsReleased}
+              </p>
+
+              <p className="text-sm text-slate-500">
+                Potencial de recuperación
+              </p>
+            </div>
+
+            <div>
+              <p className="text-xs uppercase text-slate-500">
+                Riesgo de Fragmentación
+              </p>
+
+              <p className="mt-2 text-2xl font-bold text-amber-600">
+                {_impactSimulation.currentFragmentationRisk}
+                {'% → '}
+                {_impactSimulation.projectedFragmentationRisk}
+                %
+              </p>
+
+              <p className="text-sm text-slate-500">
+                Reducción:
+                {' '}
+                {_impactSimulation.riskDelta}
+                %
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {compliance && (
+        <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Cumplimiento Operativo
+          </p>
+
+          <div className="mt-4 flex items-center justify-between gap-6">
+            <div>
+              <p className="text-3xl font-bold text-slate-900">
+                {compliance.complianceRate}%
+              </p>
+
+              <span
+                className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-bold ${
+                  compliance.status === 'completed'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : compliance.status === 'in_progress'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-slate-100 text-slate-700'
+                }`}
+              >
+                {compliance.statusLabel}
+              </span>
+            </div>
+
+            <div className="flex-1">
+              <div className="h-3 rounded-full bg-slate-200">
+                <div
+                  className="h-3 rounded-full bg-blue-500"
+                  style={{
+                    width: `${compliance.complianceRate}%`,
+                  }}
+                />
+              </div>
+
+              <p className="mt-3 text-sm text-slate-600">
+                {compliance.summary}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {executionTracking && (
+        <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Seguimiento de Ejecución Inteligente
+          </p>
+
+          <div className="mt-4 grid gap-6 md:grid-cols-3">
+            <div>
+              <p className="text-sm text-slate-500">
+                Acciones
+              </p>
+
+              <p className="mt-2 text-3xl font-bold text-slate-900">
+                {executionTracking.executedActions}
+                <span className="text-slate-400">
+                  {' '}
+                  / {executionTracking.totalActions}
+                </span>
+              </p>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Ejecutadas
+              </p>
+            </div>
+
+            <div>
+              <p className="text-sm text-slate-500">
+                Avance
+              </p>
+
+              <p className="mt-2 text-3xl font-bold text-blue-600">
+                {executionTracking.executionProgress}%
+              </p>
+
+              <div className="mt-3 h-3 rounded-full bg-slate-200">
+                <div
+                  className="h-3 rounded-full bg-blue-500"
+                  style={{
+                    width: `${executionTracking.executionProgress}%`,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm text-slate-500">
+                Beneficio obtenido
+              </p>
+
+              <p className="mt-2 text-3xl font-bold text-emerald-600">
+                {executionTracking.obtainedBenefit}
+              </p>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Pendiente: {executionTracking.pendingBenefit}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {executivePriorities.length > 0 && (
+        <div className="rounded-xl border bg-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Centro de Prioridades Ejecutivas
+          </p>
+
+          <div className="mt-4 space-y-4">
+            {executivePriorities.map((item) => (
+              <div
+                key={item.rank}
+                className="rounded-lg border border-slate-200 p-4"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-lg font-bold text-slate-900">
+                      #{item.rank} {item.title}
+                    </p>
+
+                    <p className="mt-2 text-sm text-slate-600">
+                      {item.reason}
+                    </p>
+
+                    <p className="mt-2 text-sm font-medium text-slate-700">
+                      {item.expectedBenefit}
+                    </p>
+                  </div>
+
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-bold ${
+                      item.priority === 'high'
+                        ? 'bg-red-100 text-red-700'
+                        : item.priority === 'medium'
+                          ? 'bg-amber-100 text-amber-700'
+                          : 'bg-emerald-100 text-emerald-700'
+                    }`}
+                  >
+                    {item.priority.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
