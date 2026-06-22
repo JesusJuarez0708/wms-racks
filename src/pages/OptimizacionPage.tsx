@@ -48,6 +48,11 @@ import {
   type OperationalCompliance,
 } from '../services/operationalComplianceService';
 
+import {
+  getExecutiveKpiDashboard,
+  type ExecutiveKpiDashboard,
+} from '../services/executiveKpiService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -89,6 +94,9 @@ export default function OptimizacionPage() {
     blockage: 0,
     rotation: 0,
   });
+
+  const [executiveKpi, setExecutiveKpi] =
+  useState<ExecutiveKpiDashboard | null>(null);
 
   useEffect(() => {
     async function loadNarrative() {
@@ -155,6 +163,12 @@ export default function OptimizacionPage() {
         ),
         rotation: Math.min(100, recommendations.length * 8),
       });
+
+      const executiveKpiData =
+        await getExecutiveKpiDashboard();
+
+      setExecutiveKpi(executiveKpiData);
+
     }
 
     loadNarrative();
@@ -223,6 +237,61 @@ export default function OptimizacionPage() {
               </p>
             )}
 
+          </div>
+        )}
+
+        {executiveKpi && (
+          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Executive KPI Command Center
+            </p>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-5">
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Cumplimiento
+                </p>
+                <p className="mt-2 text-2xl font-bold text-slate-900">
+                  {executiveKpi.complianceRate}%
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Recomendaciones ejecutadas
+                </p>
+                <p className="mt-2 text-2xl font-bold text-blue-600">
+                  {executiveKpi.executedRecommendations}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Alertas activas
+                </p>
+                <p className="mt-2 text-2xl font-bold text-amber-600">
+                  {executiveKpi.activeAlerts}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Riesgos operativos
+                </p>
+                <p className="mt-2 text-2xl font-bold text-red-600">
+                  {executiveKpi.operationalRisks}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Score ejecutivo
+                </p>
+                <p className="mt-2 text-2xl font-bold text-emerald-600">
+                  {executiveKpi.executiveScore}/100
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
