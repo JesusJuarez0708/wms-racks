@@ -58,6 +58,16 @@ import {
   type ExecutiveDecisionSummary,
 } from '../services/executiveDecisionSummaryService';
 
+import {
+  getExecutiveCommandCenter,
+  type ExecutiveCommandCenter,
+} from '../services/executiveCommandCenterService';
+
+import {
+  calculateExecutiveRiskIntelligence,
+  type ExecutiveRiskIntelligence,
+} from '../services/executiveRiskIntelligenceService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -105,6 +115,12 @@ export default function OptimizacionPage() {
 
   const [executiveSummary, setExecutiveSummary] =
   useState<ExecutiveDecisionSummary | null>(null);
+
+  const [executiveCommandCenter, setExecutiveCommandCenter] =
+  useState<ExecutiveCommandCenter | null>(null);
+
+  const [executiveRisk, setExecutiveRisk] =
+  useState<ExecutiveRiskIntelligence | null>(null);
 
   useEffect(() => {
     async function loadNarrative() {
@@ -182,6 +198,16 @@ export default function OptimizacionPage() {
 
       setExecutiveSummary(summaryData);
 
+      const commandCenterData =
+        await getExecutiveCommandCenter();
+
+      setExecutiveCommandCenter(commandCenterData);
+
+      const riskData =
+        await calculateExecutiveRiskIntelligence();
+
+      setExecutiveRisk(riskData);
+
     }
 
     loadNarrative();
@@ -196,6 +222,144 @@ export default function OptimizacionPage() {
         <p className="mt-1 text-sm text-slate-400">
           Centro de Optimización Operativa CJWMS
         </p>
+
+        {executiveCommandCenter && (
+          <div className="mt-6 rounded-xl border border-slate-800 bg-slate-950 p-6 shadow-sm">
+            <div className="flex items-start justify-between gap-6">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-cyan-400">
+                  Executive Command Center
+                </p>
+
+                <h2 className="mt-3 text-3xl font-bold text-white">
+                  {executiveCommandCenter.globalStatus === 'excellent'
+                    ? 'Operación Excelente'
+                    : executiveCommandCenter.globalStatus === 'good'
+                      ? 'Operación Buena'
+                      : executiveCommandCenter.globalStatus === 'attention'
+                        ? 'Operación en Atención'
+                        : 'Operación Crítica'}
+                </h2>
+
+                <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-300">
+                  {executiveCommandCenter.summary}
+                </p>
+              </div>
+
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-bold ${
+                  executiveCommandCenter.globalStatus === 'excellent'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : executiveCommandCenter.globalStatus === 'good'
+                      ? 'bg-blue-100 text-blue-700'
+                      : executiveCommandCenter.globalStatus === 'attention'
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-red-100 text-red-700'
+                }`}
+              >
+                {executiveCommandCenter.globalStatus.toUpperCase()}
+              </span>
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
+                <p className="text-xs uppercase text-slate-400">
+                  Score Ejecutivo
+                </p>
+
+                <p className="mt-2 text-3xl font-bold text-cyan-400">
+                  {executiveCommandCenter.executiveScore}/100
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
+                <p className="text-xs uppercase text-slate-400">
+                  Nivel de Riesgo
+                </p>
+
+                <p
+                  className={`mt-2 text-3xl font-bold ${
+                    executiveCommandCenter.riskLevel === 'critical'
+                      ? 'text-red-400'
+                      : executiveCommandCenter.riskLevel === 'high'
+                        ? 'text-orange-400'
+                        : executiveCommandCenter.riskLevel === 'medium'
+                          ? 'text-amber-400'
+                          : 'text-emerald-400'
+                  }`}
+                >
+                  {executiveCommandCenter.riskLevel.toUpperCase()}
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
+                <p className="text-xs uppercase text-slate-400">
+                  Prioridad Principal
+                </p>
+
+                <p className="mt-2 text-lg font-bold text-white">
+                  {executiveCommandCenter.topPriority}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {executiveRisk && (
+          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Executive Risk Intelligence
+              </p>
+
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-bold ${
+                  executiveRisk.riskLevel === 'critical'
+                    ? 'bg-red-100 text-red-700'
+                    : executiveRisk.riskLevel === 'high'
+                      ? 'bg-orange-100 text-orange-700'
+                      : executiveRisk.riskLevel === 'medium'
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                }`}
+              >
+                {executiveRisk.riskLevel.toUpperCase()}
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Score de riesgo
+                </p>
+
+                <p className="mt-2 text-3xl font-bold text-slate-900">
+                  {executiveRisk.riskScore}/100
+                </p>
+              </div>
+
+              <div className="md:col-span-2">
+                <p className="text-xs uppercase text-slate-500">
+                  Explicación ejecutiva
+                </p>
+
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {executiveRisk.explanation}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-lg bg-slate-50 p-4">
+              <p className="text-xs uppercase text-slate-500">
+                Acción recomendada
+              </p>
+
+              <p className="mt-2 text-sm font-semibold text-slate-800">
+                {executiveRisk.recommendedAction}
+              </p>
+            </div>
+          </div>
+        )}
 
         {health && (
           <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
