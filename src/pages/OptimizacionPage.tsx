@@ -53,6 +53,11 @@ import {
   type ExecutiveKpiDashboard,
 } from '../services/executiveKpiService';
 
+import {
+  generateExecutiveDecisionSummary,
+  type ExecutiveDecisionSummary,
+} from '../services/executiveDecisionSummaryService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -97,6 +102,9 @@ export default function OptimizacionPage() {
 
   const [executiveKpi, setExecutiveKpi] =
   useState<ExecutiveKpiDashboard | null>(null);
+
+  const [executiveSummary, setExecutiveSummary] =
+  useState<ExecutiveDecisionSummary | null>(null);
 
   useEffect(() => {
     async function loadNarrative() {
@@ -168,6 +176,11 @@ export default function OptimizacionPage() {
         await getExecutiveKpiDashboard();
 
       setExecutiveKpi(executiveKpiData);
+
+      const summaryData =
+        await generateExecutiveDecisionSummary();
+
+      setExecutiveSummary(summaryData);
 
     }
 
@@ -292,6 +305,36 @@ export default function OptimizacionPage() {
                 </p>
               </div>
             </div>
+          </div>
+        )}
+
+        {executiveSummary && (
+          <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Executive Decision Summary
+              </p>
+
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-bold ${
+                  executiveSummary.priority === 'high'
+                    ? 'bg-red-100 text-red-700'
+                    : executiveSummary.priority === 'medium'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-emerald-100 text-emerald-700'
+                }`}
+              >
+                {executiveSummary.priority.toUpperCase()}
+              </span>
+            </div>
+
+            <h3 className="mt-3 text-lg font-bold text-slate-900">
+              {executiveSummary.title}
+            </h3>
+
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              {executiveSummary.summary}
+            </p>
           </div>
         )}
 
