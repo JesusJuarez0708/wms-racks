@@ -78,6 +78,11 @@ import {
   type ExecutiveSimulationResult,
 } from '../services/executiveDecisionSimulatorService';
 
+import {
+  predictOperationalSaturation,
+  type OperationalSaturationPrediction,
+} from '../services/operationalSaturationPredictorService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -137,6 +142,9 @@ export default function OptimizacionPage() {
 
   const [simulationResults, setSimulationResults] =
     useState<ExecutiveSimulationResult[]>([]);
+
+  const [saturationPrediction, setSaturationPrediction] =
+    useState<OperationalSaturationPrediction | null>(null);
 
   const [loadingExecutiveCenter, setLoadingExecutiveCenter] =
     useState(true);
@@ -272,6 +280,11 @@ export default function OptimizacionPage() {
         await runExecutiveDecisionSimulation();
 
       setSimulationResults(simulationData);
+
+      const saturationData =
+        await predictOperationalSaturation();
+
+      setSaturationPrediction(saturationData);
 
       setLoaderStep(6);
       const commandCenterData =
@@ -648,6 +661,74 @@ export default function OptimizacionPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {saturationPrediction && (
+          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Motor Predictivo de Saturación Operativa
+              </p>
+
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-bold ${
+                  saturationPrediction.riskLevel === 'critical'
+                    ? 'bg-red-100 text-red-700'
+                    : saturationPrediction.riskLevel === 'high'
+                      ? 'bg-orange-100 text-orange-700'
+                      : saturationPrediction.riskLevel === 'medium'
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                }`}
+              >
+                {translateLevel(saturationPrediction.riskLevel)}
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Saturación actual
+                </p>
+
+                <p className="mt-2 text-3xl font-bold text-slate-900">
+                  {saturationPrediction.currentSaturation}%
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Saturación proyectada
+                </p>
+
+                <p className="mt-2 text-3xl font-bold text-orange-600">
+                  {saturationPrediction.projectedSaturation}%
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Riesgo estimado
+                </p>
+
+                <p className="mt-2 text-3xl font-bold text-red-600">
+                  {saturationPrediction.daysToRisk} días
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-lg bg-slate-50 p-4">
+              <p className="text-sm text-slate-700">
+                {saturationPrediction.explanation}
+              </p>
+
+              <p className="mt-3 text-sm font-semibold text-slate-900">
+                Acción recomendada:
+                {' '}
+                {saturationPrediction.recommendedAction}
+              </p>
             </div>
           </div>
         )}
