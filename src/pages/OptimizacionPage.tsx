@@ -83,6 +83,11 @@ import {
   type OperationalSaturationPrediction,
 } from '../services/operationalSaturationPredictorService';
 
+import {
+  generatePredictiveWorkOrderSuggestion,
+  type PredictiveWorkOrderSuggestion,
+} from '../services/predictiveWorkOrderService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -145,6 +150,9 @@ export default function OptimizacionPage() {
 
   const [saturationPrediction, setSaturationPrediction] =
     useState<OperationalSaturationPrediction | null>(null);
+
+  const [predictiveWorkOrder, setPredictiveWorkOrder] =
+    useState<PredictiveWorkOrderSuggestion | null>(null);
 
   const [loadingExecutiveCenter, setLoadingExecutiveCenter] =
     useState(true);
@@ -285,6 +293,11 @@ export default function OptimizacionPage() {
         await predictOperationalSaturation();
 
       setSaturationPrediction(saturationData);
+
+      const predictiveWorkOrderData =
+        await generatePredictiveWorkOrderSuggestion();
+
+      setPredictiveWorkOrder(predictiveWorkOrderData);
 
       setLoaderStep(6);
       const commandCenterData =
@@ -729,6 +742,61 @@ export default function OptimizacionPage() {
                 {' '}
                 {saturationPrediction.recommendedAction}
               </p>
+            </div>
+          </div>
+        )}
+
+        {predictiveWorkOrder && (
+          <div className="mt-6 rounded-xl border border-blue-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Orden de Trabajo Preventiva Sugerida
+              </p>
+
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-bold ${
+                  predictiveWorkOrder.priority === 'critical'
+                    ? 'bg-red-100 text-red-700'
+                    : predictiveWorkOrder.priority === 'high'
+                      ? 'bg-orange-100 text-orange-700'
+                      : predictiveWorkOrder.priority === 'medium'
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                }`}
+              >
+                {translateLevel(predictiveWorkOrder.priority)}
+              </span>
+            </div>
+
+            <h3 className="mt-4 text-lg font-bold text-slate-900">
+              {predictiveWorkOrder.title}
+            </h3>
+
+            <div className="mt-4 rounded-lg bg-slate-50 p-4">
+              <p className="text-sm text-slate-700">
+                <strong>Disparador:</strong>{' '}
+                {predictiveWorkOrder.trigger}
+              </p>
+
+              <p className="mt-3 text-sm text-slate-700">
+                <strong>Acción sugerida:</strong>{' '}
+                {predictiveWorkOrder.suggestedAction}
+              </p>
+
+              <p className="mt-3 text-sm text-slate-700">
+                <strong>Beneficio esperado:</strong>{' '}
+                {predictiveWorkOrder.expectedBenefit}
+              </p>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between">
+              <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                {predictiveWorkOrder.id}
+              </span>
+
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                Sugerida
+              </span>
             </div>
           </div>
         )}
