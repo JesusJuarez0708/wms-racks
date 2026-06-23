@@ -88,6 +88,11 @@ import {
   type PredictiveWorkOrderSuggestion,
 } from '../services/predictiveWorkOrderService';
 
+import {
+  getIntelligentWorkOrderExecution,
+  type IntelligentWorkOrderExecution,
+} from '../services/intelligentWorkOrderExecutionService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -154,6 +159,9 @@ export default function OptimizacionPage() {
   const [predictiveWorkOrder, setPredictiveWorkOrder] =
     useState<PredictiveWorkOrderSuggestion | null>(null);
 
+  const [intelligentExecution, setIntelligentExecution] =
+    useState<IntelligentWorkOrderExecution | null>(null);
+
   const [loadingExecutiveCenter, setLoadingExecutiveCenter] =
     useState(true);
 
@@ -183,6 +191,21 @@ export default function OptimizacionPage() {
         return 'Deterioro';
       default:
         return level ?? '';
+    }
+  }
+
+  function translateStatus(status?: string) {
+    switch (status) {
+      case 'suggested':
+        return 'Sugerida';
+      case 'approved':
+        return 'Aprobada';
+      case 'executing':
+        return 'En ejecución';
+      case 'completed':
+        return 'Completada';
+      default:
+        return status ?? '';
     }
   }
 
@@ -298,6 +321,11 @@ export default function OptimizacionPage() {
         await generatePredictiveWorkOrderSuggestion();
 
       setPredictiveWorkOrder(predictiveWorkOrderData);
+
+      const intelligentExecutionData =
+        await getIntelligentWorkOrderExecution();
+
+      setIntelligentExecution(intelligentExecutionData);
 
       setLoaderStep(6);
       const commandCenterData =
@@ -796,6 +824,75 @@ export default function OptimizacionPage() {
 
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                 Sugerida
+              </span>
+            </div>
+          </div>
+        )}
+
+        {intelligentExecution && (
+          <div className="mt-6 rounded-xl border border-emerald-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Centro de Ejecución de Órdenes Inteligentes
+              </p>
+
+              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                {translateStatus(intelligentExecution.status)}
+              </span>
+            </div>
+
+            <h3 className="mt-4 text-lg font-bold text-slate-900">
+              {intelligentExecution.title}
+            </h3>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Progreso
+                </p>
+
+                <p className="mt-2 text-3xl font-bold text-emerald-600">
+                  {intelligentExecution.progress}%
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Responsable
+                </p>
+
+                <p className="mt-2 text-sm font-semibold text-slate-900">
+                  {intelligentExecution.owner}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Impacto estimado
+                </p>
+
+                <p className="mt-2 text-sm font-semibold text-slate-900">
+                  {intelligentExecution.estimatedImpact}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-200">
+              <div
+                className="h-full rounded-full bg-emerald-500"
+                style={{
+                  width: `${intelligentExecution.progress}%`,
+                }}
+              />
+            </div>
+
+            <div className="mt-4 flex items-center justify-between">
+              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                {intelligentExecution.id}
+              </span>
+
+              <span className="text-sm font-semibold text-slate-700">
+                {intelligentExecution.progress}% completado
               </span>
             </div>
           </div>
