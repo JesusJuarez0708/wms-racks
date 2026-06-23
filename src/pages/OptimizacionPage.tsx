@@ -73,6 +73,11 @@ import {
   type ExecutiveForecast,
 } from '../services/executiveForecastService';
 
+import {
+  runExecutiveDecisionSimulation,
+  type ExecutiveSimulationResult,
+} from '../services/executiveDecisionSimulatorService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -129,6 +134,9 @@ export default function OptimizacionPage() {
 
   const [executiveForecast, setExecutiveForecast] =
     useState<ExecutiveForecast | null>(null);
+
+  const [simulationResults, setSimulationResults] =
+    useState<ExecutiveSimulationResult[]>([]);
 
   const [loadingExecutiveCenter, setLoadingExecutiveCenter] =
     useState(true);
@@ -259,6 +267,11 @@ export default function OptimizacionPage() {
         await generateExecutiveForecast();
 
       setExecutiveForecast(executiveForecastData);
+
+      const simulationData =
+        await runExecutiveDecisionSimulation();
+
+      setSimulationResults(simulationData);
 
       setLoaderStep(6);
       const commandCenterData =
@@ -598,6 +611,43 @@ export default function OptimizacionPage() {
                 {' '}
                 {executiveForecast.recommendedAction}
               </p>
+            </div>
+          </div>
+        )}
+
+        {simulationResults.length > 0 && (
+          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Simulador Ejecutivo de Decisiones
+            </p>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              {simulationResults.map((item) => (
+                <div
+                  key={item.scenario}
+                  className="rounded-lg border border-slate-200 p-4"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="font-semibold text-slate-900">
+                        {item.scenario}
+                      </h3>
+
+                      <p className="mt-2 text-sm font-medium text-amber-600">
+                        {item.impact}
+                      </p>
+
+                      <p className="mt-2 text-sm text-slate-600">
+                        {item.recommendation}
+                      </p>
+                    </div>
+
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                      {item.currentValue}% → {item.projectedValue}%
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
