@@ -68,6 +68,11 @@ import {
   type ExecutiveRiskIntelligence,
 } from '../services/executiveRiskIntelligenceService';
 
+import {
+  generateExecutiveForecast,
+  type ExecutiveForecast,
+} from '../services/executiveForecastService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -94,7 +99,7 @@ export default function OptimizacionPage() {
     useState<OperationalExecutionTracking | null>(null);
 
   const [compliance, setCompliance] =
-  useState<OperationalCompliance | null>(null);
+    useState<OperationalCompliance | null>(null);
 
   const [executiveMetrics, setExecutiveMetrics] = useState({
     alerts: 0,
@@ -111,27 +116,69 @@ export default function OptimizacionPage() {
   });
 
   const [executiveKpi, setExecutiveKpi] =
-  useState<ExecutiveKpiDashboard | null>(null);
+    useState<ExecutiveKpiDashboard | null>(null);
 
   const [executiveSummary, setExecutiveSummary] =
-  useState<ExecutiveDecisionSummary | null>(null);
+    useState<ExecutiveDecisionSummary | null>(null);
 
   const [executiveCommandCenter, setExecutiveCommandCenter] =
-  useState<ExecutiveCommandCenter | null>(null);
+    useState<ExecutiveCommandCenter | null>(null);
 
   const [executiveRisk, setExecutiveRisk] =
-  useState<ExecutiveRiskIntelligence | null>(null);
+    useState<ExecutiveRiskIntelligence | null>(null);
+
+  const [executiveForecast, setExecutiveForecast] =
+    useState<ExecutiveForecast | null>(null);
+
+  const [loadingExecutiveCenter, setLoadingExecutiveCenter] =
+    useState(true);
+
+  const [loaderStep, setLoaderStep] = useState(0);
+
+  function translateLevel(level?: string) {
+    switch (level?.toLowerCase()) {
+      case 'critical':
+        return 'CRÍTICO';
+      case 'high':
+        return 'ALTO';
+      case 'medium':
+        return 'MEDIO';
+      case 'low':
+        return 'BAJO';
+      case 'good':
+        return 'BUENO';
+      case 'excellent':
+        return 'EXCELENTE';
+      case 'warning':
+        return 'ATENCIÓN';
+      case 'stable':
+        return 'Estable';
+      case 'up':
+        return 'Mejorando';
+      case 'down':
+        return 'Deterioro';
+      default:
+        return level ?? '';
+    }
+  }
 
   useEffect(() => {
     async function loadNarrative() {
+      setLoadingExecutiveCenter(true);
+
+      setLoaderStep(0);
+
       const narrativeData = await generateOperationalNarrative();
       setNarrative(narrativeData);
 
       const healthData = await calculateOperationalHealth();
       setHealth(healthData);
+      setLoaderStep(1);
+
       saveOperationalHealthScore(healthData.score);
       const trendData = calculateOperationalTrend();
       setTrend(trendData);
+      setLoaderStep(2);
 
       const forecastData =
         await generateOperationalForecast();
@@ -152,6 +199,7 @@ export default function OptimizacionPage() {
         await generateExecutivePriorities();
 
       setExecutivePriorities(prioritiesData);
+      setLoaderStep(4);
 
       const executionData =
         await trackOperationalExecution();
@@ -198,20 +246,91 @@ export default function OptimizacionPage() {
 
       setExecutiveSummary(summaryData);
 
+      const riskData =
+        await calculateExecutiveRiskIntelligence();
+
+      setExecutiveRisk(riskData);
+      setLoaderStep(3);
+
+      setLoaderStep(4);
+
+      setLoaderStep(5);
+      const executiveForecastData =
+        await generateExecutiveForecast();
+
+      setExecutiveForecast(executiveForecastData);
+
+      setLoaderStep(6);
       const commandCenterData =
         await getExecutiveCommandCenter();
 
       setExecutiveCommandCenter(commandCenterData);
 
-      const riskData =
-        await calculateExecutiveRiskIntelligence();
-
-      setExecutiveRisk(riskData);
+      setTimeout(() => {
+        setLoadingExecutiveCenter(false);
+      }, 500);
 
     }
 
     loadNarrative();
   }, []);
+
+  if (loadingExecutiveCenter) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
+        <div className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-2xl">
+            🧠
+          </div>
+
+          <h1 className="text-2xl font-bold text-slate-900">
+            Inicializando Inteligencia Operativa CJWMS
+          </h1>
+
+          <p className="mt-3 text-sm leading-6 text-slate-500">
+            Analizando salud operativa, riesgos, cumplimiento,
+            prioridades ejecutivas y proyecciones del almacén.
+          </p>
+
+          <div className="mt-6 space-y-3 text-left">
+            {[
+              'Salud Operativa',
+              'Tendencias',
+              'Riesgos Ejecutivos',
+              'Prioridades Operativas',
+              'Proyección Ejecutiva',
+              'Centro de Comando',
+            ].map((item, index) => (
+              <div
+                key={item}
+                className="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-700"
+              >
+                <span className="flex h-5 w-5 items-center justify-center">
+                  {loaderStep > index ? (
+                    <span className="text-sm font-bold text-emerald-500">
+                      ✓
+                    </span>
+                  ) : loaderStep === index ? (
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                  ) : (
+                    <span className="h-2 w-2 rounded-full bg-slate-300" />
+                  )}
+                </span>
+
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-6 text-xs uppercase tracking-wider text-slate-400">
+            {loaderStep >= 6
+              ? 'Construyendo vista ejecutiva...'
+              : 'Preparando Centro Ejecutivo'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6 text-slate-100">
@@ -228,7 +347,7 @@ export default function OptimizacionPage() {
             <div className="flex items-start justify-between gap-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-cyan-400">
-                  Executive Command Center
+                  Centro de Comando Ejecutivo
                 </p>
 
                 <h2 className="mt-3 text-3xl font-bold text-white">
@@ -257,7 +376,7 @@ export default function OptimizacionPage() {
                         : 'bg-red-100 text-red-700'
                 }`}
               >
-                {executiveCommandCenter.globalStatus.toUpperCase()}
+                {translateLevel(executiveCommandCenter.globalStatus)}
               </span>
             </div>
 
@@ -288,7 +407,7 @@ export default function OptimizacionPage() {
                           : 'text-emerald-400'
                   }`}
                 >
-                  {executiveCommandCenter.riskLevel.toUpperCase()}
+                  {translateLevel(executiveCommandCenter.riskLevel)}
                 </p>
               </div>
 
@@ -309,7 +428,7 @@ export default function OptimizacionPage() {
           <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Executive Risk Intelligence
+                Inteligencia de Riesgo Ejecutivo
               </p>
 
               <span
@@ -323,7 +442,7 @@ export default function OptimizacionPage() {
                         : 'bg-emerald-100 text-emerald-700'
                 }`}
               >
-                {executiveRisk.riskLevel.toUpperCase()}
+                {translateLevel(executiveRisk.riskLevel)}
               </span>
             </div>
 
@@ -384,7 +503,7 @@ export default function OptimizacionPage() {
                         : 'bg-red-100 text-red-700'
                 }`}
               >
-                {health.status.toUpperCase()}
+                {translateLevel(health.status)}
               </span>
             </div>
 
@@ -417,10 +536,76 @@ export default function OptimizacionPage() {
           </div>
         )}
 
+        {executiveForecast && (
+          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Centro de Proyección Ejecutiva
+              </h3>
+
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  executiveForecast.forecastLevel === 'high'
+                    ? 'bg-red-100 text-red-600'
+                    : executiveForecast.forecastLevel === 'medium'
+                    ? 'bg-amber-100 text-amber-600'
+                    : 'bg-emerald-100 text-emerald-600'
+                }`}
+              >
+                {translateLevel(executiveForecast.forecastLevel)}
+              </span>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Score Actual
+                </p>
+
+                <p className="text-3xl font-bold text-slate-900">
+                  {executiveForecast.currentScore}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Score Proyectado
+                </p>
+
+                <p className="text-3xl font-bold text-blue-600">
+                  {executiveForecast.projectedScore}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase text-slate-500">
+                  Tendencia
+                </p>
+
+                <p className="text-xl font-bold text-slate-900">
+                  {translateLevel(executiveForecast.trend)}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-lg bg-slate-50 p-4">
+              <p className="text-sm text-slate-700">
+                {executiveForecast.explanation}
+              </p>
+
+              <p className="mt-3 text-sm font-semibold text-slate-900">
+                Acción recomendada:
+                {' '}
+                {executiveForecast.recommendedAction}
+              </p>
+            </div>
+          </div>
+        )}
+
         {executiveKpi && (
           <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Executive KPI Command Center
+              Panel Ejecutivo de Indicadores (KPI)
             </p>
 
             <div className="mt-4 grid gap-4 md:grid-cols-5">
@@ -455,7 +640,15 @@ export default function OptimizacionPage() {
                 <p className="text-xs uppercase text-slate-500">
                   Riesgos operativos
                 </p>
-                <p className="mt-2 text-2xl font-bold text-red-600">
+                <p
+                  className={`mt-2 text-2xl font-bold ${
+                    executiveKpi.operationalRisks === 0
+                      ? 'text-emerald-600'
+                      : executiveKpi.operationalRisks <= 3
+                        ? 'text-amber-600'
+                        : 'text-red-600'
+                  }`}
+                >
                   {executiveKpi.operationalRisks}
                 </p>
               </div>
@@ -476,7 +669,7 @@ export default function OptimizacionPage() {
           <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Executive Decision Summary
+                Resumen Ejecutivo de Decisiones
               </p>
 
               <span
@@ -488,7 +681,7 @@ export default function OptimizacionPage() {
                     : 'bg-emerald-100 text-emerald-700'
                 }`}
               >
-                {executiveSummary.priority.toUpperCase()}
+                {translateLevel(executiveSummary.priority)}
               </span>
             </div>
 
@@ -566,7 +759,7 @@ export default function OptimizacionPage() {
                     : 'bg-red-100 text-red-700'
                 }`}
               >
-                {forecast.riskLevel.toUpperCase()}
+                {translateLevel(forecast.riskLevel)}
               </div>
             </div>
 
@@ -786,7 +979,7 @@ export default function OptimizacionPage() {
                           : 'bg-emerald-100 text-emerald-700'
                     }`}
                   >
-                    {item.priority.toUpperCase()}
+                    {translateLevel(item.priority)}
                   </span>
                 </div>
               </div>
@@ -821,7 +1014,7 @@ export default function OptimizacionPage() {
                         : 'bg-emerald-100 text-emerald-700'
                     }`}
                   >
-                    {item.priority.toUpperCase()}
+                    {translateLevel(item.priority)}
                   </span>
                 </div>
 

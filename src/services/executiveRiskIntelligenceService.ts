@@ -6,6 +6,10 @@ import {
   generateOptimizationRecommendations,
 } from './operationalOptimizationService';
 
+import {
+  getExecutiveIntelligenceCore,
+} from './executiveIntelligenceCoreService';
+
 export interface ExecutiveRiskIntelligence {
   riskScore: number;
   riskLevel: 'low' | 'medium' | 'high' | 'critical';
@@ -20,6 +24,9 @@ export async function calculateExecutiveRiskIntelligence():
   const recommendations =
     await generateOptimizationRecommendations();
 
+  const core =
+  await getExecutiveIntelligenceCore();
+
   const highPriorityAlerts = alerts.filter(
     (alert) => alert.priority === 'high',
   );
@@ -31,16 +38,7 @@ export async function calculateExecutiveRiskIntelligence():
       recommendations.length * 5,
   );
 
-  let riskLevel: 'low' | 'medium' | 'high' | 'critical' =
-    'low';
-
-  if (riskScore >= 80) {
-    riskLevel = 'critical';
-  } else if (riskScore >= 60) {
-    riskLevel = 'high';
-  } else if (riskScore >= 35) {
-    riskLevel = 'medium';
-  }
+  const riskLevel = core.riskLevel;
 
   const explanation =
     `El sistema detecta ${alerts.length} alertas activas, ` +
