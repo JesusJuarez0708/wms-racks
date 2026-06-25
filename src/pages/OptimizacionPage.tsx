@@ -93,6 +93,11 @@ import {
   type IntelligentWorkOrderExecution,
 } from '../services/intelligentWorkOrderExecutionService';
 
+import {
+  generateStrategicAlerts,
+  type StrategicAlert,
+} from '../services/strategicAlertService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -166,6 +171,9 @@ export default function OptimizacionPage() {
     useState(true);
 
   const [loaderStep, setLoaderStep] = useState(0);
+
+  const [strategicAlerts, setStrategicAlerts] =
+    useState<StrategicAlert[]>([]);
 
   function translateLevel(level?: string) {
     switch (level?.toLowerCase()) {
@@ -332,6 +340,11 @@ export default function OptimizacionPage() {
         await getExecutiveCommandCenter();
 
       setExecutiveCommandCenter(commandCenterData);
+
+      const strategicAlertsData =
+        await generateStrategicAlerts();
+
+      setStrategicAlerts(strategicAlertsData);
 
       setTimeout(() => {
         setLoadingExecutiveCenter(false);
@@ -894,6 +907,68 @@ export default function OptimizacionPage() {
               <span className="text-sm font-semibold text-slate-700">
                 {intelligentExecution.progress}% completado
               </span>
+            </div>
+          </div>
+        )}
+
+        {strategicAlerts && (
+          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Centro de Alertas Estratégicas
+            </p>
+
+            <div className="mt-4 space-y-3">
+
+              {strategicAlerts.length === 0 && (
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                  <p className="font-semibold text-emerald-700">
+                    Sin alertas estratégicas activas
+                  </p>
+
+                  <p className="mt-2 text-sm text-slate-700">
+                    El sistema no detecta alertas estratégicas críticas en este momento.
+                  </p>
+                </div>
+              )}
+
+              {strategicAlerts.map((alert) => (
+                <div
+                  key={alert.id}
+                  className={`rounded-lg border p-4 ${
+                    alert.severity === 'critical'
+                      ? 'border-red-200 bg-red-50'
+                      : alert.severity === 'high'
+                        ? 'border-amber-200 bg-amber-50'
+                        : 'border-blue-200 bg-blue-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold text-slate-900">
+                      {alert.title}
+                    </p>
+
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                        alert.severity === 'critical'
+                          ? 'bg-red-100 text-red-700'
+                          : alert.severity === 'high'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-blue-100 text-blue-700'
+                      }`}
+                    >
+                      {alert.severity.toUpperCase()}
+                    </span>
+                  </div>
+
+                  <p className="mt-2 text-sm text-slate-700">
+                    <strong>Impacto:</strong> {alert.impact}
+                  </p>
+
+                  <p className="mt-1 text-sm text-slate-700">
+                    <strong>Acción:</strong> {alert.recommendation}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         )}
