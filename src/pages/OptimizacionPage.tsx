@@ -102,6 +102,10 @@ import {
   generateStrategicOpportunities,
 } from '../services/strategicOpportunityService';
 
+import {
+  calculateOperationalMaturity,
+} from '../services/operationalMaturityService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -182,6 +186,15 @@ export default function OptimizacionPage() {
   const strategicOpportunities =
     generateStrategicOpportunities();
 
+  const operationalMaturity =
+    executiveKpi && executiveRisk && executiveCommandCenter
+      ? calculateOperationalMaturity(
+          executiveCommandCenter.executiveScore ?? 0,
+          executiveKpi.compliance ?? 0,
+          executiveRisk.riskScore ?? 100,
+        )
+      : null;
+    
   function translateLevel(level?: string) {
     switch (level?.toLowerCase()) {
       case 'critical':
@@ -1099,8 +1112,109 @@ export default function OptimizacionPage() {
               ))}
             </div>
           )}
-
         </section>
+
+        {operationalMaturity && (
+          <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Índice de Madurez Operativa
+                </h2>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  Evalúa el nivel global de evolución operativa del almacén.
+                </p>
+              </div>
+
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  operationalMaturity.level === 'excellent'
+                    ? 'bg-blue-100 text-blue-700'
+                    : operationalMaturity.level === 'optimized'
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : operationalMaturity.level === 'managed'
+                        ? 'bg-amber-100 text-amber-700'
+                        : operationalMaturity.level === 'developing'
+                          ? 'bg-orange-100 text-orange-700'
+                          : 'bg-red-100 text-red-700'
+                }`}
+              >
+                {operationalMaturity.title}
+              </span>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-[220px_1fr]">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 text-center">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Score de madurez
+                </p>
+
+                <p className="mt-3 text-4xl font-bold text-slate-900">
+                  {operationalMaturity.score}
+                  <span className="text-xl text-slate-400">
+                    /100
+                  </span>
+                </p>
+
+                <p className="mt-2 text-sm font-medium text-slate-600">
+                  {operationalMaturity.title}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-sm font-semibold text-slate-900">
+                  Diagnóstico ejecutivo
+                </p>
+
+                <p className="mt-2 text-sm text-slate-600">
+                  La operación se encuentra en un nivel de madurez{' '}
+                  <span className="font-semibold">
+                    {operationalMaturity.title}
+                  </span>
+                  .
+                </p>
+
+                <div className="mt-4">
+                  <p className="text-sm font-semibold text-slate-900">
+                    Recomendación
+                  </p>
+
+                  <p className="mt-1 text-sm text-slate-600">
+                    {operationalMaturity.recommendation}
+                  </p>
+                </div>
+
+                <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    className={`h-full rounded-full ${
+                      operationalMaturity.level === 'excellent'
+                        ? 'bg-blue-500'
+                        : operationalMaturity.level === 'optimized'
+                          ? 'bg-emerald-500'
+                          : operationalMaturity.level === 'managed'
+                            ? 'bg-amber-500'
+                            : operationalMaturity.level === 'developing'
+                              ? 'bg-orange-500'
+                              : 'bg-red-500'
+                    }`}
+                    style={{
+                      width: `${operationalMaturity.score}%`,
+                    }}
+                  />
+                </div>
+
+                <div className="mt-2 flex justify-between text-xs text-slate-400">
+                  <span>Inicial</span>
+                  <span>En desarrollo</span>
+                  <span>Gestionado</span>
+                  <span>Optimizado</span>
+                  <span>Excelente</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {executiveKpi && (
           <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
