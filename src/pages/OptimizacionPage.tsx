@@ -106,6 +106,18 @@ import {
   calculateOperationalMaturity,
 } from '../services/operationalMaturityService';
 
+import {
+  generateOperationalRoadmap,
+} from '../services/operationalRoadmapService';
+
+import {
+  generateStrategicRecommendations,
+} from '../services/strategicRecommendationEngineService';
+
+import {
+  generateExecutiveExecutionPlan,
+} from '../services/executivePlannerService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -194,7 +206,36 @@ export default function OptimizacionPage() {
           executiveRisk.riskScore ?? 100,
         )
       : null;
-    
+
+  const operationalRoadmap =
+  executiveKpi && executiveRisk && executiveCommandCenter
+    ? generateOperationalRoadmap(
+        executiveCommandCenter.executiveScore ?? 0,
+        executiveKpi.compliance ?? 0,
+        executiveRisk.riskScore ?? 100,
+      )
+    : null;
+
+  const strategicRecommendations =
+  executiveKpi &&
+  executiveRisk &&
+  executiveCommandCenter
+    ? generateStrategicRecommendations(
+        executiveCommandCenter.executiveScore ?? 0,
+        executiveKpi.compliance ?? 0,
+        executiveKpi.activeAlerts ?? 0,
+        executiveRisk.riskScore ?? 100,
+      )
+    : [];
+
+  const executiveExecutionPlan =
+    executiveCommandCenter
+      ? generateExecutiveExecutionPlan(
+          strategicRecommendations,
+          executiveCommandCenter.executiveScore ?? 0,
+        )
+      : null;
+
   function translateLevel(level?: string) {
     switch (level?.toLowerCase()) {
       case 'critical':
@@ -405,7 +446,7 @@ export default function OptimizacionPage() {
                 key={item}
                 className="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-700"
               >
-                <span className="flex h-5 w-5 items-center justify-center">
+                <span className="flex h-6 w-6 items-center justify-center">
                   {loaderStep > index ? (
                     <span className="text-sm font-bold text-emerald-500">
                       ✓
@@ -1211,6 +1252,277 @@ export default function OptimizacionPage() {
                   <span>Optimizado</span>
                   <span>Excelente</span>
                 </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {operationalRoadmap && (
+          <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Roadmap Estratégico de Evolución
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Define las acciones necesarias para avanzar al siguiente nivel de madurez operativa.
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-[260px_1fr]">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Nivel actual
+                </p>
+
+                <p className="mt-2 text-2xl font-bold text-slate-900">
+                  {operationalRoadmap.currentLevel}
+                </p>
+
+                <div className="my-4 h-px bg-slate-200" />
+
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Siguiente nivel
+                </p>
+
+                <p className="mt-2 text-2xl font-bold text-slate-900">
+                  {operationalRoadmap.nextLevel}
+                </p>
+
+                <div className="mt-5">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Progreso
+                  </p>
+
+                  <p className="mt-2 text-3xl font-bold text-blue-600">
+                    {operationalRoadmap.progress}%
+                  </p>
+
+                  <p className="mt-2 text-sm text-slate-500">
+                    {operationalRoadmap.completedActions} de{' '}
+                    {operationalRoadmap.totalActions} acciones completadas
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-sm font-semibold text-slate-900">
+                  Acciones para avanzar
+                </p>
+
+                <div className="mt-4 space-y-3">
+                  {operationalRoadmap.actions.map((action) => (
+                    <div
+                      key={action.id}
+                      className="flex items-start gap-4 rounded-lg border border-slate-200 bg-white p-3"
+                    >
+                      <span
+                        className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
+                          action.completed
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : action.inProgress
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-slate-100 text-slate-400'
+                        }`}
+                      >
+                        {action.completed
+                          ? '✓'
+                          : action.inProgress
+                          ? '•'
+                          : '○'}
+                      </span>
+
+                      <div>
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-[11px] font-semibold uppercase ${
+                            action.priority === 'Alta'
+                              ? 'bg-red-100 text-red-700'
+                              : action.priority === 'Media'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-emerald-100 text-emerald-700'
+                          }`}
+                        >
+                          {action.priority}
+                        </span>
+
+                        <p className="mt-2 text-sm font-medium text-slate-800">
+                          {action.title}
+                        </p>
+
+                        <p className="mt-1 text-xs text-slate-400">
+                          {action.completed
+                            ? 'Completado'
+                            : 'Pendiente'}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {strategicRecommendations.length > 0 && (
+          <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Motor Inteligente de Recomendaciones Estratégicas
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Prioriza acciones ejecutivas con impacto directo en cumplimiento,
+                riesgo y madurez operativa.
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {strategicRecommendations.map((recommendation) => (
+                <div
+                  key={recommendation.id}
+                  className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                >
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold uppercase ${
+                        recommendation.priority === 'critical'
+                          ? 'bg-red-100 text-red-700'
+                          : recommendation.priority === 'high'
+                            ? 'bg-orange-100 text-orange-700'
+                            : recommendation.priority === 'medium'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-emerald-100 text-emerald-700'
+                      }`}
+                    >
+                      {recommendation.priority === 'critical'
+                        ? 'Crítica'
+                        : recommendation.priority === 'high'
+                          ? 'Alta'
+                          : recommendation.priority === 'medium'
+                            ? 'Media'
+                            : 'Baja'}
+                    </span>
+
+                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      {recommendation.id}
+                    </span>
+                  </div>
+
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    {recommendation.title}
+                  </h3>
+
+                  <p className="mt-2 text-sm text-slate-600">
+                    {recommendation.description}
+                  </p>
+
+                  <div className="mt-4 rounded-lg bg-white p-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      Impacto esperado
+                    </p>
+
+                    <p className="mt-1 text-sm text-slate-600">
+                      {recommendation.expectedImpact}
+                    </p>
+                  </div>
+
+                  <div
+                    className={`mt-3 rounded-lg p-3 ${
+                      recommendation.priority === 'critical'
+                        ? 'bg-red-50'
+                        : recommendation.priority === 'high'
+                          ? 'bg-orange-50'
+                          : recommendation.priority === 'medium'
+                            ? 'bg-blue-50'
+                            : 'bg-emerald-50'
+                    }`}
+                  >
+                    <p
+                      className={`text-xs font-semibold uppercase tracking-wide ${
+                        recommendation.priority === 'critical'
+                          ? 'text-red-700'
+                          : recommendation.priority === 'high'
+                            ? 'text-orange-700'
+                            : recommendation.priority === 'medium'
+                              ? 'text-blue-700'
+                              : 'text-emerald-700'
+                      }`}
+                    >
+                      → Siguiente acción
+                    </p>
+
+                    <p className="mt-1 text-sm text-slate-700">
+                      {recommendation.suggestedAction}
+                    </p>
+                  </div>
+
+                </div>
+
+              ))}
+            </div>
+          </section>
+        )}
+
+        {executiveExecutionPlan && executiveExecutionPlan.steps.length > 0 && (
+          <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Planificador Ejecutivo Inteligente
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Ordena las recomendaciones estratégicas en una secuencia ejecutiva
+                priorizada.
+              </p>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
+              <div className="space-y-3">
+                {executiveExecutionPlan.steps.map((step) => (
+                  <div
+                    key={step.recommendationId}
+                    className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      Paso {step.order} · {step.recommendationId}
+                    </p>
+
+                    <h3 className="mt-1 text-sm font-semibold text-slate-900">
+                      {step.title}
+                    </h3>
+
+                    <p className="mt-2 text-sm text-slate-600">
+                      {step.estimatedBenefit}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Resultado esperado
+                </p>
+
+                <p className="mt-4 text-sm text-slate-500">
+                  Score Ejecutivo
+                </p>
+                <p className="text-3xl font-bold text-blue-600">
+                  {executiveExecutionPlan.expectedExecutiveScore}/100
+                </p>
+
+                <p className="mt-4 text-sm text-slate-500">
+                  Riesgo esperado
+                </p>
+                <p className="text-xl font-bold text-slate-900">
+                  {executiveExecutionPlan.expectedRiskLevel}
+                </p>
+
+                <p className="mt-4 text-sm text-slate-500">
+                  Madurez esperada
+                </p>
+                <p className="text-xl font-bold text-slate-900">
+                  {executiveExecutionPlan.expectedMaturity}
+                </p>
               </div>
             </div>
           </section>
