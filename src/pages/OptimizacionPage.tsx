@@ -98,6 +98,10 @@ import {
   type StrategicAlert,
 } from '../services/strategicAlertService';
 
+import {
+  generateStrategicOpportunities,
+} from '../services/strategicOpportunityService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -174,6 +178,9 @@ export default function OptimizacionPage() {
 
   const [strategicAlerts, setStrategicAlerts] =
     useState<StrategicAlert[]>([]);
+
+  const strategicOpportunities =
+    generateStrategicOpportunities();
 
   function translateLevel(level?: string) {
     switch (level?.toLowerCase()) {
@@ -972,6 +979,128 @@ export default function OptimizacionPage() {
             </div>
           </div>
         )}
+
+        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Centro de Oportunidades Estratégicas
+            </h2>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Identifica oportunidades ejecutivas para mejorar productividad,
+              capacidad y crecimiento operativo.
+            </p>
+          </div>
+
+          {strategicOpportunities.length === 0 ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    En monitoreo
+                  </p>
+
+                  <h3 className="mt-1 text-sm font-semibold text-slate-900">
+                    Sin oportunidades estratégicas detectadas
+                  </h3>
+                </div>
+
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  Estable
+                </span>
+              </div>
+
+              <p className="text-sm text-slate-600">
+                La operación requiere estabilizar primero los indicadores antes de
+                generar nuevas oportunidades de crecimiento.
+              </p>
+
+              <div className="mt-4 space-y-2 text-sm">
+                <div>
+                  <p className="font-medium text-slate-700">
+                    Estado actual
+                  </p>
+                  <p className="text-slate-500">
+                    No existen oportunidades estratégicas habilitadas con los
+                    indicadores actuales.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-medium text-slate-700">
+                    Recomendación
+                  </p>
+                  <p className="text-slate-500">
+                    Incrementar el cumplimiento operativo y mejorar el score ejecutivo
+                    para habilitar recomendaciones estratégicas.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {strategicOpportunities.map((opportunity) => (
+                <div
+                  key={opportunity.id}
+                  className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                >
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                        {opportunity.id}
+                      </p>
+
+                      <h3 className="mt-1 text-sm font-semibold text-slate-900">
+                        {opportunity.title}
+                      </h3>
+                    </div>
+
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        opportunity.priority === 'high'
+                          ? 'bg-red-100 text-red-700'
+                          : opportunity.priority === 'medium'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-emerald-100 text-emerald-700'
+                      }`}
+                    >
+                      {opportunity.priority === 'high'
+                        ? 'Alta'
+                        : opportunity.priority === 'medium'
+                          ? 'Media'
+                          : 'Baja'}
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-slate-600">
+                    {opportunity.description}
+                  </p>
+
+                  <div className="mt-4 space-y-2 text-sm">
+                    <div>
+                      <p className="font-medium text-slate-700">
+                        Impacto
+                      </p>
+                      <p className="text-slate-500">
+                        {opportunity.impact}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="font-medium text-slate-700">
+                        Beneficio estimado
+                      </p>
+                      <p className="text-slate-500">
+                        {opportunity.estimatedBenefit}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+        </section>
 
         {executiveKpi && (
           <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
