@@ -118,6 +118,10 @@ import {
   generateExecutiveExecutionPlan,
 } from '../services/executivePlannerService';
 
+import {
+  simulateExecutiveImpact,
+} from '../services/executiveSimulationImpactService';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -235,6 +239,18 @@ export default function OptimizacionPage() {
           executiveCommandCenter.executiveScore ?? 0,
         )
       : null;
+
+  const executiveSimulationImpact =
+    executiveKpi &&
+    executiveRisk &&
+    executiveCommandCenter
+      ? simulateExecutiveImpact(
+          executiveCommandCenter.executiveScore ?? 0,
+          executiveKpi.compliance ?? 0,
+          executiveKpi.activeAlerts ?? 0,
+          executiveRisk.riskScore ?? 100,
+        )
+      : [];
 
   function translateLevel(level?: string) {
     switch (level?.toLowerCase()) {
@@ -750,7 +766,7 @@ export default function OptimizacionPage() {
             </p>
 
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-              {simulationResults.map((item) => (
+              {simulationResults.map((item, index) => (
                 <div
                   key={item.scenario}
                   className="rounded-lg border border-slate-200 p-4"
@@ -761,18 +777,134 @@ export default function OptimizacionPage() {
                         {item.scenario}
                       </h3>
 
-                      <p className="mt-2 text-sm font-medium text-amber-600">
+                      <p
+                        className={`mt-2 text-sm font-medium ${
+                          executiveSimulationImpact[index]?.projectedScore >= 50
+                            ? 'text-emerald-600'
+                            : executiveSimulationImpact[index]?.projectedScore >= 40
+                              ? 'text-amber-600'
+                              : 'text-red-600'
+                        }`}
+                      >
                         {item.impact}
                       </p>
 
                       <p className="mt-2 text-sm text-slate-600">
                         {item.recommendation}
                       </p>
+
+                      {executiveSimulationImpact[index] && (
+                        <div className="mt-4 rounded-lg bg-slate-50 p-3">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            Impacto ejecutivo
+                          </p>
+
+                          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500">
+                                Score Ejecutivo
+                              </p>
+                              <p
+                                className={`text-xl font-bold ${
+                                  executiveSimulationImpact[index].projectedScore >=
+                                  executiveSimulationImpact[index].currentScore
+                                    ? 'text-emerald-500'
+                                    : 'text-red-500'
+                                }`}
+                              >
+                                {executiveSimulationImpact[index].currentScore} →{' '}
+                                {executiveSimulationImpact[index].projectedScore}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs text-slate-400">
+                                Cumplimiento
+                              </p>
+                              <p
+                                className={`text-sm font-semibold ${
+                                  executiveSimulationImpact[index].projectedCompliance >=
+                                  executiveSimulationImpact[index].currentCompliance
+                                    ? 'text-emerald-600'
+                                    : 'text-red-600'
+                                }`}
+                              >
+                                {executiveSimulationImpact[index].currentCompliance}% →{' '}
+                                {executiveSimulationImpact[index].projectedCompliance}%
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs text-slate-400">
+                                Alertas
+                              </p>
+                              <p
+                                className={`text-sm font-semibold ${
+                                  executiveSimulationImpact[index].projectedAlerts <=
+                                  executiveSimulationImpact[index].currentAlerts
+                                    ? 'text-emerald-600'
+                                    : 'text-red-600'
+                                }`}
+                              >
+                                {executiveSimulationImpact[index].currentAlerts} →{' '}
+                                {executiveSimulationImpact[index].projectedAlerts}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs text-slate-400">
+                                Riesgo
+                              </p>
+                              <p
+                                className={`text-sm font-semibold ${
+                                  executiveSimulationImpact[index].projectedRisk <=
+                                  executiveSimulationImpact[index].currentRisk
+                                    ? 'text-emerald-600'
+                                    : 'text-red-600'
+                                }`}
+                              >
+                                {executiveSimulationImpact[index].currentRisk} →{' '}
+                                {executiveSimulationImpact[index].projectedRisk}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 rounded-lg border-l-4 border-blue-500 bg-blue-50 p-3">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+                              💡 Recomendación estratégica
+                            </p>
+
+                            <p className="mt-2 text-sm text-slate-700">
+                              {executiveSimulationImpact[index].recommendation}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
                     </div>
 
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
-                      {item.currentValue}% → {item.projectedValue}%
-                    </span>
+                    <div className="flex flex-col items-end gap-2">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-bold ${
+                          executiveSimulationImpact[index]?.projectedScore >= 50
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : executiveSimulationImpact[index]?.projectedScore >= 40
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {executiveSimulationImpact[index]?.projectedScore >= 50
+                          ? 'Muy recomendable'
+                          : executiveSimulationImpact[index]?.projectedScore >= 40
+                            ? 'Evaluar'
+                            : 'Alto riesgo'}
+                      </span>
+
+                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                        {item.currentValue}% → {item.projectedValue}%
+                      </span>
+                    </div>
+
                   </div>
                 </div>
               ))}
