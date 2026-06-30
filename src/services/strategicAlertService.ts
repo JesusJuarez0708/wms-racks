@@ -30,10 +30,10 @@ export async function generateStrategicAlerts():
     await getExecutiveKpiDashboard();
 
   const risk =
-    calculateExecutiveRiskIntelligence();
+    await calculateExecutiveRiskIntelligence();
 
   const saturation =
-    predictOperationalSaturation();
+    await predictOperationalSaturation();
 
   if (kpi.executiveScore < 40) {
     alerts.push({
@@ -83,7 +83,7 @@ export async function generateStrategicAlerts():
     });
   }
 
-  if (saturation.projectedOccupancy >= 90) {
+  if (saturation.projectedSaturation >= 90) {
     alerts.push({
       id: 'SAT-001',
       title: 'Saturación proyectada superior al 90%',

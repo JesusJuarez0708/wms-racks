@@ -28,22 +28,21 @@ export interface StrategicOpportunity {
   priority: 'high' | 'medium' | 'low';
 }
 
-export function generateStrategicOpportunities():
-  StrategicOpportunity[] {
+export async function generateStrategicOpportunities(): Promise<StrategicOpportunity[]> {
 
   const opportunities: StrategicOpportunity[] = [];
 
   const health =
-    calculateOperationalHealth();
+    await calculateOperationalHealth();
 
   const compliance =
-    calculateOperationalCompliance();
+    await calculateOperationalCompliance();
 
   const saturation =
-    predictOperationalSaturation();
+    await predictOperationalSaturation();
 
   const risk =
-    calculateExecutiveRiskIntelligence();
+    await calculateExecutiveRiskIntelligence();
 
   if (health.score >= 90) {
     opportunities.push({
@@ -59,7 +58,7 @@ export function generateStrategicOpportunities():
     });
   }
 
-  if (compliance.compliance >= 95) {
+  if (compliance.complianceRate >= 95) {
     opportunities.push({
       id: 'OP-002',
       title: 'Automatizar procesos repetitivos',
@@ -73,7 +72,7 @@ export function generateStrategicOpportunities():
     });
   }
 
-  if (saturation.projectedOccupancy < 70) {
+  if (saturation.projectedSaturation < 70) {
     opportunities.push({
       id: 'OP-003',
       title: 'Incrementar capacidad comercial',
