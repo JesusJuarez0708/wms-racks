@@ -139,7 +139,7 @@ import ExecutiveActionPlanSection from '../components/optimization/ExecutiveActi
 import ExecutiveRiskRadarSection from '../components/optimization/ExecutiveRiskRadarSection';
 import ExecutiveNarrativeSection from '../components/optimization/ExecutiveNarrativeSection';
 import { ExecutiveScenarioCenterSection } from '../components/optimization/ExecutiveScenarioCenterSection';
-
+import { ExecutiveExecutionCenterSection } from '../components/optimization/ExecutiveExecutionCenterSection';
 
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
@@ -350,21 +350,6 @@ export default function OptimizacionPage() {
         return 'Deterioro';
       default:
         return level ?? '';
-    }
-  }
-
-  function translateStatus(status?: string) {
-    switch (status) {
-      case 'suggested':
-        return 'Sugerida';
-      case 'approved':
-        return 'Aprobada';
-      case 'executing':
-        return 'En ejecución';
-      case 'completed':
-        return 'Completada';
-      default:
-        return status ?? '';
     }
   }
 
@@ -1141,74 +1126,9 @@ export default function OptimizacionPage() {
           </div>
         )}
 
-        {activeExecutiveSection === 'execution' && intelligentExecution && (
-          <div className="mt-6 rounded-xl border border-emerald-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Centro de Ejecución de Órdenes Inteligentes
-              </p>
-
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-                {translateStatus(intelligentExecution.status)}
-              </span>
-            </div>
-
-            <h3 className="mt-4 text-lg font-bold text-slate-900">
-              {intelligentExecution.title}
-            </h3>
-
-            <div className="mt-4 grid gap-4 md:grid-cols-3">
-              <div>
-                <p className="text-xs uppercase text-slate-500">
-                  Progreso
-                </p>
-
-                <p className="mt-2 text-3xl font-bold text-emerald-600">
-                  {intelligentExecution.progress}%
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs uppercase text-slate-500">
-                  Responsable
-                </p>
-
-                <p className="mt-2 text-sm font-semibold text-slate-900">
-                  {intelligentExecution.owner}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs uppercase text-slate-500">
-                  Impacto estimado
-                </p>
-
-                <p className="mt-2 text-sm font-semibold text-slate-900">
-                  {intelligentExecution.estimatedImpact}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-200">
-              <div
-                className="h-full rounded-full bg-emerald-500"
-                style={{
-                  width: `${intelligentExecution.progress}%`,
-                }}
-              />
-            </div>
-
-            <div className="mt-4 flex items-center justify-between">
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                {intelligentExecution.id}
-              </span>
-
-              <span className="text-sm font-semibold text-slate-700">
-                {intelligentExecution.progress}% completado
-              </span>
-            </div>
-          </div>
-        )}
+        <ExecutiveExecutionCenterSection
+          intelligentExecution={intelligentExecution}
+        />
 
         {activeExecutiveSection === 'risks' && strategicAlerts && (
           <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
