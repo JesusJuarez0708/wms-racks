@@ -135,6 +135,10 @@ import ExecutiveImpactSimulationSection from '../components/optimization/Executi
 import ExecutiveComplianceSection from '../components/optimization/ExecutiveComplianceSection';
 import ExecutiveExecutionTrackingSection from '../components/optimization/ExecutiveExecutionTrackingSection';
 import { ExecutivePrioritiesSection } from '../components/optimization/ExecutivePrioritiesSection';
+import ExecutiveActionPlanSection from '../components/optimization/ExecutiveActionPlanSection';
+import ExecutiveRiskRadarSection from '../components/optimization/ExecutiveRiskRadarSection';
+import ExecutiveNarrativeSection from '../components/optimization/ExecutiveNarrativeSection';
+import { ExecutiveScenarioCenterSection } from '../components/optimization/ExecutiveScenarioCenterSection';
 
 
 export default function OptimizacionPage() {
@@ -1855,150 +1859,20 @@ export default function OptimizacionPage() {
         translateLevel={translateLevel}
       />
 
-      {actionPlan.length > 0 && (
-        <div className="rounded-xl border bg-white p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Plan de Acción Inteligente
-          </p>
+      <ExecutiveActionPlanSection
+        actionPlan={actionPlan}
+        translateLevel={translateLevel}
+      />
 
-          <div className="mt-4 space-y-3">
-            {actionPlan.map((item, index) => (
-              <div
-                key={`${item.title}-${index}`}
-                className="rounded-lg border border-slate-200 p-4"
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-slate-900">
-                    {index + 1}. {item.title}
-                  </h3>
+      <ExecutiveRiskRadarSection
+        riskRadar={riskRadar}
+      />
 
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      item.priority === 'high'
-                        ? 'bg-red-100 text-red-700'
-                        : item.priority === 'medium'
-                        ? 'bg-amber-100 text-amber-700'
-                        : 'bg-emerald-100 text-emerald-700'
-                    }`}
-                  >
-                    {translateLevel(item.priority)}
-                  </span>
-                </div>
+      <ExecutiveNarrativeSection narrative={narrative} />
 
-                <p className="mt-2 text-sm text-slate-600">
-                  Impacto esperado: {item.impact}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="rounded-xl border bg-white p-5 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-          Radar de Riesgo Operativo
-        </p>
-
-        <div className="mt-4 space-y-4">
-          {[
-            ['Saturación', riskRadar.saturation],
-            ['Fragmentación', riskRadar.fragmentation],
-            ['Bloqueo', riskRadar.blockage],
-            ['Rotación', riskRadar.rotation],
-          ].map(([label, value]) => (
-            <div key={label}>
-              <div className="mb-1 flex items-center justify-between text-sm">
-                <span className="font-medium text-slate-700">{label}</span>
-                <span className="font-semibold text-slate-900">{value}%</span>
-              </div>
-
-              <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-                <div
-                  className={`h-full rounded-full ${
-                    Number(value) >= 70
-                      ? 'bg-red-500'
-                      : Number(value) >= 40
-                        ? 'bg-amber-500'
-                        : 'bg-emerald-500'
-                  }`}
-                  style={{ width: `${value}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {narrative && (
-        <div className="rounded-xl border border-slate-700 bg-slate-900 p-4">
-          <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-cyan-400">
-            Análisis Ejecutivo CJWMS
-          </div>
-
-          <div className="space-y-2 text-sm text-slate-200">
-            {narrative.summary.split('. ').map((line) => (
-              <p key={line}>
-                {line.trim().endsWith('.') ? line.trim() : `${line.trim()}.`}
-              </p>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="rounded-xl border border-slate-700 bg-slate-900 p-6">
-        <h2 className="mb-4 text-xl font-bold text-cyan-300">
-          Centro Ejecutivo de Escenarios Priorizados
-        </h2>
-
-        <div className="space-y-4">
-          {prioritizedScenarios.map((scenario) => (
-            <div
-              key={scenario.id}
-              className="rounded-lg border border-slate-700 bg-slate-800 p-4"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <h3 className="font-semibold text-white">
-                  {scenario.scenario}
-                </h3>
-
-                <span className="rounded bg-cyan-700 px-3 py-1 text-sm font-semibold text-white">
-                  Score {scenario.priorityScore}
-                </span>
-              </div>
-
-              <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-slate-400">Prioridad</p>
-                  <p className="font-semibold text-cyan-300">
-                    {scenario.priorityLevel}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-slate-400">Valor proyectado</p>
-                  <p className="font-semibold text-green-400">
-                    {scenario.projectedValue}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-slate-400">Impacto</p>
-                  <p className="font-semibold text-orange-300">
-                    {scenario.impact}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-slate-400">Recomendación</p>
-                  <p className="font-semibold text-white">
-                    {scenario.recommendation}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <ExecutiveScenarioCenterSection
+        prioritizedScenarios={prioritizedScenarios}
+      />
 
     </div>
   );
