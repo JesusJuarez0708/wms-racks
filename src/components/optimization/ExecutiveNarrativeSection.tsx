@@ -14,7 +14,7 @@ function ExecutiveNarrativeSection({
   }
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+    <div className="mt-6 rounded-xl border border-slate-700 bg-slate-900 p-4">
       <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-cyan-400">
         Análisis Ejecutivo CJWMS
       </div>

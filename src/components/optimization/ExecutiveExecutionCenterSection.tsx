@@ -34,7 +34,7 @@ export function ExecutiveExecutionCenterSection({
   }
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-800">
         Centro de Ejecución de Órdenes Inteligentes
       </h2>

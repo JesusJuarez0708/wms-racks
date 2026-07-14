@@ -19,7 +19,7 @@ function ExecutiveForecastSection({
   }
 
   return (
-    <div className="rounded-xl border bg-white p-5 shadow-sm">
+    <div className="mt-6 rounded-xl border bg-white p-5 shadow-sm">
       <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
         Predicción Operativa
       </p>

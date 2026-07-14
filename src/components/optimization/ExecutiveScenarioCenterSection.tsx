@@ -22,7 +22,7 @@ export function ExecutiveScenarioCenterSection({
 
   return (
     <>
-      <div className="rounded-xl border border-slate-700 bg-slate-900 p-6">
+      <div className="mt-6 rounded-xl border border-slate-700 bg-slate-900 p-6">
         <h2 className="mb-4 text-xl font-bold text-cyan-300">
           Centro Ejecutivo de Escenarios Priorizados
         </h2>
