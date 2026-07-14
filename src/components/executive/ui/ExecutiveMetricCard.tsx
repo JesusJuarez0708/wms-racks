@@ -1,3 +1,6 @@
+import ExecutiveCard from './ExecutiveCard';
+import { ExecutiveBadge } from './ExecutiveBadge';
+
 type ExecutiveMetricCardProps = {
   title: string;
   value: string | number;
@@ -16,8 +19,10 @@ export function ExecutiveMetricCard({
   className = '',
 }: ExecutiveMetricCardProps) {
   return (
-    <div
-      className={`rounded-lg bg-slate-50 px-3 py-3 transition-all duration-200 hover:bg-slate-100 hover:shadow-sm ${className}`}
+    <ExecutiveCard
+      variant="light"
+      padding="compact"
+      className={className}
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs uppercase tracking-wide text-slate-500">
@@ -25,9 +30,9 @@ export function ExecutiveMetricCard({
         </p>
 
         {badge && (
-          <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-600">
+          <ExecutiveBadge size="sm">
             {badge}
-          </span>
+          </ExecutiveBadge>
         )}
       </div>
 
@@ -40,6 +45,6 @@ export function ExecutiveMetricCard({
           {subtitle}
         </p>
       )}
-    </div>
+    </ExecutiveCard>
   );
 }

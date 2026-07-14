@@ -1,3 +1,5 @@
+import ExecutiveCard from '../ui/ExecutiveCard';
+
 type ExecutiveExpectedResult = {
   expectedExecutiveScore: number;
   expectedRiskLevel: string;
@@ -42,7 +44,11 @@ export function ExecutiveExpectedResultCard({
   result,
 }: ExecutiveExpectedResultCardProps) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 transition-all duration-200 hover:border-slate-300 hover:bg-white hover:shadow-sm">
+    <ExecutiveCard
+      variant="light"
+      padding="default"
+      className="p-5 hover:bg-white"
+    >
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         Resultado esperado
       </p>
@@ -82,6 +88,6 @@ export function ExecutiveExpectedResultCard({
           </p>
         </div>
       </div>
-    </div>
+    </ExecutiveCard>
   );
 }
