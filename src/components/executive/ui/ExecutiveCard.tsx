@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 
 type ExecutiveCardVariant =
-  | 'default'
-  | 'subtle'
-  | 'light';
+  | 'hero'
+  | 'panel'
+  | 'surface';
 
 type ExecutiveCardPadding =
   | 'none'
@@ -22,14 +22,14 @@ const variantClasses: Record<
   ExecutiveCardVariant,
   string
 > = {
-  default:
-    'border-slate-800 bg-slate-950/80 shadow-sm hover:border-cyan-700/40 hover:shadow-lg',
+  hero:
+    'border-slate-800 bg-slate-950/90 shadow-lg shadow-slate-950/20 hover:-translate-y-0.5 hover:border-cyan-700/50 hover:shadow-xl hover:shadow-slate-950/30',
 
-  subtle:
-    'border-slate-800/80 bg-slate-900/60 shadow-sm hover:border-slate-700 hover:bg-slate-900/80',
+  panel:
+    'border-slate-800/80 bg-slate-900/60 shadow-md shadow-slate-950/10 hover:-translate-y-0.5 hover:border-slate-700 hover:bg-slate-900/80 hover:shadow-lg hover:shadow-slate-950/20',
 
-  light:
-    'border-slate-200 bg-slate-50 shadow-none hover:border-slate-300 hover:bg-slate-100 hover:shadow-sm',
+  surface:
+    'border-slate-200 bg-slate-50 shadow-sm shadow-slate-900/5 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-md hover:shadow-slate-900/10',
 };
 
 const paddingClasses: Record<
@@ -45,7 +45,7 @@ const paddingClasses: Record<
 export default function ExecutiveCard({
   children,
   className = '',
-  variant = 'default',
+  variant = 'hero',
   padding = 'default',
 }: ExecutiveCardProps) {
   return (
@@ -54,8 +54,13 @@ export default function ExecutiveCard({
         'rounded-2xl',
         'border',
         'backdrop-blur-sm',
-        'transition-all',
+        'will-change-transform',
+        'transform-gpu',
+        'transition-[transform,box-shadow,border-color,background-color]',
         'duration-300',
+        'ease-out',
+        'motion-reduce:transform-none',
+        'motion-reduce:transition-none',
         variantClasses[variant],
         paddingClasses[padding],
         className,

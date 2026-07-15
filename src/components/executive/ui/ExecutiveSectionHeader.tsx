@@ -1,5 +1,14 @@
 import type { ReactNode } from 'react';
 
+type ExecutiveSectionHeaderTone =
+  | 'light'
+  | 'dark';
+
+type ExecutiveSectionHeaderSize =
+  | 'compact'
+  | 'default'
+  | 'hero';
+
 type ExecutiveSectionHeaderProps = {
   eyebrow?: string;
   title: string;
@@ -7,6 +16,52 @@ type ExecutiveSectionHeaderProps = {
   badge?: ReactNode;
   actions?: ReactNode;
   className?: string;
+  tone?: ExecutiveSectionHeaderTone;
+  size?: ExecutiveSectionHeaderSize;
+};
+
+const toneClasses: Record<
+  ExecutiveSectionHeaderTone,
+  {
+    eyebrow: string;
+    title: string;
+    description: string;
+  }
+> = {
+  light: {
+    eyebrow: 'text-cyan-600',
+    title: 'text-slate-900',
+    description: 'text-slate-500',
+  },
+
+  dark: {
+    eyebrow: 'text-cyan-400',
+    title: 'text-white',
+    description: 'text-slate-300',
+  },
+};
+
+const sizeClasses: Record<
+  ExecutiveSectionHeaderSize,
+  {
+    title: string;
+    description: string;
+  }
+> = {
+  compact: {
+    title: 'text-lg',
+    description: 'text-xs leading-5',
+  },
+
+  default: {
+    title: 'text-xl',
+    description: 'text-sm leading-6',
+  },
+
+  hero: {
+    title: 'text-3xl',
+    description: 'text-base leading-7',
+  },
 };
 
 export function ExecutiveSectionHeader({
@@ -16,6 +71,8 @@ export function ExecutiveSectionHeader({
   badge,
   actions,
   className = '',
+  tone = 'light',
+  size = 'default',
 }: ExecutiveSectionHeaderProps) {
   return (
     <div
@@ -31,17 +88,40 @@ export function ExecutiveSectionHeader({
     >
       <div className="min-w-0">
         {eyebrow && (
-          <p className="text-xs font-semibold uppercase tracking-wider text-cyan-600">
+          <p
+            className={[
+              'text-xs',
+              'font-semibold',
+              'uppercase',
+              'tracking-wider',
+              toneClasses[tone].eyebrow,
+            ].join(' ')}
+          >
             {eyebrow}
           </p>
         )}
 
-        <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-900">
+        <h2
+          className={[
+            eyebrow ? 'mt-2' : '',
+            'font-bold',
+            'tracking-tight',
+            sizeClasses[size].title,
+            toneClasses[tone].title,
+          ].join(' ')}
+        >
           {title}
         </h2>
 
         {description && (
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+          <p
+            className={[
+              'mt-2',
+              'max-w-3xl',
+              sizeClasses[size].description,
+              toneClasses[tone].description,
+            ].join(' ')}
+          >
             {description}
           </p>
         )}

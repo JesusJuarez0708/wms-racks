@@ -27,53 +27,54 @@ export function ExecutiveKpiPanel({
         : 'text-red-600';
 
   return (
-    <ExecutiveCard
-      variant="light"
-      padding="default"
-      className="mt-4"
-    >
-      <ExecutiveSection spacing="compact">
-        <ExecutiveSectionHeader
-          title="Panel Ejecutivo de Indicadores"
-          description="Visión consolidada del desempeño operativo"
-          badge={
-            <ExecutiveBadge>
-              KPI
-            </ExecutiveBadge>
-          }
-        />
-
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <ExecutiveMetricCard
-            title="Cumplimiento"
-            value={`${executiveKpi.complianceRate}%`}
+    <ExecutiveSection gap="compact">
+      <ExecutiveCard
+        variant="surface"
+        padding="default"
+      >
+        <ExecutiveSection spacing="compact">
+          <ExecutiveSectionHeader
+            title="Panel Ejecutivo de Indicadores"
+            description="Visión consolidada del desempeño operativo"
+            badge={
+              <ExecutiveBadge>
+                KPI
+              </ExecutiveBadge>
+            }
           />
 
-          <ExecutiveMetricCard
-            title="Recomendaciones ejecutadas"
-            value={executiveKpi.executedRecommendations}
-            valueClassName="text-blue-600"
-          />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <ExecutiveMetricCard
+              title="Cumplimiento"
+              value={`${executiveKpi.complianceRate}%`}
+            />
 
-          <ExecutiveMetricCard
-            title="Alertas activas"
-            value={executiveKpi.activeAlerts}
-            valueClassName="text-amber-600"
-          />
+            <ExecutiveMetricCard
+              title="Recomendaciones ejecutadas"
+              value={executiveKpi.executedRecommendations}
+              valueClassName="text-blue-600"
+            />
 
-          <ExecutiveMetricCard
-            title="Riesgos operativos"
-            value={executiveKpi.operationalRisks}
-            valueClassName={operationalRiskClassName}
-          />
+            <ExecutiveMetricCard
+              title="Alertas activas"
+              value={executiveKpi.activeAlerts}
+              valueClassName="text-amber-600"
+            />
 
-          <ExecutiveMetricCard
-            title="Score ejecutivo"
-            value={`${executiveKpi.executiveScore}/100`}
-            valueClassName="text-emerald-600"
-          />
-        </div>
-      </ExecutiveSection>
-    </ExecutiveCard>
+            <ExecutiveMetricCard
+              title="Riesgos operativos"
+              value={executiveKpi.operationalRisks}
+              valueClassName={operationalRiskClassName}
+            />
+
+            <ExecutiveMetricCard
+              title="Score ejecutivo"
+              value={`${executiveKpi.executiveScore}/100`}
+              valueClassName="text-emerald-600"
+            />
+          </div>
+        </ExecutiveSection>
+      </ExecutiveCard>
+    </ExecutiveSection>
   );
 }

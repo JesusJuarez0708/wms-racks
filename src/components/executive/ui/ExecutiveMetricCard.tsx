@@ -20,7 +20,7 @@ export function ExecutiveMetricCard({
 }: ExecutiveMetricCardProps) {
   return (
     <ExecutiveCard
-      variant="light"
+      variant="surface"
       padding="compact"
       className={className}
     >

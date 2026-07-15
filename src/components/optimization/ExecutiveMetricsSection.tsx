@@ -1,3 +1,6 @@
+import { ExecutiveMetricsGrid } from '../executive/patterns/ExecutiveMetricsGrid';
+import { ExecutiveMetricCard } from '../executive/ui/ExecutiveMetricCard';
+
 type ExecutiveMetrics = {
   alerts: number;
   criticalAlerts: number;
@@ -13,47 +16,31 @@ function ExecutiveMetricsSection({
   executiveMetrics,
 }: ExecutiveMetricsSectionProps) {
   return (
-    <div className="mt-4 grid gap-4 md:grid-cols-4">
-      <div className="rounded-xl border bg-white p-4 shadow-sm">
-        <div className="text-xs uppercase text-slate-500">
-          Alertas activas
-        </div>
+    <ExecutiveMetricsGrid className="mt-4 md:grid-cols-4">
+      <ExecutiveMetricCard
+        title="Alertas activas"
+        value={executiveMetrics.alerts}
+        valueClassName="text-3xl text-slate-900"
+      />
 
-        <div className="mt-2 text-3xl font-bold text-slate-900">
-          {executiveMetrics.alerts}
-        </div>
-      </div>
+      <ExecutiveMetricCard
+        title="Alertas críticas"
+        value={executiveMetrics.criticalAlerts}
+        valueClassName="text-3xl text-red-600"
+      />
 
-      <div className="rounded-xl border bg-white p-4 shadow-sm">
-        <div className="text-xs uppercase text-slate-500">
-          Alertas críticas
-        </div>
+      <ExecutiveMetricCard
+        title="Recomendaciones"
+        value={executiveMetrics.recommendations}
+        valueClassName="text-3xl text-blue-600"
+      />
 
-        <div className="mt-2 text-3xl font-bold text-red-600">
-          {executiveMetrics.criticalAlerts}
-        </div>
-      </div>
-
-      <div className="rounded-xl border bg-white p-4 shadow-sm">
-        <div className="text-xs uppercase text-slate-500">
-          Recomendaciones
-        </div>
-
-        <div className="mt-2 text-3xl font-bold text-blue-600">
-          {executiveMetrics.recommendations}
-        </div>
-      </div>
-
-      <div className="rounded-xl border bg-white p-4 shadow-sm">
-        <div className="text-xs uppercase text-slate-500">
-          Oportunidades
-        </div>
-
-        <div className="mt-2 text-3xl font-bold text-emerald-600">
-          {executiveMetrics.opportunities}
-        </div>
-      </div>
-    </div>
+      <ExecutiveMetricCard
+        title="Oportunidades"
+        value={executiveMetrics.opportunities}
+        valueClassName="text-3xl text-emerald-600"
+      />
+    </ExecutiveMetricsGrid>
   );
 }
 

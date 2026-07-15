@@ -1,3 +1,5 @@
+import { ExecutivePanel } from '../executive/patterns/ExecutivePanel';
+
 type ExecutiveNarrative = {
   summary: string;
 };
@@ -14,19 +16,24 @@ function ExecutiveNarrativeSection({
   }
 
   return (
-    <div className="mt-6 rounded-xl border border-slate-700 bg-slate-900 p-4">
-      <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-cyan-400">
-        Análisis Ejecutivo CJWMS
-      </div>
-
+    <ExecutivePanel
+      title="Análisis Ejecutivo CJWMS"
+      tone="dark"
+      variant="panel"
+      padding="compact"
+      className="mt-6"
+      contentClassName="mt-3"
+    >
       <div className="space-y-2 text-sm text-slate-200">
         {narrative.summary.split('. ').map((line) => (
           <p key={line}>
-            {line.trim().endsWith('.') ? line.trim() : `${line.trim()}.`}
+            {line.trim().endsWith('.')
+              ? line.trim()
+              : `${line.trim()}.`}
           </p>
         ))}
       </div>
-    </div>
+    </ExecutivePanel>
   );
 }
 

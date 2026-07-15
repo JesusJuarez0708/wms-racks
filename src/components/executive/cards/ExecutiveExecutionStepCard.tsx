@@ -16,9 +16,8 @@ export function ExecutiveExecutionStepCard({
 }: ExecutiveExecutionStepCardProps) {
   return (
     <ExecutiveCard
-      variant="light"
+      variant="surface"
       padding="default"
-      className="hover:bg-white"
     >
       <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
         Paso {step.order} · {step.recommendationId}

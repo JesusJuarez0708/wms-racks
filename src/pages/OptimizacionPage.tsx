@@ -137,6 +137,13 @@ import {
   ExecutiveBrainSection,
 } from '../components/optimization/ExecutiveBrainSection';
 
+import {
+  generateExecutiveInsight,
+  type ExecutiveInsight,
+} from '../services/executiveInsightService';
+
+import { ExecutiveInsightSection } from '../components/optimization/ExecutiveInsightSection';
+
 export default function OptimizacionPage() {
   const [narrative, setNarrative] =
     useState<OperationalNarrative | null>(null);
@@ -183,6 +190,9 @@ export default function OptimizacionPage() {
 
   const [executiveBrainDecision, setExecutiveBrainDecision] =
     useState<ExecutiveBrainDecision | null>(null);
+
+  const [executiveInsight, setExecutiveInsight] =
+    useState<ExecutiveInsight | null>(null);
 
   const [executiveRisk, setExecutiveRisk] =
     useState<ExecutiveRiskIntelligence | null>(null);
@@ -382,6 +392,13 @@ export default function OptimizacionPage() {
 
       setExecutiveBrainDecision(brainDecision);
 
+      const insight = generateExecutiveInsight({
+        executiveCommandCenter: data.executiveCommandCenter,
+        executiveBrain: brainDecision,
+      });
+
+      setExecutiveInsight(insight);
+
       setTimeout(() => {
         setLoadingExecutiveCenter(false);
       }, 500);
@@ -485,9 +502,15 @@ export default function OptimizacionPage() {
         )}
 
         {activeExecutiveSection === 'summary' && (
-          <ExecutiveBrainSection
-            decision={executiveBrainDecision}
-          />
+          <>
+            <ExecutiveBrainSection
+              decision={executiveBrainDecision}
+            />
+
+            <ExecutiveInsightSection
+              insight={executiveInsight}
+            />
+          </>
         )}
 
         {activeExecutiveSection === 'risks' && executiveRisk && (

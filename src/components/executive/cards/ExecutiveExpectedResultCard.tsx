@@ -45,9 +45,9 @@ export function ExecutiveExpectedResultCard({
 }: ExecutiveExpectedResultCardProps) {
   return (
     <ExecutiveCard
-      variant="light"
+      variant="surface"
       padding="default"
-      className="p-5 hover:bg-white"
+      className="p-5"
     >
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         Resultado esperado
