@@ -2,7 +2,7 @@
 
 **Código:** COM-18.0.13
 
-**Versión:** 1.0
+**Versión:** 1.1
 
 **Estado:** Oficial
 
@@ -98,7 +98,23 @@ Como mínimo deberá indicar:
 
 ---
 
-# 8. Convenciones Editoriales
+# 8. Dimensiones Operativas Fundamentales
+
+A partir de la versión 1.1 del Modelo Operativo Cognitivo (COM), toda evolución metodológica deberá mantener coherencia con las cinco dimensiones operativas oficiales:
+
+| Dimensión   | Finalidad                                                         |
+| ----------- | ----------------------------------------------------------------- |
+| Actores     | Definir quién participa en la operación.                          |
+| Estados     | Representar la condición del proceso.                             |
+| Eventos     | Identificar los hechos que generan cambios.                       |
+| Actividades | Describir las acciones ejecutadas.                                |
+| Decisiones  | Representar las bifurcaciones y transiciones del flujo operativo. |
+
+Estas dimensiones constituyen el núcleo conceptual del COM y deberán ser consideradas en la elaboración o actualización de cualquier modelo metodológico relacionado con la operación.
+
+---
+
+# 9. Convenciones Editoriales
 
 Toda la documentación metodológica deberá cumplir las siguientes convenciones:
 
@@ -112,7 +128,7 @@ Toda la documentación metodológica deberá cumplir las siguientes convenciones
 
 ---
 
-# 9. Evolución del Estándar
+# 10. Evolución del Estándar
 
 El presente estándar podrá evolucionar conforme crezca el marco metodológico COM.
 
@@ -120,19 +136,19 @@ Toda modificación deberá preservar la compatibilidad con los documentos existe
 
 ---
 
-# 10. Resultado Esperado
+# 11. Resultado Esperado
 
 Con este estándar, toda la documentación metodológica de COM mantiene una estructura uniforme, facilita la navegación entre modelos y fortalece la gobernanza del conocimiento operativo de CJWMS.
 
 ---
 
-# 11. Plantillas Oficiales de Documentación COM
+# 12. Plantillas Oficiales de Documentación COM
 
 Con el propósito de garantizar uniformidad documental, todo documento perteneciente al Modelo Operativo Cognitivo (COM) deberá utilizar las siguientes plantillas oficiales.
 
 ---
 
-## 11.1 Cabecera Metodológica
+## 12.1 Cabecera Metodológica
 
 Todo documento deberá iniciar con la siguiente estructura:
 
@@ -148,7 +164,7 @@ Todo documento deberá iniciar con la siguiente estructura:
 
 ---
 
-## 11.2 Rol dentro de COM
+## 12.2 Rol dentro de COM
 
 Cada documento deberá incorporar una sección que describa claramente su responsabilidad dentro del marco metodológico.
 
@@ -170,7 +186,7 @@ Indica explícitamente qué elementos no forman parte de este modelo.
 
 ---
 
-## 11.3 Relaciones dentro de COM
+## 12.3 Relaciones dentro de COM
 
 Todo documento deberá identificar explícitamente sus relaciones con otros modelos.
 
@@ -192,7 +208,7 @@ Todo documento deberá identificar explícitamente sus relaciones con otros mode
 
 ---
 
-## 11.4 Resultado Esperado
+## 12.4 Resultado Esperado
 
 Cada documento deberá finalizar con una conclusión metodológica.
 
@@ -204,7 +220,7 @@ Describe el estado final esperado del modelo y el valor que aporta al ecosistema
 
 ---
 
-## 11.5 Recomendaciones Generales
+## 12.5 Recomendaciones Generales
 
 Durante la elaboración de documentos metodológicos se recomienda:
 

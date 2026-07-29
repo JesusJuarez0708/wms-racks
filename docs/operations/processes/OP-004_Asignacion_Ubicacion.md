@@ -128,11 +128,11 @@ El proceso se rige por los siguientes principios:
 
 ## Actores
 
-| Actor | Participación |
-|--------|---------------|
-| Supervisor | Solicita o valida la asignación cuando aplica. |
-| CJWMS | Orquesta el proceso de asignación y registra las evidencias. |
-| Montacarguista | Ejecuta el traslado físico durante OP-005. |
+| Actor          | Participación                                                |
+| -------------- | ------------------------------------------------------------ |
+| Supervisor     | Solicita o valida la asignación cuando aplica.               |
+| CJWMS          | Orquesta el proceso de asignación y registra las evidencias. |
+| Montacarguista | Ejecuta el traslado físico durante OP-005.                   |
 
 > **Nota:** El **Location Intelligence Engine (LIE)** no se considera un actor operativo. Es un **servicio cognitivo interno** invocado por CJWMS para apoyar la toma de decisiones.
 
@@ -183,12 +183,12 @@ El proceso se rige por los siguientes principios:
 
 ## Relación con Otros Procesos
 
-| Proceso | Relación |
-|----------|----------|
-| OP-003 — Inspección | Proceso precedente que entrega la unidad logística aprobada. |
-| OP-005 — Traslado a Ubicación | Proceso siguiente que ejecuta físicamente la asignación. |
-| Operational Memory | Registra el historial de decisiones para análisis futuros. |
-| Centro Ejecutivo | Consume indicadores derivados del proceso para análisis estratégico. |
+| Proceso                       | Relación                                                             |
+| ----------------------------- | -------------------------------------------------------------------- |
+| OP-003 — Inspección           | Proceso precedente que entrega la unidad logística aprobada.         |
+| OP-005 — Traslado a Ubicación | Proceso siguiente que ejecuta físicamente la asignación.             |
+| Operational Memory            | Registra el historial de decisiones para análisis futuros.           |
+| Centro Ejecutivo              | Consume indicadores derivados del proceso para análisis estratégico. |
 
 ---
 
@@ -797,15 +797,15 @@ Por esta razón, únicamente participan en esta matriz las ubicaciones que han s
 
 La comparación entre ubicaciones candidatas considera los siguientes criterios.
 
-| Criterio | Objetivo |
-|----------|----------|
-| Rotación ABC | Favorecer la estrategia de almacenamiento según la rotación del producto. |
-| Continuidad del carril | Mantener carriles homogéneos y reducir fragmentación. |
-| Consolidación del SKU | Agrupar productos compatibles cuando resulte conveniente. |
-| Distancia de recorrido | Reducir desplazamientos del montacarguista. |
-| Ocupación del almacén | Distribuir eficientemente la capacidad disponible. |
-| Riesgo de bloqueo | Evitar configuraciones que dificulten operaciones futuras. |
-| Facilidad de acceso | Favorecer procesos posteriores como surtido y reubicación. |
+| Criterio               | Objetivo                                                                  |
+| ---------------------- | ------------------------------------------------------------------------- |
+| Rotación ABC           | Favorecer la estrategia de almacenamiento según la rotación del producto. |
+| Continuidad del carril | Mantener carriles homogéneos y reducir fragmentación.                     |
+| Consolidación del SKU  | Agrupar productos compatibles cuando resulte conveniente.                 |
+| Distancia de recorrido | Reducir desplazamientos del montacarguista.                               |
+| Ocupación del almacén  | Distribuir eficientemente la capacidad disponible.                        |
+| Riesgo de bloqueo      | Evitar configuraciones que dificulten operaciones futuras.                |
+| Facilidad de acceso    | Favorecer procesos posteriores como surtido y reubicación.                |
 
 ---
 
@@ -891,13 +891,13 @@ Esto garantiza que situaciones equivalentes produzcan resultados equivalentes.
 
 Cada ubicación candidata será analizada considerando los siguientes elementos.
 
-| Elemento | Propósito |
-|----------|-----------|
-| Cumplimiento de reglas | Verificar que la ubicación continúa siendo válida durante la evaluación. |
-| Beneficio operativo | Determinar el valor logístico que aporta la ubicación. |
+| Elemento                          | Propósito                                                                     |
+| --------------------------------- | ----------------------------------------------------------------------------- |
+| Cumplimiento de reglas            | Verificar que la ubicación continúa siendo válida durante la evaluación.      |
+| Beneficio operativo               | Determinar el valor logístico que aporta la ubicación.                        |
 | Impacto sobre operaciones futuras | Medir el efecto esperado en surtido, reubicaciones y movimientos posteriores. |
-| Riesgo operativo | Identificar condiciones que puedan afectar la eficiencia del almacén. |
-| Evidencia generada | Registrar los criterios utilizados durante la evaluación. |
+| Riesgo operativo                  | Identificar condiciones que puedan afectar la eficiencia del almacén.         |
+| Evidencia generada                | Registrar los criterios utilizados durante la evaluación.                     |
 
 ---
 
@@ -1066,11 +1066,11 @@ Esto permite reconstruir completamente la decisión.
 
 La información presentada puede variar según el perfil del usuario.
 
-| Nivel | Información principal |
-|--------|-----------------------|
-| Operativo | Motivo general de la recomendación. |
-| Supervisor | Criterios aplicados y principales alternativas. |
-| Auditoría | Evidencias completas y reconstrucción del proceso. |
+| Nivel      | Información principal                                          |
+| ---------- | -------------------------------------------------------------- |
+| Operativo  | Motivo general de la recomendación.                            |
+| Supervisor | Criterios aplicados y principales alternativas.                |
+| Auditoría  | Evidencias completas y reconstrucción del proceso.             |
 | Ingeniería | Información detallada del modelo de evaluación y priorización. |
 
 ---
@@ -1612,12 +1612,12 @@ Recibe de OP-004:
 
 Durante su ejecución, OP-004 utiliza los modelos corporativos definidos para CJWMS.
 
-| Modelo | Propósito |
-|---------|-----------|
-| Modelo de Estados Operativos | Gestionar el cambio de estado de la unidad logística. |
-| Modelo de Eventos Operativos | Registrar los eventos generados durante la asignación. |
-| Modelo de Actividades Operativas | Coordinar las actividades que componen el proceso. |
-| Modelo de Actores Operativos | Identificar las responsabilidades de cada actor. |
+| Modelo                           | Propósito                                              |
+| -------------------------------- | ------------------------------------------------------ |
+| Modelo de Estados Operativos     | Gestionar el cambio de estado de la unidad logística.  |
+| Modelo de Eventos Operativos     | Registrar los eventos generados durante la asignación. |
+| Modelo de Actividades Operativas | Coordinar las actividades que componen el proceso.     |
+| Modelo de Actores Operativos     | Identificar las responsabilidades de cada actor.       |
 
 ---
 
@@ -2018,17 +2018,17 @@ La trazabilidad no se limita al registro de un evento; integra la secuencia comp
 
 ## Matriz de Trazabilidad
 
-| Elemento | Origen | Destino | Evidencia Generada |
-|----------|--------|---------|--------------------|
-| Solicitud de asignación | OP-003 | OP-004 | Solicitud registrada |
-| Construcción del contexto | OP-004 | Modelo de Decisión | Contexto operativo consolidado |
-| Aplicación de reglas | Marco Normativo | Evaluación | Reglas aplicadas y restricciones |
-| Evaluación de candidatas | Modelo de Evaluación | Priorización | Resultados de evaluación |
-| Priorización | Matriz Oficial de Priorización | Selección | Ranking de alternativas |
-| Selección de ubicación | OP-004 | Formalización | Ubicación recomendada |
-| Explicabilidad | Modelo de Explicabilidad | Auditoría | Justificación operativa |
-| Registro de evidencias | OP-004 | Memoria Operativa | Evidencias completas |
-| Cierre del proceso | OP-004 | OP-005 | Estado operativo actualizado |
+| Elemento                  | Origen                         | Destino            | Evidencia Generada               |
+| ------------------------- | ------------------------------ | ------------------ | -------------------------------- |
+| Solicitud de asignación   | OP-003                         | OP-004             | Solicitud registrada             |
+| Construcción del contexto | OP-004                         | Modelo de Decisión | Contexto operativo consolidado   |
+| Aplicación de reglas      | Marco Normativo                | Evaluación         | Reglas aplicadas y restricciones |
+| Evaluación de candidatas  | Modelo de Evaluación           | Priorización       | Resultados de evaluación         |
+| Priorización              | Matriz Oficial de Priorización | Selección          | Ranking de alternativas          |
+| Selección de ubicación    | OP-004                         | Formalización      | Ubicación recomendada            |
+| Explicabilidad            | Modelo de Explicabilidad       | Auditoría          | Justificación operativa          |
+| Registro de evidencias    | OP-004                         | Memoria Operativa  | Evidencias completas             |
+| Cierre del proceso        | OP-004                         | OP-005             | Estado operativo actualizado     |
 
 ---
 
@@ -2185,14 +2185,14 @@ Se valida que el modelo operativo permanezca independiente de cualquier lenguaje
 
 ## Matriz de Validación
 
-| Dimensión | Estado Esperado |
-|-----------|-----------------|
-| Consistencia Operativa | ✅ Conforme |
-| Integridad Funcional | ✅ Conforme |
-| Trazabilidad | ✅ Conforme |
-| Explicabilidad | ✅ Conforme |
-| Integración Arquitectónica | ✅ Conforme |
-| Independencia Tecnológica | ✅ Conforme |
+| Dimensión                  | Estado Esperado |
+| -------------------------- | --------------- |
+| Consistencia Operativa     | ✅ Conforme     |
+| Integridad Funcional       | ✅ Conforme     |
+| Trazabilidad               | ✅ Conforme     |
+| Explicabilidad             | ✅ Conforme     |
+| Integración Arquitectónica | ✅ Conforme     |
+| Independencia Tecnológica  | ✅ Conforme     |
 
 ---
 

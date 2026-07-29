@@ -135,12 +135,12 @@ Controlar el ingreso de un transporte al almacén desde su llegada hasta la auto
 
 # Actores
 
-| Actor | Participación | Utiliza CJWMS |
-|---------|---------------|---------------|
-| Guardia | Recibe al transporte y dirige al operador | No |
-| Operador Logístico | Entrega documentación y mueve el vehículo | No |
-| Mesa de Control | Registra, valida y autoriza | Sí |
-| Cliente | Autoriza incidencias cuando existen excepciones | No (en la operación actual) |
+| Actor              | Participación                                   | Utiliza CJWMS               |
+| ------------------ | ----------------------------------------------- | --------------------------- |
+| Guardia            | Recibe al transporte y dirige al operador       | No                          |
+| Operador Logístico | Entrega documentación y mueve el vehículo       | No                          |
+| Mesa de Control    | Registra, valida y autoriza                     | Sí                          |
+| Cliente            | Autoriza incidencias cuando existen excepciones | No (en la operación actual) |
 
 ---
 

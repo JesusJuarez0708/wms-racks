@@ -2,7 +2,7 @@
 
 **Código:** COM-18.0.10
 
-**Versión:** 1.0
+**Versión:** 1.1
 
 **Estado:** Oficial
 
@@ -76,7 +76,34 @@ Toda ampliación del modelo deberá realizarse preservando:
 
 ---
 
-# 8. Compromiso Arquitectónico
+---
+
+# 8. Evolución Metodológica del COM
+
+La evolución del Modelo Operativo Cognitivo (COM) responde al aprendizaje obtenido durante el modelado de la operación real y se incorpora únicamente cuando fortalece la capacidad del modelo para representar el comportamiento del negocio de forma consistente.
+
+Como resultado de la documentación de los procesos operativos, el COM reconoce oficialmente cinco dimensiones fundamentales para describir cualquier proceso:
+
+- Actores Operativos
+- Estados Operativos
+- Eventos Operativos
+- Actividades Operativas
+- Decisiones Operativas
+
+Estas dimensiones constituyen el núcleo conceptual del COM y deberán estar presentes en todos los procesos modelados a partir de esta versión.
+
+Asimismo, el COM adopta los siguientes principios metodológicos:
+
+- Toda bifurcación o cambio de flujo deberá representarse mediante una Decisión Operativa formalmente documentada.
+- Las decisiones deberán ser explícitas, trazables, explicables y auditables.
+- El Modelo Operativo Cognitivo (COM) define la estructura conceptual de la operación.
+- El Motor Cognitivo implementa el análisis, las recomendaciones y el apoyo a la toma de decisiones utilizando dicho modelo, manteniendo responsabilidades claramente diferenciadas.
+
+La incorporación de la dimensión de Decisiones Operativas y de las transiciones condicionales constituye la segunda evolución metodológica mayor del COM y fortalece su capacidad para representar procesos operativos reales sin comprometer la trazabilidad, la gobernanza ni la explicabilidad del sistema.
+
+---
+
+# 9. Compromiso Arquitectónico
 
 Todo nuevo componente incorporado al ecosistema CJWMS deberá integrarse con los modelos oficiales definidos por COM.
 
@@ -84,7 +111,7 @@ Ningún desarrollo deberá duplicar conocimiento ya formalizado en los modelos c
 
 ---
 
-# 9. Declaración Institucional
+# 10. Declaración Institucional
 
 El conocimiento operativo constituye uno de los activos estratégicos más importantes de una organización.
 
@@ -92,6 +119,6 @@ COM establece el compromiso de representarlo de manera estructurada, reutilizabl
 
 ---
 
-# 10. Resultado Esperado
+# 11. Resultado Esperado
 
 Con este manifiesto, CJWMS consolida oficialmente el Modelo Operativo Cognitivo (COM) como el marco metodológico que guiará el diseño, la implementación, la evolución y la gobernanza del conocimiento operativo de la organización.

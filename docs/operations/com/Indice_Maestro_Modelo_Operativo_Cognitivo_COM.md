@@ -2,7 +2,7 @@
 
 **Código:** COM-18.0.12
 
-**Versión:** 1.0
+**Versión:** 1.1
 
 **Estado:** Oficial
 
@@ -90,7 +90,25 @@ El conocimiento operativo de COM se organiza en los siguientes dominios:
 
 ---
 
-# 5. Dependencias Metodológicas
+# 5. Dimensiones Operativas Fundamentales
+
+A partir de la versión 1.1 del Modelo Operativo Cognitivo (COM), toda representación de un proceso operativo deberá considerar cinco dimensiones fundamentales:
+
+| Dimensión   | Pregunta que responde                               |
+| ----------- | --------------------------------------------------- |
+| Actores     | ¿Quién participa en la operación?                   |
+| Estados     | ¿En qué condición se encuentra el proceso?          |
+| Eventos     | ¿Qué provoca un cambio de estado?                   |
+| Actividades | ¿Qué acciones se ejecutan?                          |
+| Decisiones  | ¿Cómo se determina el siguiente camino del proceso? |
+
+Estas dimensiones constituyen el núcleo conceptual del COM y deberán integrarse de forma consistente en todos los procesos operativos del CJWMS.
+
+Las Reglas Operativas, la Trazabilidad y las Evidencias Operativas actúan como componentes transversales que gobiernan, documentan y permiten analizar dichas dimensiones.
+
+---
+
+# 6. Dependencias Metodológicas
 
 La construcción de cualquier proceso operativo deberá seguir el siguiente orden lógico:
 
@@ -116,7 +134,7 @@ Las relaciones entre estos modelos se encuentran formalizadas en el Modelo Ofici
 
 ---
 
-# 6. Utilización del Modelo
+# 7. Utilización del Modelo
 
 Todo nuevo proceso operativo deberá:
 
@@ -128,7 +146,7 @@ Todo nuevo proceso operativo deberá:
 
 ---
 
-# 7. Evolución del Marco Metodológico
+# 8. Evolución del Marco Metodológico
 
 La incorporación de nuevos modelos deberá respetar los principios establecidos en el Manifiesto del Modelo Operativo Cognitivo.
 
@@ -142,6 +160,6 @@ Toda ampliación deberá preservar:
 
 ---
 
-# 8. Resultado Esperado
+# 9. Resultado Esperado
 
 Con este índice maestro, COM dispone de un punto único de acceso a su arquitectura metodológica, facilitando la navegación, el mantenimiento, la incorporación de nuevos integrantes al proyecto y la evolución controlada del conocimiento operativo de CJWMS.
