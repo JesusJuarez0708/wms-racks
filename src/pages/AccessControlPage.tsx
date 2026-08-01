@@ -1,21 +1,19 @@
 import { useEffect, useState } from 'react';
 
 import {
-    changeGateAccessStatus,
-    createGateAccess,
-    getGateAccesses,
-    type GateAccessItem,
+  assignDockToGateAccess,
+  changeGateAccessStatus,
+  createGateAccess,
+  getGateAccesses,
+  releaseGateAccessToReception,
+  type GateAccessItem,
 } from '../services/gateAccessService';
-
-import {
-  assignDock,
-  getAvailableDocks,
-} from '../services/dockService';
 
 import { getWarehouses } from '../services/warehouseService';
 import GateAccessTable from '../components/GateAccessTable';
 
 import {
+  getGateAccessStatusLabel,
   getGateAccessTransition,
   type GateAccessAction,
 } from '../services/gateAccessStateMachine';
@@ -25,8 +23,6 @@ import type {
 } from '../repositories/gateAccessRepository';
 
 import DockAssignmentDialog from '../components/DockAssignmentDialog';
-
-import { assignDockToGateAccess } from '../services/gateAccessService';
 
 export default function AccessControlPage() {
     const [vehiclePlate, setVehiclePlate] = useState('');
@@ -163,66 +159,6 @@ export default function AccessControlPage() {
     }
   }
 
-  async function handleRequestAuthorization(id: string) {
-    setMessage(null);
-    setErrorMessage(null);
-    setUpdatingAccessId(id);
-
-    try {
-        await changeGateAccessStatus(
-        id,
-        'pending_authorization'
-        );
-
-        await loadGateAccesses();
-
-        setMessage(
-        'El acceso fue enviado a autorización correctamente.'
-        );
-    } catch (error) {
-        console.error(error);
-
-        setErrorMessage(
-        error instanceof Error
-            ? error.message
-            : 'No fue posible actualizar el estado del acceso.'
-        );
-    } finally {
-        setUpdatingAccessId(null);
-    }
-  }
-
-  async function handleAuthorizationDecision(
-    id: string,
-    decision: 'authorized' | 'rejected'
-    ) {
-    setMessage(null);
-    setErrorMessage(null);
-    setUpdatingAccessId(id);
-
-    try {
-        await changeGateAccessStatus(id, decision);
-
-        await loadGateAccesses();
-
-        setMessage(
-        decision === 'authorized'
-            ? 'El acceso fue autorizado correctamente.'
-            : 'El acceso fue rechazado correctamente.'
-        );
-    } catch (error) {
-        console.error(error);
-
-        setErrorMessage(
-        error instanceof Error
-            ? error.message
-            : 'No fue posible registrar la decisión de autorización.'
-        );
-    } finally {
-        setUpdatingAccessId(null);
-    }
-  }
-
   async function handleGateAccessTransition(
     id: string,
     currentStatus: GateAccessStatus,
@@ -253,15 +189,21 @@ export default function AccessControlPage() {
             return;
         }
 
-        await changeGateAccessStatus(
-        id,
-        transition.to
-        );
+        if (action === 'release_to_reception') {
+            await releaseGateAccessToReception(id);
+            } else {
+            await changeGateAccessStatus(
+                id,
+                transition.to
+            );
+        }
 
         await loadGateAccesses();
 
         setMessage(
-        `Estado actualizado correctamente: ${transition.label}.`
+            `Estado actualizado correctamente: ${
+            getGateAccessStatusLabel(transition.to)
+            }.`
         );
     } catch (error) {
         console.error(error);
@@ -521,6 +463,10 @@ export default function AccessControlPage() {
 
       <DockAssignmentDialog
         open={dockAssignmentOpen}
+        assigning={
+            selectedAccessId !== null &&
+            updatingAccessId === selectedAccessId
+        }
         onClose={() => {
             setDockAssignmentOpen(false);
             setSelectedAccessId(null);

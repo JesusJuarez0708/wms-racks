@@ -1,5 +1,9 @@
 import type { GateAccessItem } from '../services/gateAccessService';
 
+import type {
+  GateAccessStatus,
+} from '../repositories/gateAccessRepository';
+
 import {
   getGateAccessStatusClass,
   getGateAccessStatusLabel,

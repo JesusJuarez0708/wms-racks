@@ -38,3 +38,12 @@ export async function assignDockToGateAccess(
 ): Promise<GateAccessItem> {
   return assignGateAccessDock(id, dockId);
 }
+
+export async function releaseGateAccessToReception(
+  gateAccessId: string
+) {
+  return updateGateAccessStatus(
+    gateAccessId,
+    'released_to_reception'
+  );
+}
