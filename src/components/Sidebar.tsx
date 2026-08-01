@@ -6,6 +6,10 @@ const menuItems = [
     path: '/',
   },
   {
+    label: 'Control de Acceso',
+    path: '/access-control',
+  },
+  {
     label: 'Movimientos',
     path: '/movements',
   },

@@ -10,6 +10,7 @@ import OrdenesTrabajoPage from './pages/OrdenesTrabajoPage';
 import HistoryPage from './pages/HistoryPage';
 import SettingsPage from './pages/SettingsPage';
 import MontacargasPage from './pages/MontacargasPage';
+import AccessControlPage from './pages/AccessControlPage';
 
 import { WmsDataProvider } from './context/WmsDataContext';
 
@@ -27,6 +28,11 @@ function App() {
             <main className="flex-1 p-5 lg:p-8">
               <Routes>
                 <Route path="/" element={<DashboardPage />} />
+
+                <Route
+                  path="/access-control"
+                  element={<AccessControlPage />}
+                />
 
                 <Route
                   path="/movements"

@@ -34,6 +34,8 @@ import { generateOperationalDecisions } from '../services/decisionEngineService'
 
 import { executeMovementWorkflow } from '../services/movementWorkflowService';
 
+import { testGateAccessConnection } from '../services/testGateAccessConnection';
+
 type LabStats = {
   warehouses: number;
   products: number;
@@ -158,6 +160,7 @@ function IntegrationLabPage() {
     }
   }
 
+  // Seeder
   async function runSeeder() {
     setLoading(true);
 
@@ -177,6 +180,7 @@ function IntegrationLabPage() {
     }
   }
 
+  // Pruebas de persistencia
   async function testMovements() {
     setLoading(true);
 
@@ -232,6 +236,29 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testGateAccess() {
+    setLoading(true);
+
+    try {
+      await testGateAccessConnection();
+
+      addLog('Gate Access OK: conexión y persistencia validadas.');
+
+      await loadStats();
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en Gate Access: ${error.message}`
+          : 'Error en Gate Access.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Memoria Operativa
   async function testOperationalMemory() {
     setLoading(true);
 
@@ -327,6 +354,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-purple-600 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Workflow
+        </button>
+
+        <button
+          onClick={testGateAccess}
+          disabled={loading}
+          className="rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Gate Access
         </button>
 
         <button
