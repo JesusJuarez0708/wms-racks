@@ -13,7 +13,8 @@ export type GateAccessAction =
   | 'start_reception'
   | 'start_unloading'
   | 'finish_unloading'
-  | 'start_initial_inspection';
+  | 'start_initial_inspection'
+  | 'start_inspection';
 
 type GateAccessTransition = {
   action: GateAccessAction;
@@ -36,6 +37,7 @@ const statusLabels: Record<GateAccessStatus, string> = {
   reception_in_progress: 'Recepción en proceso',
   unloading_completed: 'Descarga finalizada',
   initial_inspection: 'Inspección inicial',
+  inspection_in_progress: 'Inspección en proceso',
 };
 
 const statusClasses: Record<GateAccessStatus, string> = {
@@ -52,6 +54,7 @@ const statusClasses: Record<GateAccessStatus, string> = {
   reception_in_progress: 'bg-sky-100 text-sky-700',
   unloading_completed: 'bg-teal-100 text-teal-700',
   initial_inspection: 'bg-lime-100 text-lime-700',
+  inspection_in_progress: 'bg-green-100 text-green-700',
 };
 
 const transitions: GateAccessTransition[] = [
@@ -120,6 +123,12 @@ const transitions: GateAccessTransition[] = [
     from: 'unloading_completed',
     to: 'initial_inspection',
     label: 'Iniciar inspección',
+  },
+  {
+    action: 'start_inspection',
+    from: 'initial_inspection',
+    to: 'inspection_in_progress',
+    label: 'Iniciar inspección física',
   },
 ];
 
