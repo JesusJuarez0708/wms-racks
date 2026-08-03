@@ -119,3 +119,12 @@ export async function assignGateAccessLocation(
     'location_assigned'
   );
 }
+
+export async function startGateAccessStorage(
+  gateAccessId: string
+) {
+  return updateGateAccessStatus(
+    gateAccessId,
+    'storage_started'
+  );
+}

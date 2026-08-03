@@ -17,7 +17,8 @@ export type GateAccessAction =
   | 'start_inspection'
   | 'complete_inspection'
   | 'accept_reception'
-  | 'assign_location';
+  | 'assign_location'
+  | 'start_storage';
 
 type GateAccessTransition = {
   action: GateAccessAction;
@@ -44,6 +45,7 @@ const statusLabels: Record<GateAccessStatus, string> = {
   inspection_completed: 'Inspección finalizada',
   reception_accepted: 'Recepción aceptada',
   location_assigned: 'Ubicación asignada',
+  storage_started: 'Almacenamiento iniciado',
 };
 
 const statusClasses: Record<GateAccessStatus, string> = {
@@ -64,6 +66,7 @@ const statusClasses: Record<GateAccessStatus, string> = {
   inspection_completed: 'bg-emerald-100 text-emerald-700',
   reception_accepted: 'bg-violet-100 text-violet-700',
   location_assigned: 'bg-purple-100 text-purple-700',
+  storage_started: 'bg-fuchsia-100 text-fuchsia-700',
 };
 
 const transitions: GateAccessTransition[] = [
@@ -156,6 +159,12 @@ const transitions: GateAccessTransition[] = [
     from: 'reception_accepted',
     to: 'location_assigned',
     label: 'Asignar ubicación',
+  },
+  {
+    action: 'start_storage',
+    from: 'location_assigned',
+    to: 'storage_started',
+    label: 'Iniciar almacenamiento',
   },
 ];
 
