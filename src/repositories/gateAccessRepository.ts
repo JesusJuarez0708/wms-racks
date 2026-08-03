@@ -12,7 +12,8 @@ export type GateAccessStatus =
   | 'cancelled'
   | 'dock_assigned'
   | 'released_to_reception'
-  | 'reception_started';
+  | 'reception_started'
+  | 'reception_in_progress';
 
 export type GateAccessRecord = {
   id: string;

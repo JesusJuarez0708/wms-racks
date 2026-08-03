@@ -10,7 +10,8 @@ export type GateAccessAction =
   | 'reject'
   | 'assign_dock'
   | 'release_to_reception'
-  | 'start_reception';
+  | 'start_reception'
+  | 'start_unloading';
 
 type GateAccessTransition = {
   action: GateAccessAction;
@@ -30,6 +31,7 @@ const statusLabels: Record<GateAccessStatus, string> = {
   dock_assigned: 'Andén asignado',
   released_to_reception: 'Liberado a recepción',
   reception_started: 'Recepción iniciada',
+  reception_in_progress: 'Recepción en proceso',
 };
 
 const statusClasses: Record<GateAccessStatus, string> = {
@@ -43,6 +45,7 @@ const statusClasses: Record<GateAccessStatus, string> = {
   dock_assigned: 'bg-indigo-100 text-indigo-700',
   released_to_reception: 'bg-cyan-100 text-cyan-700',
   reception_started: 'bg-blue-100 text-blue-700',
+  reception_in_progress: 'bg-sky-100 text-sky-700',
 };
 
 const transitions: GateAccessTransition[] = [
@@ -93,6 +96,12 @@ const transitions: GateAccessTransition[] = [
     from: 'released_to_reception',
     to: 'reception_started',
     label: 'Iniciar recepción',
+  },
+  {
+    action: 'start_unloading',
+    from: 'reception_started',
+    to: 'reception_in_progress',
+    label: 'Iniciar descarga',
   },
 ];
 

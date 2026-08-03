@@ -7,6 +7,7 @@ import {
   getGateAccesses,
   releaseGateAccessToReception,
   startGateAccessReception,
+  startGateAccessUnloading,
   type GateAccessItem,
 } from '../services/gateAccessService';
 
@@ -194,6 +195,8 @@ export default function AccessControlPage() {
             await releaseGateAccessToReception(id);
         } else if (action === 'start_reception') {
             await startGateAccessReception(id);
+        } else if (action === 'start_unloading') {
+            await startGateAccessUnloading(id);
         } else {
             await changeGateAccessStatus(
                 id,
