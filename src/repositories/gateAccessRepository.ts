@@ -14,7 +14,8 @@ export type GateAccessStatus =
   | 'released_to_reception'
   | 'reception_started'
   | 'reception_in_progress'
-  | 'unloading_completed';
+  | 'unloading_completed'
+  | 'initial_inspection';
 
 export type GateAccessRecord = {
   id: string;

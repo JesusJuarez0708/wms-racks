@@ -74,3 +74,12 @@ export async function finishGateAccessUnloading(
     'unloading_completed'
   );
 }
+
+export async function startGateAccessInitialInspection(
+  gateAccessId: string
+) {
+  return updateGateAccessStatus(
+    gateAccessId,
+    'initial_inspection'
+  );
+}
