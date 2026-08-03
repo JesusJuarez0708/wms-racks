@@ -16,7 +16,8 @@ export type GateAccessAction =
   | 'start_initial_inspection'
   | 'start_inspection'
   | 'complete_inspection'
-  | 'accept_reception';
+  | 'accept_reception'
+  | 'assign_location';
 
 type GateAccessTransition = {
   action: GateAccessAction;
@@ -42,6 +43,7 @@ const statusLabels: Record<GateAccessStatus, string> = {
   inspection_in_progress: 'Inspección en proceso',
   inspection_completed: 'Inspección finalizada',
   reception_accepted: 'Recepción aceptada',
+  location_assigned: 'Ubicación asignada',
 };
 
 const statusClasses: Record<GateAccessStatus, string> = {
@@ -61,6 +63,7 @@ const statusClasses: Record<GateAccessStatus, string> = {
   inspection_in_progress: 'bg-green-100 text-green-700',
   inspection_completed: 'bg-emerald-100 text-emerald-700',
   reception_accepted: 'bg-violet-100 text-violet-700',
+  location_assigned: 'bg-purple-100 text-purple-700',
 };
 
 const transitions: GateAccessTransition[] = [
@@ -147,6 +150,12 @@ const transitions: GateAccessTransition[] = [
     from: 'inspection_completed',
     to: 'reception_accepted',
     label: 'Aceptar recepción',
+  },
+  {
+    action: 'assign_location',
+    from: 'reception_accepted',
+    to: 'location_assigned',
+    label: 'Asignar ubicación',
   },
 ];
 

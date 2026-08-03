@@ -110,3 +110,12 @@ export async function acceptGateAccessReception(
     'reception_accepted'
   );
 }
+
+export async function assignGateAccessLocation(
+  gateAccessId: string
+) {
+  return updateGateAccessStatus(
+    gateAccessId,
+    'location_assigned'
+  );
+}
