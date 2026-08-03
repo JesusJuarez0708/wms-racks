@@ -101,3 +101,12 @@ export async function completeGateAccessInspection(
     'inspection_completed'
   );
 }
+
+export async function acceptGateAccessReception(
+  gateAccessId: string
+) {
+  return updateGateAccessStatus(
+    gateAccessId,
+    'reception_accepted'
+  );
+}

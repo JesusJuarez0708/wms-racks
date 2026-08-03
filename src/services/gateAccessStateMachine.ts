@@ -15,7 +15,8 @@ export type GateAccessAction =
   | 'finish_unloading'
   | 'start_initial_inspection'
   | 'start_inspection'
-  | 'complete_inspection';
+  | 'complete_inspection'
+  | 'accept_reception';
 
 type GateAccessTransition = {
   action: GateAccessAction;
@@ -40,6 +41,7 @@ const statusLabels: Record<GateAccessStatus, string> = {
   initial_inspection: 'Inspección inicial',
   inspection_in_progress: 'Inspección en proceso',
   inspection_completed: 'Inspección finalizada',
+  reception_accepted: 'Recepción aceptada',
 };
 
 const statusClasses: Record<GateAccessStatus, string> = {
@@ -58,6 +60,7 @@ const statusClasses: Record<GateAccessStatus, string> = {
   initial_inspection: 'bg-lime-100 text-lime-700',
   inspection_in_progress: 'bg-green-100 text-green-700',
   inspection_completed: 'bg-emerald-100 text-emerald-700',
+  reception_accepted: 'bg-violet-100 text-violet-700',
 };
 
 const transitions: GateAccessTransition[] = [
@@ -138,6 +141,12 @@ const transitions: GateAccessTransition[] = [
     from: 'inspection_in_progress',
     to: 'inspection_completed',
     label: 'Finalizar inspección',
+  },
+  {
+    action: 'accept_reception',
+    from: 'inspection_completed',
+    to: 'reception_accepted',
+    label: 'Aceptar recepción',
   },
 ];
 

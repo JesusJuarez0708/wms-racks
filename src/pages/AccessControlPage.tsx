@@ -12,6 +12,7 @@ import {
   startGateAccessInitialInspection,
   startGateAccessInspection,
   completeGateAccessInspection,
+  acceptGateAccessReception,
   type GateAccessItem,
 } from '../services/gateAccessService';
 
@@ -209,6 +210,8 @@ export default function AccessControlPage() {
             await startGateAccessInspection(id);
         } else if (action === 'complete_inspection') {
             await completeGateAccessInspection(id);
+        } else if (action === 'accept_reception') {
+            await acceptGateAccessReception(id);
         } else {
             await changeGateAccessStatus(
                 id,
