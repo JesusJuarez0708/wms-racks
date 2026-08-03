@@ -9,7 +9,8 @@ export type GateAccessAction =
   | 'authorize'
   | 'reject'
   | 'assign_dock'
-  | 'release_to_reception';
+  | 'release_to_reception'
+  | 'start_reception';
 
 type GateAccessTransition = {
   action: GateAccessAction;
@@ -28,6 +29,7 @@ const statusLabels: Record<GateAccessStatus, string> = {
   cancelled: 'Cancelado',
   dock_assigned: 'Andén asignado',
   released_to_reception: 'Liberado a recepción',
+  reception_started: 'Recepción iniciada',
 };
 
 const statusClasses: Record<GateAccessStatus, string> = {
@@ -40,6 +42,7 @@ const statusClasses: Record<GateAccessStatus, string> = {
   cancelled: 'bg-gray-100 text-gray-600',
   dock_assigned: 'bg-indigo-100 text-indigo-700',
   released_to_reception: 'bg-cyan-100 text-cyan-700',
+  reception_started: 'bg-blue-100 text-blue-700',
 };
 
 const transitions: GateAccessTransition[] = [
@@ -84,6 +87,12 @@ const transitions: GateAccessTransition[] = [
     from: 'dock_assigned',
     to: 'released_to_reception',
     label: 'Liberar a recepción',
+  },
+  {
+    action: 'start_reception',
+    from: 'released_to_reception',
+    to: 'reception_started',
+    label: 'Iniciar recepción',
   },
 ];
 

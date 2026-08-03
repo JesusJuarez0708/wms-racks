@@ -11,7 +11,8 @@ export type GateAccessStatus =
   | 'rejected'
   | 'cancelled'
   | 'dock_assigned'
-  | 'released_to_reception';
+  | 'released_to_reception'
+  | 'reception_started';
 
 export type GateAccessRecord = {
   id: string;

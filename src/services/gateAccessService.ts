@@ -47,3 +47,12 @@ export async function releaseGateAccessToReception(
     'released_to_reception'
   );
 }
+
+export async function startGateAccessReception(
+  gateAccessId: string
+) {
+  return updateGateAccessStatus(
+    gateAccessId,
+    'reception_started'
+  );
+}
