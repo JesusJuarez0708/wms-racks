@@ -13,7 +13,8 @@ export type GateAccessStatus =
   | 'dock_assigned'
   | 'released_to_reception'
   | 'reception_started'
-  | 'reception_in_progress';
+  | 'reception_in_progress'
+  | 'unloading_completed';
 
 export type GateAccessRecord = {
   id: string;

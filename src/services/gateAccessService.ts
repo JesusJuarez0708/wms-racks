@@ -65,3 +65,12 @@ export async function startGateAccessUnloading(
     'reception_in_progress'
   );
 }
+
+export async function finishGateAccessUnloading(
+  gateAccessId: string
+) {
+  return updateGateAccessStatus(
+    gateAccessId,
+    'unloading_completed'
+  );
+}
