@@ -69,6 +69,8 @@ function getActionClass(action: GateAccessAction) {
       'bg-lime-600 hover:bg-lime-700',
     start_inspection:
       'bg-green-600 hover:bg-green-700',
+    complete_inspection:
+      'bg-emerald-600 hover:bg-emerald-700',
   };
 
   return classes[action];

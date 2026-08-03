@@ -92,3 +92,12 @@ export async function startGateAccessInspection(
     'inspection_in_progress'
   );
 }
+
+export async function completeGateAccessInspection(
+  gateAccessId: string
+) {
+  return updateGateAccessStatus(
+    gateAccessId,
+    'inspection_completed'
+  );
+}

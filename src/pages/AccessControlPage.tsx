@@ -11,6 +11,7 @@ import {
   finishGateAccessUnloading,
   startGateAccessInitialInspection,
   startGateAccessInspection,
+  completeGateAccessInspection,
   type GateAccessItem,
 } from '../services/gateAccessService';
 
@@ -206,6 +207,8 @@ export default function AccessControlPage() {
             await startGateAccessInitialInspection(id);
         } else if (action === 'start_inspection') {
             await startGateAccessInspection(id);
+        } else if (action === 'complete_inspection') {
+            await completeGateAccessInspection(id);
         } else {
             await changeGateAccessStatus(
                 id,
