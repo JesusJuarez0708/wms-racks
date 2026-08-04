@@ -1,15 +1,19 @@
 import {
   fetchMovements,
   insertMovement,
+  updateMovementAssignment,
 } from '../repositories/movementRepository';
 
 import type {
   CreateMovementRecord,
   MovementRecord,
+  UpdateMovementAssignmentRecord,
 } from '../repositories/movementRepository';
 
 export type MovementItem = MovementRecord;
 export type CreateMovementInput = CreateMovementRecord;
+
+export type UpdateMovementAssignmentInput = UpdateMovementAssignmentRecord;
 
 export async function getMovements(): Promise<MovementItem[]> {
   return fetchMovements();
@@ -19,4 +23,11 @@ export async function createMovement(
   movement: CreateMovementInput
 ): Promise<MovementItem> {
   return insertMovement(movement);
+}
+
+export async function assignMovementPicking(
+  movementId: string,
+  assignment: UpdateMovementAssignmentInput
+): Promise<MovementItem> {
+  return updateMovementAssignment(movementId, assignment);
 }

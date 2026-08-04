@@ -1,7 +1,9 @@
 import {
+  assignMovementPicking,
   createMovement,
   type CreateMovementInput,
   type MovementItem,
+  type UpdateMovementAssignmentInput,
 } from './movementService';
 
 import {
@@ -16,6 +18,7 @@ import { getPallets } from './palletService';
 import { registerOperationalMemory } from './operationalMemoryService';
 
 type ExecuteMovementInput = CreateMovementInput;
+type AssignPickingInput = UpdateMovementAssignmentInput;
 
 export async function executeMovementWorkflow(
   movement: ExecuteMovementInput
@@ -120,4 +123,40 @@ export async function executeMovementWorkflow(
   });
 
   return createdMovement;
+}
+
+export async function assignPickingWorkflow(
+  movementId: string,
+  assignment: AssignPickingInput
+): Promise<MovementItem> {
+  const updatedMovement = await assignMovementPicking(
+    movementId,
+    assignment
+  );
+
+  await registerOperationalMemory({
+    memoryType: 'movement',
+    entityId: updatedMovement.id,
+    entityType: 'movement',
+    title: 'Asignación Operativa de Picking confirmada',
+    description:
+      'La solicitud de surtido fue asignada a un operador y quedó pendiente de inicio.',
+    score: updatedMovement.decision_score ?? 80,
+    metadata: {
+      phase: '21.20',
+      source: 'movementWorkflowService',
+      movementId: updatedMovement.id,
+      warehouseId: updatedMovement.warehouse_id,
+      movementType: updatedMovement.movement_type,
+      palletId: updatedMovement.pallet_id,
+      productId: updatedMovement.product_id,
+      originPositionId: updatedMovement.origin_position_id,
+      operatorId: updatedMovement.operator_id,
+      forkliftUnitId: updatedMovement.forklift_unit_id,
+      status: updatedMovement.status,
+      operationalState: 'picking_pending_start',
+    },
+  });
+
+  return updatedMovement;
 }

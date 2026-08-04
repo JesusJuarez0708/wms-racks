@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import MovementFormModal from '../components/MovementFormModal';
 
+import PickingAssignmentModal, {
+  type PickingAssignmentData,
+} from '../components/PickingAssignmentModal';
+
+import { assignPickingWorkflow } from '../services/movementWorkflowService';
+
 import {
   getMovements,
   type MovementItem,
@@ -100,11 +106,34 @@ function getPriorityClass(priority: string) {
   return 'bg-slate-100 text-slate-700';
 }
 
+function getAssignedPickingOperator(notes: string | null) {
+  if (!notes) {
+    return '';
+  }
+
+  const operatorLine = notes
+    .split('\n')
+    .find((line) => line.startsWith('Operador asignado:'));
+
+  return operatorLine
+    ? operatorLine.replace('Operador asignado:', '').trim()
+    : '';
+}
+
 function MovementsPage() {
   const [movements, setMovements] = useState<EnrichedMovement[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [showMovementModal, setShowMovementModal] = useState(false);
+
+  const [selectedPickingMovement, setSelectedPickingMovement] =
+    useState<EnrichedMovement | null>(null);
+
+  const [submittingPickingAssignment, setSubmittingPickingAssignment] =
+    useState(false);
+
+  const [operationMessage, setOperationMessage] = useState('');
+  const [operationError, setOperationError] = useState('');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('Todos');
@@ -172,6 +201,68 @@ function MovementsPage() {
     setShowMovementModal(true);
   }
 
+  function handleOpenPickingAssignment(movement: EnrichedMovement) {
+    setSelectedPickingMovement(movement);
+    setOperationMessage('');
+    setOperationError('');
+  }
+
+  function handleClosePickingAssignment() {
+    if (submittingPickingAssignment) {
+      return;
+    }
+
+    setSelectedPickingMovement(null);
+  }
+
+  async function handleConfirmPickingAssignment(
+    movement: EnrichedMovement,
+    assignment: PickingAssignmentData
+  ) {
+    try {
+      setSubmittingPickingAssignment(true);
+      setOperationMessage('');
+      setOperationError('');
+
+      const assignmentNotes = [
+        assignment.notes,
+        `Operador asignado: ${assignment.operatorId}`,
+        assignment.forkliftUnitId
+          ? `Unidad de montacargas: ${assignment.forkliftUnitId}`
+          : '',
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      await assignPickingWorkflow(movement.id, {
+        operator_id: null,
+        forklift_unit_id: null,
+        notes: assignmentNotes,
+        decision_explanation:
+          'Solicitud de surtido asignada operativamente y pendiente de inicio.',
+        created_by: 'Usuario CJWMS',
+      });
+
+      await loadMovements();
+
+      setSelectedPickingMovement(null);
+
+      setOperationMessage(
+        `Picking asignado correctamente al operador ${assignment.operatorId}.`
+      );
+    } catch (error) {
+      console.error('Error al asignar el picking:', error);
+
+      setOperationError(
+        error instanceof Error
+          ? error.message
+          : 'No fue posible completar la asignación operativa de picking.'
+      );
+    } finally {
+      setSubmittingPickingAssignment(false);
+    }
+  }
+
   function handleEdit() {
     alert('La edición de movimientos se migrará en D.7.3.');
   }
@@ -193,6 +284,22 @@ function MovementsPage() {
           Control y seguimiento de entradas, salidas y reubicaciones en racks compactos.
         </p>
       </header>
+
+      {operationMessage && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+          <p className="font-medium text-emerald-700">
+            {operationMessage}
+          </p>
+        </div>
+      )}
+
+      {operationError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+          <p className="font-medium text-red-700">
+            {operationError}
+          </p>
+        </div>
+      )}
 
       <section className="rounded-2xl bg-white p-6 shadow-sm">
         <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -288,6 +395,7 @@ function MovementsPage() {
                   <th className="px-4 py-3">Prioridad</th>
                   <th className="px-4 py-3">Estado</th>
                   <th className="px-4 py-3">Fecha</th>
+                  <th className="px-4 py-3">Asignación</th>
                   <th className="px-4 py-3">Acciones</th>
                 </tr>
               </thead>
@@ -295,6 +403,7 @@ function MovementsPage() {
               <tbody>
                 {filteredMovements.map((movement) => {
                   const priority = getPriorityByScore(movement.decision_score);
+                  const assignedPickingOperator = getAssignedPickingOperator(movement.notes);
 
                   return (
                     <tr
@@ -368,6 +477,34 @@ function MovementsPage() {
                       </td>
 
                       <td className="px-4 py-4 whitespace-nowrap">
+                        {movement.movement_type === 'salida' &&
+                        movement.status === 'pending' &&
+                        !assignedPickingOperator ? (
+                          <button
+                            type="button"
+                            onClick={() => handleOpenPickingAssignment(movement)}
+                            className="rounded-lg bg-violet-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-violet-700"
+                          >
+                            Asignar Picking
+                          </button>
+                        ) : movement.movement_type === 'salida' &&
+                          movement.status === 'pending' &&
+                          assignedPickingOperator ? (
+                          <div className="leading-tight">
+                            <div className="font-semibold text-violet-700">
+                              {assignedPickingOperator}
+                            </div>
+
+                            <div className="text-xs text-slate-500">
+                              Picking pendiente de inicio
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex gap-2">
                           <button
                             onClick={handleEdit}
@@ -391,7 +528,7 @@ function MovementsPage() {
                 {filteredMovements.length === 0 && (
                   <tr>
                     <td
-                      colSpan={10}
+                      colSpan={11}
                       className="py-8 text-center text-sm text-slate-500"
                     >
                       No se encontraron movimientos con los filtros seleccionados.
@@ -417,6 +554,14 @@ function MovementsPage() {
             new CustomEvent('cjwms-inventory-updated')
           );
         }}
+      />
+
+      <PickingAssignmentModal
+        open={selectedPickingMovement !== null}
+        movement={selectedPickingMovement}
+        submitting={submittingPickingAssignment}
+        onClose={handleClosePickingAssignment}
+        onConfirm={handleConfirmPickingAssignment}
       />
 
     </div>
