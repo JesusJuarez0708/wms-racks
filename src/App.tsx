@@ -11,10 +11,10 @@ import HistoryPage from './pages/HistoryPage';
 import SettingsPage from './pages/SettingsPage';
 import MontacargasPage from './pages/MontacargasPage';
 import AccessControlPage from './pages/AccessControlPage';
+import IntegrationLabPage from './pages/IntegrationLabPage';
+import InventoryQueryPage from './pages/InventoryQueryPage';
 
 import { WmsDataProvider } from './context/WmsDataContext';
-
-import IntegrationLabPage from './pages/IntegrationLabPage';
 
 function App() {
 
@@ -42,6 +42,11 @@ function App() {
                 <Route
                   path="/racks"
                   element={<RacksPage />}
+                />
+
+                <Route
+                  path="/inventory"
+                  element={<InventoryQueryPage />}
                 />
 
                 <Route

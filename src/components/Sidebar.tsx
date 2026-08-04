@@ -18,6 +18,10 @@ const menuItems = [
     path: '/racks',
   },
   {
+    label: 'Consulta de Inventario',
+    path: '/inventory',
+  },
+  {
     label: 'Optimización',
     path: '/optimizacion',
   },
