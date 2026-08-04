@@ -22,7 +22,8 @@ export type GateAccessStatus =
   | 'location_assigned'
   | 'storage_started'
   | 'storage_in_progress'
-  | 'storage_completed';
+  | 'storage_completed'
+  | 'storage_confirmed';
 
 export type GateAccessRecord = {
   id: string;

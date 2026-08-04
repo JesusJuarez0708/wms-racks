@@ -20,7 +20,8 @@ export type GateAccessAction =
   | 'assign_location'
   | 'start_storage'
   | 'continue_storage'
-  | 'complete_storage';
+  | 'complete_storage'
+  | 'confirm_storage';
 
 type GateAccessTransition = {
   action: GateAccessAction;
@@ -50,6 +51,7 @@ const statusLabels: Record<GateAccessStatus, string> = {
   storage_started: 'Almacenamiento iniciado',
   storage_in_progress: 'Almacenamiento en proceso',
   storage_completed: 'Almacenamiento finalizado',
+  storage_confirmed: 'Almacenamiento confirmado',
 };
 
 const statusClasses: Record<GateAccessStatus, string> = {
@@ -73,6 +75,7 @@ const statusClasses: Record<GateAccessStatus, string> = {
   storage_started: 'bg-fuchsia-100 text-fuchsia-700',
   storage_in_progress: 'bg-pink-100 text-pink-700',
   storage_completed: 'bg-rose-100 text-rose-700',
+  storage_confirmed: 'bg-red-100 text-red-700',
 };
 
 const transitions: GateAccessTransition[] = [
@@ -183,6 +186,12 @@ const transitions: GateAccessTransition[] = [
     from: 'storage_in_progress',
     to: 'storage_completed',
     label: 'Finalizar almacenamiento',
+  },
+  {
+    action: 'confirm_storage',
+    from: 'storage_completed',
+    to: 'storage_confirmed',
+    label: 'Confirmar almacenamiento',
   },
 ];
 

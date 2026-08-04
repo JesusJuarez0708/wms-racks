@@ -146,3 +146,12 @@ export async function completeGateAccessStorage(
     'storage_completed'
   );
 }
+
+export async function confirmGateAccessStorage(
+  gateAccessId: string
+) {
+  return updateGateAccessStatus(
+    gateAccessId,
+    'storage_confirmed'
+  );
+}
