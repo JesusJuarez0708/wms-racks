@@ -128,3 +128,12 @@ export async function startGateAccessStorage(
     'storage_started'
   );
 }
+
+export async function continueGateAccessStorage(
+  gateAccessId: string
+) {
+  return updateGateAccessStatus(
+    gateAccessId,
+    'storage_in_progress'
+  );
+}

@@ -18,7 +18,8 @@ export type GateAccessAction =
   | 'complete_inspection'
   | 'accept_reception'
   | 'assign_location'
-  | 'start_storage';
+  | 'start_storage'
+  | 'continue_storage';
 
 type GateAccessTransition = {
   action: GateAccessAction;
@@ -46,6 +47,7 @@ const statusLabels: Record<GateAccessStatus, string> = {
   reception_accepted: 'Recepción aceptada',
   location_assigned: 'Ubicación asignada',
   storage_started: 'Almacenamiento iniciado',
+  storage_in_progress: 'Almacenamiento en proceso',
 };
 
 const statusClasses: Record<GateAccessStatus, string> = {
@@ -67,6 +69,7 @@ const statusClasses: Record<GateAccessStatus, string> = {
   reception_accepted: 'bg-violet-100 text-violet-700',
   location_assigned: 'bg-purple-100 text-purple-700',
   storage_started: 'bg-fuchsia-100 text-fuchsia-700',
+  storage_in_progress: 'bg-pink-100 text-pink-700',
 };
 
 const transitions: GateAccessTransition[] = [
@@ -165,6 +168,12 @@ const transitions: GateAccessTransition[] = [
     from: 'location_assigned',
     to: 'storage_started',
     label: 'Iniciar almacenamiento',
+  },
+  {
+    action: 'continue_storage',
+    from: 'storage_started',
+    to: 'storage_in_progress',
+    label: 'Continuar almacenamiento',
   },
 ];
 

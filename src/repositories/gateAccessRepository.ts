@@ -20,7 +20,8 @@ export type GateAccessStatus =
   | 'inspection_completed'
   | 'reception_accepted'
   | 'location_assigned'
-  | 'storage_started';
+  | 'storage_started'
+  | 'storage_in_progress';
 
 export type GateAccessRecord = {
   id: string;
