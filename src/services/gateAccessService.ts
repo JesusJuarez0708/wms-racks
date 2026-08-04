@@ -137,3 +137,12 @@ export async function continueGateAccessStorage(
     'storage_in_progress'
   );
 }
+
+export async function completeGateAccessStorage(
+  gateAccessId: string
+) {
+  return updateGateAccessStatus(
+    gateAccessId,
+    'storage_completed'
+  );
+}

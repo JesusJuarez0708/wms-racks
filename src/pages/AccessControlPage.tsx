@@ -16,6 +16,7 @@ import {
   assignGateAccessLocation,
   startGateAccessStorage,
   continueGateAccessStorage,
+  completeGateAccessStorage,
   type GateAccessItem,
 } from '../services/gateAccessService';
 
@@ -221,6 +222,8 @@ export default function AccessControlPage() {
             await startGateAccessStorage(id);
         } else if (action === 'continue_storage') {
             await continueGateAccessStorage(id);
+        } else if (action === 'complete_storage') {
+            await completeGateAccessStorage(id);
         } else {
             await changeGateAccessStatus(
                 id,
