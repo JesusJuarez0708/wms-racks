@@ -5,8 +5,13 @@ import PickingAssignmentModal, {
   type PickingAssignmentData,
 } from '../components/PickingAssignmentModal';
 
+import PickingProgressModal, {
+  type PickingProgressData,
+} from '../components/PickingProgressModal';
+
 import {
   assignPickingWorkflow,
+  registerPickingProgressWorkflow,
   startPickingWorkflow,
 } from '../services/movementWorkflowService';
 
@@ -126,7 +131,16 @@ function getAssignedPickingOperator(notes: string | null) {
 function isPickingInProgress(movement: MovementItem) {
   return (
     movement.decision_explanation ===
-    'Inicio Operativo del Picking confirmado.'
+      'Inicio Operativo del Picking confirmado.' ||
+    movement.decision_explanation ===
+      'Picking en Proceso: extracción parcial confirmada.'
+  );
+}
+
+function hasPickingPartialProgress(movement: MovementItem) {
+  return (
+    movement.decision_explanation ===
+    'Picking en Proceso: extracción parcial confirmada.'
   );
 }
 
@@ -144,6 +158,12 @@ function MovementsPage() {
 
   const [startingPickingMovementId, setStartingPickingMovementId] =
     useState<string | null>(null);
+
+  const [selectedPickingProgressMovement, setSelectedPickingProgressMovement] =
+    useState<EnrichedMovement | null>(null);
+
+  const [submittingPickingProgress, setSubmittingPickingProgress] =
+    useState(false);
 
   const [operationMessage, setOperationMessage] = useState('');
   const [operationError, setOperationError] = useState('');
@@ -314,6 +334,72 @@ function MovementsPage() {
     }
   }
 
+  function handleOpenPickingProgress(movement: EnrichedMovement) {
+    setSelectedPickingProgressMovement(movement);
+    setOperationMessage('');
+    setOperationError('');
+  }
+
+  function handleClosePickingProgress() {
+    if (submittingPickingProgress) {
+      return;
+    }
+
+    setSelectedPickingProgressMovement(null);
+  }
+
+  async function handleConfirmPickingProgress(
+    movement: EnrichedMovement,
+    progress: PickingProgressData
+  ) {
+    try {
+      setSubmittingPickingProgress(true);
+      setOperationMessage('');
+      setOperationError('');
+
+      const progressNotes = [
+        movement.notes,
+        `Cantidad extraída parcialmente: ${progress.extractedQuantity} ${
+          movement.unit ?? ''
+        }`,
+        progress.notes
+          ? `Observaciones del avance: ${progress.notes}`
+          : '',
+        'Estado operativo: Picking en proceso con extracción parcial confirmada',
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      await registerPickingProgressWorkflow(movement.id, {
+        notes: progressNotes,
+        decision_explanation:
+          'Picking en Proceso: extracción parcial confirmada.',
+        created_by: 'Usuario CJWMS',
+      });
+
+      await loadMovements();
+
+      setSelectedPickingProgressMovement(null);
+
+      setOperationMessage(
+        `Avance parcial registrado correctamente para el movimiento ${movement.id}.`
+      );
+    } catch (error) {
+      console.error(
+        'Error al registrar el avance parcial del picking:',
+        error
+      );
+
+      setOperationError(
+        error instanceof Error
+          ? error.message
+          : 'No fue posible registrar el avance parcial del picking.'
+      );
+    } finally {
+      setSubmittingPickingProgress(false);
+    }
+  }
+
   function handleEdit() {
     alert('La edición de movimientos se migrará en D.7.3.');
   }
@@ -460,6 +546,8 @@ function MovementsPage() {
 
                   const pickingInProgress = isPickingInProgress(movement);
 
+                  const pickingPartialProgress = hasPickingPartialProgress(movement);
+
                   return (
                     <tr
                       key={movement.id}
@@ -572,20 +660,38 @@ function MovementsPage() {
                           movement.status === 'pending' &&
                           assignedPickingOperator &&
                           pickingInProgress ? (
-                          <div className="leading-tight">
-                            <div className="font-semibold text-blue-700">
-                              {assignedPickingOperator}
+                          <div className="space-y-2">
+                            <div className="leading-tight">
+                              <div className="font-semibold text-blue-700">
+                                {assignedPickingOperator}
+                              </div>
+
+                              <div
+                                className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                                  pickingPartialProgress
+                                    ? 'bg-cyan-100 text-cyan-700'
+                                    : 'bg-blue-100 text-blue-700'
+                                }`}
+                              >
+                                {pickingPartialProgress
+                                  ? 'Extracción parcial confirmada'
+                                  : 'Picking en proceso'}
+                              </div>
                             </div>
 
-                            <div className="mt-1 inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
-                              Picking en proceso
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenPickingProgress(movement)}
+                              className="rounded-lg bg-cyan-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-700"
+                            >
+                              Confirmar avance parcial
+                            </button>
                           </div>
                         ) : (
                           <span className="text-slate-400">—</span>
                         )}
                       </td>
-                      
+
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex gap-2">
                           <button
@@ -644,6 +750,14 @@ function MovementsPage() {
         submitting={submittingPickingAssignment}
         onClose={handleClosePickingAssignment}
         onConfirm={handleConfirmPickingAssignment}
+      />
+
+      <PickingProgressModal
+        open={selectedPickingProgressMovement !== null}
+        movement={selectedPickingProgressMovement}
+        submitting={submittingPickingProgress}
+        onClose={handleClosePickingProgress}
+        onConfirm={handleConfirmPickingProgress}
       />
 
     </div>

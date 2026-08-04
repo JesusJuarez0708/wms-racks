@@ -3,6 +3,7 @@ import {
   insertMovement,
   startMovementPicking,
   updateMovementAssignment,
+  updateMovementPickingProgress,
 } from '../repositories/movementRepository';
 
 import type {
@@ -10,6 +11,7 @@ import type {
   MovementRecord,
   StartMovementPickingRecord,
   UpdateMovementAssignmentRecord,
+  UpdateMovementPickingProgressRecord,
 } from '../repositories/movementRepository';
 
 export type MovementItem = MovementRecord;
@@ -17,6 +19,8 @@ export type CreateMovementInput = CreateMovementRecord;
 
 export type UpdateMovementAssignmentInput = UpdateMovementAssignmentRecord;
 export type StartMovementPickingInput = StartMovementPickingRecord;
+export type UpdateMovementPickingProgressInput =
+  UpdateMovementPickingProgressRecord;
 
 export async function getMovements(): Promise<MovementItem[]> {
   return fetchMovements();
@@ -40,4 +44,11 @@ export async function startPickingMovement(
   picking: StartMovementPickingInput
 ): Promise<MovementItem> {
   return startMovementPicking(movementId, picking);
+}
+
+export async function registerPickingProgress(
+  movementId: string,
+  progress: UpdateMovementPickingProgressInput
+): Promise<MovementItem> {
+  return updateMovementPickingProgress(movementId, progress);
 }

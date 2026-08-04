@@ -62,6 +62,12 @@ export type StartMovementPickingRecord = {
   created_by?: string | null;
 };
 
+export type UpdateMovementPickingProgressRecord = {
+  notes: string;
+  decision_explanation?: string | null;
+  created_by?: string | null;
+};
+
 export async function fetchMovements(): Promise<MovementRecord[]> {
   const { data, error } = await supabase
     .from('movements')
@@ -149,6 +155,35 @@ export async function startMovementPicking(
   if (error) {
     throw new Error(
       `Error al iniciar el movimiento de picking: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+export async function updateMovementPickingProgress(
+  movementId: string,
+  progress: UpdateMovementPickingProgressRecord
+): Promise<MovementRecord> {
+  const { data, error } = await supabase
+    .from('movements')
+    .update({
+      notes: progress.notes,
+      decision_explanation:
+        progress.decision_explanation ??
+        'Picking en Proceso: extracción parcial confirmada.',
+      created_by: progress.created_by ?? 'Usuario CJWMS',
+    })
+    .eq('id', movementId)
+    .eq('movement_type', 'salida')
+    .eq('status', 'pending')
+    .ilike('decision_explanation', '%Inicio Operativo del Picking confirmado%')
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al registrar el avance parcial del picking: ${error.message}`
     );
   }
 

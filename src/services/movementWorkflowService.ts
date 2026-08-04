@@ -1,11 +1,13 @@
 import {
   assignMovementPicking,
   createMovement,
+  registerPickingProgress,
   startPickingMovement,
   type CreateMovementInput,
   type MovementItem,
   type StartMovementPickingInput,
   type UpdateMovementAssignmentInput,
+  type UpdateMovementPickingProgressInput,
 } from './movementService';
 
 import {
@@ -22,6 +24,7 @@ import { registerOperationalMemory } from './operationalMemoryService';
 type ExecuteMovementInput = CreateMovementInput;
 type AssignPickingInput = UpdateMovementAssignmentInput;
 type StartPickingInput = StartMovementPickingInput;
+type PickingProgressInput = UpdateMovementPickingProgressInput;
 
 export async function executeMovementWorkflow(
   movement: ExecuteMovementInput
@@ -194,6 +197,44 @@ export async function startPickingWorkflow(
       forkliftUnitId: updatedMovement.forklift_unit_id,
       status: updatedMovement.status,
       operationalState: 'picking_in_progress',
+    },
+  });
+
+  return updatedMovement;
+}
+
+export async function registerPickingProgressWorkflow(
+  movementId: string,
+  progress: PickingProgressInput
+): Promise<MovementItem> {
+  const updatedMovement = await registerPickingProgress(
+    movementId,
+    progress
+  );
+
+  await registerOperationalMemory({
+    memoryType: 'movement',
+    entityId: updatedMovement.id,
+    entityType: 'movement',
+    title: 'Avance parcial de picking confirmado',
+    description:
+      'El operador confirmó una extracción parcial del surtido sin finalizar todavía el movimiento.',
+    score: updatedMovement.decision_score ?? 88,
+    metadata: {
+      phase: '21.22',
+      source: 'movementWorkflowService',
+      movementId: updatedMovement.id,
+      warehouseId: updatedMovement.warehouse_id,
+      movementType: updatedMovement.movement_type,
+      palletId: updatedMovement.pallet_id,
+      productId: updatedMovement.product_id,
+      originPositionId: updatedMovement.origin_position_id,
+      operatorId: updatedMovement.operator_id,
+      forkliftUnitId: updatedMovement.forklift_unit_id,
+      quantity: updatedMovement.quantity,
+      unit: updatedMovement.unit,
+      status: updatedMovement.status,
+      operationalState: 'picking_partial_extraction_confirmed',
     },
   });
 
