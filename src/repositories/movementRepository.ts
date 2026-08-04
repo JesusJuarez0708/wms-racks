@@ -56,6 +56,12 @@ export type UpdateMovementAssignmentRecord = {
   created_by?: string | null;
 };
 
+export type StartMovementPickingRecord = {
+  notes?: string | null;
+  decision_explanation?: string | null;
+  created_by?: string | null;
+};
+
 export async function fetchMovements(): Promise<MovementRecord[]> {
   const { data, error } = await supabase
     .from('movements')
@@ -114,6 +120,35 @@ export async function updateMovementAssignment(
   if (error) {
     throw new Error(
       `Error al asignar el movimiento de picking: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+export async function startMovementPicking(
+  movementId: string,
+  picking: StartMovementPickingRecord
+): Promise<MovementRecord> {
+  const { data, error } = await supabase
+    .from('movements')
+    .update({
+      notes: picking.notes ?? 'Ejecución física del picking iniciada.',
+      decision_explanation:
+        picking.decision_explanation ??
+        'Inicio Operativo del Picking confirmado.',
+      created_by: picking.created_by ?? 'Usuario CJWMS',
+    })
+    .eq('id', movementId)
+    .eq('movement_type', 'salida')
+    .eq('status', 'pending')
+    .ilike('notes', '%Operador asignado:%')
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al iniciar el movimiento de picking: ${error.message}`
     );
   }
 

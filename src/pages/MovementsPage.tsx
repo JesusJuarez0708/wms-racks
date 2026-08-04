@@ -5,7 +5,10 @@ import PickingAssignmentModal, {
   type PickingAssignmentData,
 } from '../components/PickingAssignmentModal';
 
-import { assignPickingWorkflow } from '../services/movementWorkflowService';
+import {
+  assignPickingWorkflow,
+  startPickingWorkflow,
+} from '../services/movementWorkflowService';
 
 import {
   getMovements,
@@ -120,6 +123,13 @@ function getAssignedPickingOperator(notes: string | null) {
     : '';
 }
 
+function isPickingInProgress(movement: MovementItem) {
+  return (
+    movement.decision_explanation ===
+    'Inicio Operativo del Picking confirmado.'
+  );
+}
+
 function MovementsPage() {
   const [movements, setMovements] = useState<EnrichedMovement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,6 +141,9 @@ function MovementsPage() {
 
   const [submittingPickingAssignment, setSubmittingPickingAssignment] =
     useState(false);
+
+  const [startingPickingMovementId, setStartingPickingMovementId] =
+    useState<string | null>(null);
 
   const [operationMessage, setOperationMessage] = useState('');
   const [operationError, setOperationError] = useState('');
@@ -260,6 +273,44 @@ function MovementsPage() {
       );
     } finally {
       setSubmittingPickingAssignment(false);
+    }
+  }
+
+  async function handleStartPicking(movement: EnrichedMovement) {
+    try {
+      setStartingPickingMovementId(movement.id);
+      setOperationMessage('');
+      setOperationError('');
+
+      const pickingNotes = [
+        movement.notes,
+        'Estado operativo: Picking en proceso',
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      await startPickingWorkflow(movement.id, {
+        notes: pickingNotes,
+        decision_explanation:
+          'Inicio Operativo del Picking confirmado.',
+        created_by: 'Usuario CJWMS',
+      });
+
+      await loadMovements();
+
+      setOperationMessage(
+        `Picking iniciado correctamente para el movimiento ${movement.id}.`
+      );
+    } catch (error) {
+      console.error('Error al iniciar el picking:', error);
+
+      setOperationError(
+        error instanceof Error
+          ? error.message
+          : 'No fue posible iniciar operativamente el picking.'
+      );
+    } finally {
+      setStartingPickingMovementId(null);
     }
   }
 
@@ -403,7 +454,11 @@ function MovementsPage() {
               <tbody>
                 {filteredMovements.map((movement) => {
                   const priority = getPriorityByScore(movement.decision_score);
-                  const assignedPickingOperator = getAssignedPickingOperator(movement.notes);
+                  const assignedPickingOperator = getAssignedPickingOperator(
+                    movement.notes
+                  );
+
+                  const pickingInProgress = isPickingInProgress(movement);
 
                   return (
                     <tr
@@ -489,21 +544,48 @@ function MovementsPage() {
                           </button>
                         ) : movement.movement_type === 'salida' &&
                           movement.status === 'pending' &&
-                          assignedPickingOperator ? (
+                          assignedPickingOperator &&
+                          !pickingInProgress ? (
+                          <div className="space-y-2">
+                            <div className="leading-tight">
+                              <div className="font-semibold text-violet-700">
+                                {assignedPickingOperator}
+                              </div>
+
+                              <div className="text-xs text-slate-500">
+                                Picking pendiente de inicio
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleStartPicking(movement)}
+                              disabled={startingPickingMovementId === movement.id}
+                              className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {startingPickingMovementId === movement.id
+                                ? 'Iniciando...'
+                                : 'Iniciar Picking'}
+                            </button>
+                          </div>
+                        ) : movement.movement_type === 'salida' &&
+                          movement.status === 'pending' &&
+                          assignedPickingOperator &&
+                          pickingInProgress ? (
                           <div className="leading-tight">
-                            <div className="font-semibold text-violet-700">
+                            <div className="font-semibold text-blue-700">
                               {assignedPickingOperator}
                             </div>
 
-                            <div className="text-xs text-slate-500">
-                              Picking pendiente de inicio
+                            <div className="mt-1 inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                              Picking en proceso
                             </div>
                           </div>
                         ) : (
                           <span className="text-slate-400">—</span>
                         )}
                       </td>
-
+                      
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex gap-2">
                           <button
