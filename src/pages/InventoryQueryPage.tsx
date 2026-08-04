@@ -5,6 +5,10 @@ import {
   type InventoryQueryItem,
 } from '../services/inventoryService';
 
+import PickingRequestModal from '../components/PickingRequestModal';
+
+import { executeMovementWorkflow } from '../services/movementWorkflowService';
+
 function getInventoryStatusLabel(
   status: InventoryQueryItem['inventory']['status']
 ) {
@@ -22,6 +26,9 @@ function InventoryQueryPage() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedItem, setSelectedItem] = useState<InventoryQueryItem | null>(null);
+  const [submittingPicking, setSubmittingPicking] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     async function loadInventory() {
@@ -70,6 +77,79 @@ function InventoryQueryPage() {
     });
   }, [inventory, searchTerm]);
 
+  function handleRequestPicking(item: InventoryQueryItem) {
+    setSelectedItem(item);
+    }
+
+  function handleClosePickingModal() {
+    setSelectedItem(null);
+    }
+
+    async function handleConfirmPicking(item: InventoryQueryItem) {
+    if (!item.inventory.warehouse_id) {
+        setErrorMessage(
+        'No fue posible identificar el almacén del inventario seleccionado.'
+        );
+        return;
+    }
+
+    if (!item.inventory.pallet_id) {
+        setErrorMessage(
+        'No fue posible identificar el pallet del inventario seleccionado.'
+        );
+        return;
+    }
+
+    if (!item.productId) {
+        setErrorMessage(
+        'No fue posible identificar el producto del pallet seleccionado.'
+        );
+        return;
+    }
+
+    try {
+        setSubmittingPicking(true);
+        setErrorMessage('');
+        setSuccessMessage('');
+
+        await executeMovementWorkflow({
+        warehouse_id: item.inventory.warehouse_id,
+        movement_type: 'salida',
+        pallet_id: item.inventory.pallet_id,
+        product_id: item.productId,
+        origin_position_id: item.inventory.rack_position_id,
+        destination_position_id: null,
+        quantity: item.quantity,
+        unit: item.unit || null,
+        status: 'pending',
+        reason: 'Surtido solicitado',
+        notes: `Solicitud de surtido generada desde Consulta de Inventario para el pallet ${item.palletNumber}.`,
+        decision_score: 80,
+        decision_explanation:
+            'Solicitud operativa de surtido confirmada desde la consulta de inventario.',
+        created_by: 'Usuario CJWMS',
+        });
+
+        const updatedInventory = await getInventoryQuery();
+
+        setInventory(updatedInventory);
+        setSelectedItem(null);
+        setSuccessMessage(
+        `Solicitud de surtido generada correctamente para el pallet ${item.palletNumber}.`
+        );
+    } catch (error) {
+        console.error('Error al generar la solicitud de surtido:', error);
+
+        setErrorMessage(
+        error instanceof Error
+            ? error.message
+            : 'No fue posible generar la solicitud de surtido.'
+        );
+    } finally {
+        setSubmittingPicking(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -99,6 +179,14 @@ function InventoryQueryPage() {
             className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
         />
       </div>
+
+      {successMessage && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <p className="font-medium text-emerald-700">
+            {successMessage}
+            </p>
+        </div>
+      )}
 
       {loading && (
         <div className="rounded-xl border border-slate-200 bg-white p-8">
@@ -155,6 +243,10 @@ function InventoryQueryPage() {
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
                     Estado
                   </th>
+
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    Acción
+                  </th>
                 </tr>
               </thead>
 
@@ -189,6 +281,15 @@ function InventoryQueryPage() {
                         {getInventoryStatusLabel(item.inventory.status)}
                       </span>
                     </td>
+                    <td className="whitespace-nowrap px-4 py-4">
+                        <button
+                            type="button"
+                            onClick={() => handleRequestPicking(item)}
+                            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                        >
+                            Solicitar surtido
+                        </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -196,6 +297,13 @@ function InventoryQueryPage() {
           </div>
         </div>
       )}
+      <PickingRequestModal
+        open={selectedItem !== null}
+        item={selectedItem}
+        onClose={handleClosePickingModal}
+        onConfirm={handleConfirmPicking}
+        submitting={submittingPicking}
+      />
     </div>
   );
 }

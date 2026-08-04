@@ -19,6 +19,7 @@ export type CreateInventoryInput = CreateInventoryRecord;
 
 export type InventoryQueryItem = {
   inventory: InventoryItem;
+  productId: string;
   locationCode: string;
   palletNumber: string;
   productSku: string;
@@ -76,6 +77,7 @@ export async function getInventoryQuery(): Promise<InventoryQueryItem[]> {
 
       return {
         inventory: item,
+        productId: pallet?.product_id ?? '',
         locationCode: position?.code ?? '',
         palletNumber: pallet?.pallet_code ?? '',
         productSku: product?.sku ?? '',
