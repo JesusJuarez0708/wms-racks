@@ -1,22 +1,28 @@
 import {
+  completeMovementPacking,
   completeMovementPicking,
   confirmMovementDeliveryArrival,
   confirmMovementOperationalVerification,
   fetchMovements,
   insertMovement,
+  startMovementPacking,
   startMovementPicking,
   updateMovementAssignment,
+  updateMovementPackingProgress,
   updateMovementPickingProgress,
 } from '../repositories/movementRepository';
 
 import type {
+  CompleteMovementPackingRecord,
   CompleteMovementPickingRecord,
   ConfirmMovementDeliveryArrivalRecord,
   ConfirmMovementOperationalVerificationRecord,
   CreateMovementRecord,
   MovementRecord,
+  StartMovementPackingRecord,
   StartMovementPickingRecord,
   UpdateMovementAssignmentRecord,
+  UpdateMovementPackingProgressRecord,
   UpdateMovementPickingProgressRecord,
 } from '../repositories/movementRepository';
 
@@ -35,6 +41,14 @@ export type ConfirmMovementDeliveryArrivalInput =
 
 export type ConfirmMovementOperationalVerificationInput =
   ConfirmMovementOperationalVerificationRecord;
+
+export type StartMovementPackingInput = StartMovementPackingRecord;
+
+export type UpdateMovementPackingProgressInput =
+  UpdateMovementPackingProgressRecord;
+
+export type CompleteMovementPackingInput =
+  CompleteMovementPackingRecord;
 
 export async function getMovements(): Promise<MovementItem[]> {
   return fetchMovements();
@@ -89,4 +103,25 @@ export async function confirmOperationalVerification(
     movementId,
     verification
   );
+}
+
+export async function startPackingMovement(
+  movementId: string,
+  packing: StartMovementPackingInput
+): Promise<MovementItem> {
+  return startMovementPacking(movementId, packing);
+}
+
+export async function registerPackingProgress(
+  movementId: string,
+  progress: UpdateMovementPackingProgressInput
+): Promise<MovementItem> {
+  return updateMovementPackingProgress(movementId, progress);
+}
+
+export async function finishPackingMovement(
+  movementId: string,
+  completion: CompleteMovementPackingInput
+): Promise<MovementItem> {
+  return completeMovementPacking(movementId, completion);
 }

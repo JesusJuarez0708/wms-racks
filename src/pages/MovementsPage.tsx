@@ -17,12 +17,20 @@ import OperationalVerificationModal, {
   type OperationalVerificationData,
 } from '../components/OperationalVerificationModal';
 
+import PackingProgressModal, {
+  type PackingAction,
+  type PackingProgressData,
+} from '../components/PackingProgressModal';
+
 import {
   assignPickingWorkflow,
+  completePackingWorkflow,
   completePickingWorkflow,
   confirmDeliveryAreaArrivalWorkflow,
   confirmOperationalVerificationWorkflow,
+  registerPackingProgressWorkflow,
   registerPickingProgressWorkflow,
+  startPackingWorkflow,
   startPickingWorkflow,
 } from '../services/movementWorkflowService';
 
@@ -40,12 +48,15 @@ import {
 } from '../utils/enrichMovement';
 
 import {
+  canCompletePacking,
   canConfirmDeliveryAreaArrival,
+  canRegisterPackingProgress,
   canStartOperationalVerification,
+  canStartPacking,
   hasPickingPartialProgress,
+  isPackingInProgress,
   isPickingInProgress,
-  isReadyForShippingAfterVerification,
-  requiresPackingAfterVerification,
+  isReadyForShipping,
 } from '../utils/movementOperationalState';
 
 function getStatusClass(status: MovementItem['status']) {
@@ -192,7 +203,19 @@ function MovementsPage() {
     setSubmittingDeliveryArrival,
   ] = useState(false);
 
+  const [
+    selectedPackingMovement,
+    setSelectedPackingMovement,
+  ] = useState<EnrichedMovement | null>(null);
+
+  const [packingAction, setPackingAction] =
+    useState<PackingAction>('start');
+
+  const [submittingPacking, setSubmittingPacking] =
+    useState(false);
+
   const [operationMessage, setOperationMessage] = useState('');
+
   const [operationError, setOperationError] = useState('');
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -593,6 +616,111 @@ function MovementsPage() {
     }
   }
 
+  function handleOpenPacking(
+    movement: EnrichedMovement,
+    action: PackingAction
+  ) {
+    setSelectedPackingMovement(movement);
+    setPackingAction(action);
+    setOperationMessage('');
+    setOperationError('');
+  }
+
+  function handleClosePacking() {
+    if (submittingPacking) {
+      return;
+    }
+
+    setSelectedPackingMovement(null);
+  }
+
+  async function handleConfirmPacking(
+    movement: EnrichedMovement,
+    data: PackingProgressData
+  ) {
+    try {
+      setSubmittingPacking(true);
+      setOperationMessage('');
+      setOperationError('');
+
+      if (packingAction === 'start') {
+        const packingNotes = [
+          movement.notes,
+          `Observaciones de inicio de empaque: ${data.notes}`,
+          'Estado operativo: Empaque iniciado',
+        ]
+          .filter(Boolean)
+          .join('\n');
+
+        await startPackingWorkflow(movement.id, {
+          notes: packingNotes,
+          decision_explanation:
+            'Empaque Iniciado: preparación física de la mercancía confirmada.',
+          created_by: 'Usuario CJWMS',
+        });
+      }
+
+      if (packingAction === 'progress') {
+        const packingProgressNotes = [
+          movement.notes,
+          `Observaciones del avance de empaque: ${data.notes}`,
+          'Estado operativo: Empaque en proceso',
+        ]
+          .filter(Boolean)
+          .join('\n');
+
+        await registerPackingProgressWorkflow(movement.id, {
+          notes: packingProgressNotes,
+          decision_explanation:
+            'Empaque en Proceso: avance operativo confirmado.',
+          created_by: 'Usuario CJWMS',
+        });
+      }
+
+      if (packingAction === 'complete') {
+        const packingCompletionNotes = [
+          movement.notes,
+          `Observaciones de finalización de empaque: ${data.notes}`,
+          'Estado operativo: Empaque finalizado y liberado para embarque',
+        ]
+          .filter(Boolean)
+          .join('\n');
+
+        await completePackingWorkflow(movement.id, {
+          notes: packingCompletionNotes,
+          decision_explanation:
+            'Empaque Finalizado: mercancía liberada para embarque.',
+          created_by: 'Usuario CJWMS',
+        });
+      }
+
+      await loadMovements();
+
+      setSelectedPackingMovement(null);
+
+      setOperationMessage(
+        packingAction === 'start'
+          ? 'El proceso de Empaque fue iniciado correctamente.'
+          : packingAction === 'progress'
+            ? 'El avance del proceso de Empaque fue registrado correctamente.'
+            : 'El Empaque fue finalizado y la mercancía quedó liberada para Embarque.'
+      );
+    } catch (error) {
+      console.error(
+        'Error durante el proceso de empaque:',
+        error
+      );
+
+      setOperationError(
+        error instanceof Error
+          ? error.message
+          : 'No fue posible completar la operación de Empaque.'
+      );
+    } finally {
+      setSubmittingPacking(false);
+    }
+  }
+
   function handleEdit() {
     alert('La edición de movimientos se migrará en D.7.3.');
   }
@@ -740,6 +868,21 @@ function MovementsPage() {
                   const pickingInProgress = isPickingInProgress(movement);
 
                   const pickingPartialProgress = hasPickingPartialProgress(movement);
+
+                  const packingCanStart =
+                    canStartPacking(movement);
+
+                  const packingCanRegisterProgress =
+                    canRegisterPackingProgress(movement);
+
+                  const packingCanComplete =
+                    canCompletePacking(movement);
+
+                  const packingInProgress =
+                    isPackingInProgress(movement);
+
+                  const readyForShipping =
+                    isReadyForShipping(movement);
 
                   return (
                     <tr
@@ -920,17 +1063,85 @@ function MovementsPage() {
                                   Verificar mercancía
                                 </button>
                               </div>
-                            ) : requiresPackingAfterVerification(movement) ? (
-                              <span className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                                Pendiente de Empaque
-                              </span>
-                            ) : isReadyForShippingAfterVerification(movement) ? (
+                            ) : packingCanStart ? (
+                              <div className="space-y-2">
+                                <span className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                                  Pendiente de Empaque
+                                </span>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleOpenPacking(movement, 'start')
+                                  }
+                                  className="block rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-amber-700"
+                                >
+                                  Iniciar Empaque
+                                </button>
+                              </div>
+                            ) : packingCanRegisterProgress ? (
+                              <div className="space-y-2">
+                                <span className="inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">
+                                  Empaque Iniciado
+                                </span>
+
+                                <div className="flex flex-col gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleOpenPacking(
+                                        movement,
+                                        'progress'
+                                      )
+                                    }
+                                    className="rounded-lg bg-orange-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-orange-700"
+                                  >
+                                    Registrar Avance
+                                  </button>
+
+                                  {packingCanComplete && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleOpenPacking(
+                                          movement,
+                                          'complete'
+                                        )
+                                      }
+                                      className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                                    >
+                                      Finalizar Empaque
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ) : packingInProgress &&
+                              packingCanComplete ? (
+                              <div className="space-y-2">
+                                <span className="inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">
+                                  Empaque en Proceso
+                                </span>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleOpenPacking(
+                                      movement,
+                                      'complete'
+                                    )
+                                  }
+                                  className="block rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                                >
+                                  Finalizar Empaque
+                                </button>
+                              </div>
+                            ) : readyForShipping ? (
                               <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
                                 Liberado para Embarque
                               </span>
                             ) : (
                               <span className="text-slate-400">—</span>
-                            )}
+                          )}
                       </td>
 
                       <td className="px-4 py-4 whitespace-nowrap">
@@ -1015,6 +1226,15 @@ function MovementsPage() {
         submitting={submittingOperationalVerification}
         onClose={handleCloseOperationalVerification}
         onConfirm={handleConfirmOperationalVerification}
+      />
+
+      <PackingProgressModal
+        open={selectedPackingMovement !== null}
+        movement={selectedPackingMovement}
+        action={packingAction}
+        submitting={submittingPacking}
+        onClose={handleClosePacking}
+        onConfirm={handleConfirmPacking}
       />
 
     </div>

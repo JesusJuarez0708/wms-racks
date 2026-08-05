@@ -21,6 +21,15 @@ export const MOVEMENT_OPERATIONAL_EXPLANATIONS = {
 
   VERIFICATION_READY_FOR_SHIPPING:
     'Verificación Operativa: liberado para embarque.',
+
+  PACKING_STARTED:
+    'Empaque Iniciado: preparación física de la mercancía confirmada.',
+
+  PACKING_IN_PROGRESS:
+    'Empaque en Proceso: avance operativo confirmado.',
+
+  PACKING_COMPLETED:
+    'Empaque Finalizado: mercancía liberada para embarque.',
 } as const;
 
 export type MovementOperationalState =
@@ -30,15 +39,20 @@ export type MovementOperationalState =
   | 'picking_partial_progress'
   | 'picking_completed'
   | 'delivery_area_pending_verification'
-  | 'not_applicable'
-  | 'unknown'
   | 'verification_completed_requires_packing'
-  | 'verification_completed_ready_for_shipping';
+  | 'verification_completed_ready_for_shipping'
+  | 'packing_started'
+  | 'packing_in_progress'
+  | 'packing_completed_ready_for_shipping'
+  | 'not_applicable'
+  | 'unknown';
 
 function hasAssignedOperator(notes: string | null) {
-  return notes
-    ?.split('\n')
-    .some((line) => line.startsWith('Operador asignado:')) ?? false;
+  return (
+    notes
+      ?.split('\n')
+      .some((line) => line.startsWith('Operador asignado:')) ?? false
+  );
 }
 
 export function getMovementOperationalState(
@@ -51,16 +65,40 @@ export function getMovementOperationalState(
   if (
     movement.status === 'completed' &&
     movement.decision_explanation ===
-        MOVEMENT_OPERATIONAL_EXPLANATIONS.VERIFICATION_REQUIRES_PACKING
-    ) {
-    return 'verification_completed_requires_packing';
-    }
+      MOVEMENT_OPERATIONAL_EXPLANATIONS.PACKING_COMPLETED
+  ) {
+    return 'packing_completed_ready_for_shipping';
+  }
 
-    if (
+  if (
     movement.status === 'completed' &&
     movement.decision_explanation ===
-        MOVEMENT_OPERATIONAL_EXPLANATIONS.VERIFICATION_READY_FOR_SHIPPING
-    ) {
+      MOVEMENT_OPERATIONAL_EXPLANATIONS.PACKING_IN_PROGRESS
+  ) {
+    return 'packing_in_progress';
+  }
+
+  if (
+    movement.status === 'completed' &&
+    movement.decision_explanation ===
+      MOVEMENT_OPERATIONAL_EXPLANATIONS.PACKING_STARTED
+  ) {
+    return 'packing_started';
+  }
+
+  if (
+    movement.status === 'completed' &&
+    movement.decision_explanation ===
+      MOVEMENT_OPERATIONAL_EXPLANATIONS.VERIFICATION_REQUIRES_PACKING
+  ) {
+    return 'verification_completed_requires_packing';
+  }
+
+  if (
+    movement.status === 'completed' &&
+    movement.decision_explanation ===
+      MOVEMENT_OPERATIONAL_EXPLANATIONS.VERIFICATION_READY_FOR_SHIPPING
+  ) {
     return 'verification_completed_ready_for_shipping';
   }
 
@@ -190,5 +228,70 @@ export function isOperationalVerificationCompleted(
       'verification_completed_requires_packing' ||
     operationalState ===
       'verification_completed_ready_for_shipping'
+  );
+}
+
+export function canStartPacking(
+  movement: MovementItem
+) {
+  return requiresPackingAfterVerification(movement);
+}
+
+export function isPackingStarted(
+  movement: MovementItem
+) {
+  return (
+    getMovementOperationalState(movement) ===
+    'packing_started'
+  );
+}
+
+export function isPackingInProgress(
+  movement: MovementItem
+) {
+  return (
+    getMovementOperationalState(movement) ===
+    'packing_in_progress'
+  );
+}
+
+export function canRegisterPackingProgress(
+  movement: MovementItem
+) {
+  return isPackingStarted(movement);
+}
+
+export function canCompletePacking(
+  movement: MovementItem
+) {
+  const operationalState =
+    getMovementOperationalState(movement);
+
+  return (
+    operationalState === 'packing_started' ||
+    operationalState === 'packing_in_progress'
+  );
+}
+
+export function isPackingCompleted(
+  movement: MovementItem
+) {
+  return (
+    getMovementOperationalState(movement) ===
+    'packing_completed_ready_for_shipping'
+  );
+}
+
+export function isReadyForShipping(
+  movement: MovementItem
+) {
+  const operationalState =
+    getMovementOperationalState(movement);
+
+  return (
+    operationalState ===
+      'verification_completed_ready_for_shipping' ||
+    operationalState ===
+      'packing_completed_ready_for_shipping'
   );
 }

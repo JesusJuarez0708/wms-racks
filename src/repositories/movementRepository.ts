@@ -87,6 +87,24 @@ export type ConfirmMovementOperationalVerificationRecord = {
   created_by?: string | null;
 };
 
+export type StartMovementPackingRecord = {
+  notes: string;
+  decision_explanation?: string;
+  created_by?: string | null;
+};
+
+export type UpdateMovementPackingProgressRecord = {
+  notes: string;
+  decision_explanation?: string;
+  created_by?: string | null;
+};
+
+export type CompleteMovementPackingRecord = {
+  notes: string;
+  decision_explanation?: string;
+  created_by?: string | null;
+};
+
 export async function fetchMovements(): Promise<MovementRecord[]> {
   const { data, error } = await supabase
     .from('movements')
@@ -283,11 +301,9 @@ export async function confirmMovementOperationalVerification(
       notes: verification.notes,
       decision_explanation:
         verification.decision_explanation ??
-        (
-          verification.requires_packing
-            ? 'Verificación Operativa: requiere empaque.'
-            : 'Verificación Operativa: liberado para embarque.'
-        ),
+        (verification.requires_packing
+          ? 'Verificación Operativa: requiere empaque.'
+          : 'Verificación Operativa: liberado para embarque.'),
       created_by: verification.created_by ?? 'Usuario CJWMS',
     })
     .eq('id', movementId)
@@ -303,6 +319,101 @@ export async function confirmMovementOperationalVerification(
   if (error) {
     throw new Error(
       `Error al confirmar la verificación operativa: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+export async function startMovementPacking(
+  movementId: string,
+  packing: StartMovementPackingRecord
+): Promise<MovementRecord> {
+  const { data, error } = await supabase
+    .from('movements')
+    .update({
+      notes: packing.notes,
+      decision_explanation:
+        packing.decision_explanation ??
+        'Empaque Iniciado: preparación física de la mercancía confirmada.',
+      created_by: packing.created_by ?? 'Usuario CJWMS',
+    })
+    .eq('id', movementId)
+    .eq('movement_type', 'salida')
+    .eq('status', 'completed')
+    .ilike(
+      'decision_explanation',
+      '%Verificación Operativa: requiere empaque%'
+    )
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al iniciar el proceso de empaque: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+export async function updateMovementPackingProgress(
+  movementId: string,
+  progress: UpdateMovementPackingProgressRecord
+): Promise<MovementRecord> {
+  const { data, error } = await supabase
+    .from('movements')
+    .update({
+      notes: progress.notes,
+      decision_explanation:
+        progress.decision_explanation ??
+        'Empaque en Proceso: avance operativo confirmado.',
+      created_by: progress.created_by ?? 'Usuario CJWMS',
+    })
+    .eq('id', movementId)
+    .eq('movement_type', 'salida')
+    .eq('status', 'completed')
+    .ilike(
+      'decision_explanation',
+      '%Empaque Iniciado: preparación física de la mercancía confirmada%'
+    )
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al registrar el avance del proceso de empaque: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+export async function completeMovementPacking(
+  movementId: string,
+  completion: CompleteMovementPackingRecord
+): Promise<MovementRecord> {
+  const { data, error } = await supabase
+    .from('movements')
+    .update({
+      notes: completion.notes,
+      decision_explanation:
+        completion.decision_explanation ??
+        'Empaque Finalizado: mercancía liberada para embarque.',
+      created_by: completion.created_by ?? 'Usuario CJWMS',
+    })
+    .eq('id', movementId)
+    .eq('movement_type', 'salida')
+    .eq('status', 'completed')
+    .or(
+      'decision_explanation.ilike.%Empaque Iniciado: preparación física de la mercancía confirmada%,decision_explanation.ilike.%Empaque en Proceso: avance operativo confirmado%'
+    )
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al finalizar el proceso de empaque: ${error.message}`
     );
   }
 
