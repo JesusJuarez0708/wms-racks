@@ -123,6 +123,12 @@ export type CompleteMovementShippingRecord = {
   created_by?: string | null;
 };
 
+export type ConfirmMovementExitRecord = {
+  notes: string;
+  decision_explanation?: string;
+  created_by?: string | null;
+};
+
 export async function fetchMovements(): Promise<MovementRecord[]> {
   const { data, error } = await supabase
     .from('movements')
@@ -526,6 +532,39 @@ export async function completeMovementShipping(
   if (error) {
     throw new Error(
       `Error al finalizar el proceso de embarque: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+export async function confirmMovementExit(
+  movementId: string,
+  confirmation: ConfirmMovementExitRecord
+): Promise<MovementRecord> {
+  const { data, error } = await supabase
+    .from('movements')
+    .update({
+      notes: confirmation.notes,
+      decision_explanation:
+        confirmation.decision_explanation ??
+        'Salida Confirmada: mercancía retirada físicamente del almacén y movimiento cerrado.',
+      created_by:
+        confirmation.created_by ?? 'Usuario CJWMS',
+    })
+    .eq('id', movementId)
+    .eq('movement_type', 'salida')
+    .eq('status', 'completed')
+    .ilike(
+      'decision_explanation',
+      '%Embarque Finalizado: carga física completada y pendiente de confirmación de salida%'
+    )
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al confirmar la salida de la mercancía: ${error.message}`
     );
   }
 

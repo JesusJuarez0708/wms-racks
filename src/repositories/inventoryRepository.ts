@@ -92,3 +92,18 @@ export async function updateInventoryPosition(
 
   return data;
 }
+
+export async function deleteInventoryRecord(
+  id: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('inventory')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    throw new Error(
+      `Error al eliminar inventario: ${error.message}`
+    );
+  }
+}

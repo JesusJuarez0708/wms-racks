@@ -2,6 +2,7 @@ import {
   assignMovementPicking,
   confirmDeliveryAreaArrival,
   confirmOperationalVerification,
+  confirmExitMovement,
   createMovement,
   finishPackingMovement,
   finishPickingMovement,
@@ -18,6 +19,7 @@ import {
   type CompleteMovementShippingInput,
   type ConfirmMovementDeliveryArrivalInput,
   type ConfirmMovementOperationalVerificationInput,
+  type ConfirmMovementExitInput,
   type CreateMovementInput,
   type MovementItem,
   type StartMovementPackingInput,
@@ -33,6 +35,7 @@ import {
   changeInventoryPosition,
   changeInventoryStatus,
   createInventoryItem,
+  deleteInventory,
   getInventory,
 } from './inventoryService';
 
@@ -48,6 +51,7 @@ import {
   canStartOperationalVerification,
   canStartPacking,
   canStartShipping,
+  canConfirmExit,
   isPickingCompleted,
 } from '../utils/movementOperationalState';
 
@@ -67,6 +71,8 @@ type ShippingProgressInput =
   UpdateMovementShippingProgressInput;
 type CompleteShippingInput =
   CompleteMovementShippingInput;
+type ConfirmExitInput =
+  ConfirmMovementExitInput;
 
 export async function executeMovementWorkflow(
   movement: ExecuteMovementInput
@@ -984,6 +990,85 @@ export async function completeShippingWorkflow(
         'shipping_completed_pending_exit_confirmation',
       logicalLocation: 'Unidad de Transporte',
       nextProcess: 'OP-011 Confirmación de Salida',
+    },
+  });
+
+  return updatedMovement;
+}
+
+export async function confirmExitWorkflow(
+  movementId: string,
+  confirmation: ConfirmExitInput
+): Promise<MovementItem> {
+  const [movements, inventory] = await Promise.all([
+    getMovements(),
+    getInventory(),
+  ]);
+
+  const movementToConfirm = movements.find(
+    (movement) =>
+      movement.id === movementId &&
+      canConfirmExit(movement)
+  );
+
+  if (!movementToConfirm) {
+    throw new Error(
+      'No se encontró un embarque finalizado pendiente de confirmación de salida.'
+    );
+  }
+
+  if (!movementToConfirm.pallet_id) {
+    throw new Error(
+      'El movimiento no tiene un pallet asociado para confirmar la salida.'
+    );
+  }
+
+  const reservedInventoryItem = inventory.find(
+    (item) =>
+      item.pallet_id === movementToConfirm.pallet_id &&
+      item.status === 'reserved'
+  );
+
+  if (!reservedInventoryItem) {
+    throw new Error(
+      'No se encontró inventario reservado para confirmar la salida.'
+    );
+  }
+
+  const updatedMovement = await confirmExitMovement(
+    movementId,
+    confirmation
+  );
+
+  await deleteInventory(reservedInventoryItem.id);
+
+  await registerOperationalMemory({
+    memoryType: 'movement',
+    entityId: updatedMovement.id,
+    entityType: 'movement',
+    title: 'Confirmación de Salida completada',
+    description:
+      'La salida física de la mercancía fue confirmada, el movimiento quedó cerrado y el inventario reservado fue dado de baja.',
+    score: updatedMovement.decision_score ?? 100,
+    metadata: {
+      phase: '21.27',
+      source: 'movementWorkflowService',
+      movementId: updatedMovement.id,
+      warehouseId: updatedMovement.warehouse_id,
+      movementType: updatedMovement.movement_type,
+      palletId: updatedMovement.pallet_id,
+      productId: updatedMovement.product_id,
+      originPositionId: updatedMovement.origin_position_id,
+      operatorId: updatedMovement.operator_id,
+      forkliftUnitId: updatedMovement.forklift_unit_id,
+      quantity: updatedMovement.quantity,
+      unit: updatedMovement.unit,
+      status: updatedMovement.status,
+      deletedInventoryId: reservedInventoryItem.id,
+      previousInventoryStatus: reservedInventoryItem.status,
+      operationalState: 'exit_confirmed',
+      logicalLocation: 'Fuera del Almacén',
+      processCompleted: 'OP-011 Confirmación de Salida',
     },
   });
 

@@ -39,6 +39,9 @@ export const MOVEMENT_OPERATIONAL_EXPLANATIONS = {
 
   SHIPPING_COMPLETED:
     'Embarque Finalizado: carga física completada y pendiente de confirmación de salida.',
+
+  EXIT_CONFIRMED:
+    'Salida Confirmada: mercancía retirada físicamente del almacén y movimiento cerrado.',
 } as const;
 
 export type MovementOperationalState =
@@ -56,6 +59,7 @@ export type MovementOperationalState =
   | 'shipping_started'
   | 'shipping_in_progress'
   | 'shipping_completed_pending_exit_confirmation'
+  | 'exit_confirmed'
   | 'not_applicable'
   | 'unknown';
 
@@ -72,6 +76,14 @@ export function getMovementOperationalState(
 ): MovementOperationalState {
   if (movement.movement_type !== 'salida') {
     return 'not_applicable';
+  }
+
+  if (
+    movement.status === 'completed' &&
+    movement.decision_explanation ===
+      MOVEMENT_OPERATIONAL_EXPLANATIONS.EXIT_CONFIRMED
+  ) {
+    return 'exit_confirmed';
   }
 
   if (
@@ -380,5 +392,20 @@ export function isShippingCompleted(
   return (
     getMovementOperationalState(movement) ===
     'shipping_completed_pending_exit_confirmation'
+  );
+}
+
+export function canConfirmExit(
+  movement: MovementItem
+) {
+  return isShippingCompleted(movement);
+}
+
+export function isExitConfirmed(
+  movement: MovementItem
+) {
+  return (
+    getMovementOperationalState(movement) ===
+    'exit_confirmed'
   );
 }

@@ -33,6 +33,7 @@ import {
   completePickingWorkflow,
   completeShippingWorkflow,
   confirmDeliveryAreaArrivalWorkflow,
+  confirmExitWorkflow,
   confirmOperationalVerificationWorkflow,
   registerPackingProgressWorkflow,
   registerPickingProgressWorkflow,
@@ -59,12 +60,14 @@ import {
   canCompletePacking,
   canCompleteShipping,
   canConfirmDeliveryAreaArrival,
+  canConfirmExit,
   canRegisterPackingProgress,
   canRegisterShippingProgress,
   canStartOperationalVerification,
   canStartPacking,
   canStartShipping,
   hasPickingPartialProgress,
+  isExitConfirmed,
   isPackingInProgress,
   isPickingInProgress,
   isShippingCompleted,
@@ -236,6 +239,11 @@ function MovementsPage() {
 
   const [submittingShipping, setSubmittingShipping] =
     useState(false);
+
+  const [
+    confirmingExitMovementId,
+    setConfirmingExitMovementId,
+  ] = useState<string | null>(null);
 
   const [operationMessage, setOperationMessage] = useState('');
 
@@ -849,6 +857,58 @@ function MovementsPage() {
     }
   }
 
+  async function handleConfirmExit(
+    movement: EnrichedMovement
+  ) {
+    const confirmed = window.confirm(
+      '¿Confirmas que la mercancía salió físicamente del almacén? Esta acción dará de baja definitiva el inventario reservado.'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setConfirmingExitMovementId(movement.id);
+      setOperationMessage('');
+      setOperationError('');
+
+      const exitConfirmationNotes = [
+        movement.notes,
+        'Estado operativo: Salida confirmada',
+        'La mercancía fue retirada físicamente del almacén.',
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      await confirmExitWorkflow(movement.id, {
+        notes: exitConfirmationNotes,
+        decision_explanation:
+          'Salida Confirmada: mercancía retirada físicamente del almacén y movimiento cerrado.',
+        created_by: 'Usuario CJWMS',
+      });
+
+      await loadMovements();
+
+      setOperationMessage(
+        'La salida fue confirmada correctamente y el inventario reservado fue dado de baja.'
+      );
+    } catch (error) {
+      console.error(
+        'Error al confirmar la salida de la mercancía:',
+        error
+      );
+
+      setOperationError(
+        error instanceof Error
+          ? error.message
+          : 'No fue posible confirmar la salida de la mercancía.'
+      );
+    } finally {
+      setConfirmingExitMovementId(null);
+    }
+  }
+
   function handleEdit() {
     alert('La edición de movimientos se migrará en D.7.3.');
   }
@@ -1023,6 +1083,12 @@ function MovementsPage() {
 
                   const shippingCompleted =
                     isShippingCompleted(movement);
+
+                  const exitCanBeConfirmed =
+                    canConfirmExit(movement);
+
+                  const exitConfirmed =
+                    isExitConfirmed(movement);
 
                   return (
                     <tr
@@ -1338,6 +1404,27 @@ function MovementsPage() {
                                   Finalizar Embarque
                                 </button>
                               </div>
+                            ) : exitCanBeConfirmed ? (
+                              <div className="space-y-2">
+                                <span className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">
+                                  Pendiente de Confirmación de Salida
+                                </span>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleConfirmExit(movement)}
+                                  disabled={confirmingExitMovementId === movement.id}
+                                  className="block rounded-lg bg-violet-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                  {confirmingExitMovementId === movement.id
+                                    ? 'Confirmando...'
+                                    : 'Confirmar Salida'}
+                                </button>
+                              </div>
+                            ) : exitConfirmed ? (
+                              <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                Salida Confirmada
+                              </span>
                             ) : shippingCompleted ? (
                               <span className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">
                                 Pendiente de Confirmación de Salida

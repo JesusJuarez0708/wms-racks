@@ -4,6 +4,7 @@ import {
   completeMovementShipping,
   confirmMovementDeliveryArrival,
   confirmMovementOperationalVerification,
+  confirmMovementExit,
   fetchMovements,
   insertMovement,
   startMovementPacking,
@@ -21,6 +22,7 @@ import type {
   CompleteMovementShippingRecord,
   ConfirmMovementDeliveryArrivalRecord,
   ConfirmMovementOperationalVerificationRecord,
+  ConfirmMovementExitRecord,
   CreateMovementRecord,
   MovementRecord,
   StartMovementPackingRecord,
@@ -64,6 +66,9 @@ export type UpdateMovementShippingProgressInput =
 
 export type CompleteMovementShippingInput =
   CompleteMovementShippingRecord;
+
+export type ConfirmMovementExitInput =
+  ConfirmMovementExitRecord;
 
 export async function getMovements(): Promise<MovementItem[]> {
   return fetchMovements();
@@ -160,4 +165,11 @@ export async function finishShippingMovement(
   completion: CompleteMovementShippingInput
 ): Promise<MovementItem> {
   return completeMovementShipping(movementId, completion);
+}
+
+export async function confirmExitMovement(
+  movementId: string,
+  confirmation: ConfirmMovementExitInput
+): Promise<MovementItem> {
+  return confirmMovementExit(movementId, confirmation);
 }

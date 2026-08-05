@@ -3,6 +3,7 @@ import { getPallets } from './palletService';
 import { getProducts } from './productService';
 
 import {
+  deleteInventoryRecord,
   fetchInventory,
   insertInventory,
   updateInventoryPosition,
@@ -50,6 +51,12 @@ export async function changeInventoryPosition(
   rackPositionId: string
 ): Promise<InventoryItem> {
   return updateInventoryPosition(id, rackPositionId);
+}
+
+export async function deleteInventory(
+  id: string
+): Promise<void> {
+  return deleteInventoryRecord(id);
 }
 
 export async function getInventoryQuery(): Promise<InventoryQueryItem[]> {
