@@ -1,29 +1,35 @@
 import {
   completeMovementPacking,
   completeMovementPicking,
+  completeMovementShipping,
   confirmMovementDeliveryArrival,
   confirmMovementOperationalVerification,
   fetchMovements,
   insertMovement,
   startMovementPacking,
   startMovementPicking,
+  startMovementShipping,
   updateMovementAssignment,
   updateMovementPackingProgress,
   updateMovementPickingProgress,
+  updateMovementShippingProgress,
 } from '../repositories/movementRepository';
 
 import type {
   CompleteMovementPackingRecord,
   CompleteMovementPickingRecord,
+  CompleteMovementShippingRecord,
   ConfirmMovementDeliveryArrivalRecord,
   ConfirmMovementOperationalVerificationRecord,
   CreateMovementRecord,
   MovementRecord,
   StartMovementPackingRecord,
   StartMovementPickingRecord,
+  StartMovementShippingRecord,
   UpdateMovementAssignmentRecord,
   UpdateMovementPackingProgressRecord,
   UpdateMovementPickingProgressRecord,
+  UpdateMovementShippingProgressRecord,
 } from '../repositories/movementRepository';
 
 export type MovementItem = MovementRecord;
@@ -49,6 +55,15 @@ export type UpdateMovementPackingProgressInput =
 
 export type CompleteMovementPackingInput =
   CompleteMovementPackingRecord;
+
+export type StartMovementShippingInput =
+  StartMovementShippingRecord;
+
+export type UpdateMovementShippingProgressInput =
+  UpdateMovementShippingProgressRecord;
+
+export type CompleteMovementShippingInput =
+  CompleteMovementShippingRecord;
 
 export async function getMovements(): Promise<MovementItem[]> {
   return fetchMovements();
@@ -124,4 +139,25 @@ export async function finishPackingMovement(
   completion: CompleteMovementPackingInput
 ): Promise<MovementItem> {
   return completeMovementPacking(movementId, completion);
+}
+
+export async function startShippingMovement(
+  movementId: string,
+  shipping: StartMovementShippingInput
+): Promise<MovementItem> {
+  return startMovementShipping(movementId, shipping);
+}
+
+export async function registerShippingProgress(
+  movementId: string,
+  progress: UpdateMovementShippingProgressInput
+): Promise<MovementItem> {
+  return updateMovementShippingProgress(movementId, progress);
+}
+
+export async function finishShippingMovement(
+  movementId: string,
+  completion: CompleteMovementShippingInput
+): Promise<MovementItem> {
+  return completeMovementShipping(movementId, completion);
 }

@@ -22,16 +22,24 @@ import PackingProgressModal, {
   type PackingProgressData,
 } from '../components/PackingProgressModal';
 
+import ShippingProgressModal, {
+  type ShippingAction,
+  type ShippingProgressData,
+} from '../components/ShippingProgressModal';
+
 import {
   assignPickingWorkflow,
   completePackingWorkflow,
   completePickingWorkflow,
+  completeShippingWorkflow,
   confirmDeliveryAreaArrivalWorkflow,
   confirmOperationalVerificationWorkflow,
   registerPackingProgressWorkflow,
   registerPickingProgressWorkflow,
+  registerShippingProgressWorkflow,
   startPackingWorkflow,
   startPickingWorkflow,
+  startShippingWorkflow,
 } from '../services/movementWorkflowService';
 
 import {
@@ -49,14 +57,18 @@ import {
 
 import {
   canCompletePacking,
+  canCompleteShipping,
   canConfirmDeliveryAreaArrival,
   canRegisterPackingProgress,
+  canRegisterShippingProgress,
   canStartOperationalVerification,
   canStartPacking,
+  canStartShipping,
   hasPickingPartialProgress,
   isPackingInProgress,
   isPickingInProgress,
-  isReadyForShipping,
+  isShippingCompleted,
+  isShippingInProgress,
 } from '../utils/movementOperationalState';
 
 function getStatusClass(status: MovementItem['status']) {
@@ -212,6 +224,17 @@ function MovementsPage() {
     useState<PackingAction>('start');
 
   const [submittingPacking, setSubmittingPacking] =
+    useState(false);
+
+  const [
+    selectedShippingMovement,
+    setSelectedShippingMovement,
+  ] = useState<EnrichedMovement | null>(null);
+
+  const [shippingAction, setShippingAction] =
+    useState<ShippingAction>('start');
+
+  const [submittingShipping, setSubmittingShipping] =
     useState(false);
 
   const [operationMessage, setOperationMessage] = useState('');
@@ -721,6 +744,111 @@ function MovementsPage() {
     }
   }
 
+  function handleOpenShipping(
+    movement: EnrichedMovement,
+    action: ShippingAction
+  ) {
+    setSelectedShippingMovement(movement);
+    setShippingAction(action);
+    setOperationMessage('');
+    setOperationError('');
+  }
+
+  function handleCloseShipping() {
+    if (submittingShipping) {
+      return;
+    }
+
+    setSelectedShippingMovement(null);
+  }
+
+  async function handleConfirmShipping(
+    movement: EnrichedMovement,
+    data: ShippingProgressData
+  ) {
+    try {
+      setSubmittingShipping(true);
+      setOperationMessage('');
+      setOperationError('');
+
+      if (shippingAction === 'start') {
+        const shippingNotes = [
+          movement.notes,
+          `Observaciones de inicio de embarque: ${data.notes}`,
+          'Estado operativo: Embarque iniciado',
+        ]
+          .filter(Boolean)
+          .join('\n');
+
+        await startShippingWorkflow(movement.id, {
+          notes: shippingNotes,
+          decision_explanation:
+            'Embarque Iniciado: carga física de la mercancía confirmada.',
+          created_by: 'Usuario CJWMS',
+        });
+      }
+
+      if (shippingAction === 'progress') {
+        const shippingProgressNotes = [
+          movement.notes,
+          `Observaciones del avance de embarque: ${data.notes}`,
+          'Estado operativo: Embarque en proceso',
+        ]
+          .filter(Boolean)
+          .join('\n');
+
+        await registerShippingProgressWorkflow(movement.id, {
+          notes: shippingProgressNotes,
+          decision_explanation:
+            'Embarque en Proceso: avance operativo de carga confirmado.',
+          created_by: 'Usuario CJWMS',
+        });
+      }
+
+      if (shippingAction === 'complete') {
+        const shippingCompletionNotes = [
+          movement.notes,
+          `Observaciones de finalización de embarque: ${data.notes}`,
+          'Estado operativo: Embarque finalizado y pendiente de confirmación de salida',
+        ]
+          .filter(Boolean)
+          .join('\n');
+
+        await completeShippingWorkflow(movement.id, {
+          notes: shippingCompletionNotes,
+          decision_explanation:
+            'Embarque Finalizado: carga física completada y pendiente de confirmación de salida.',
+          created_by: 'Usuario CJWMS',
+        });
+      }
+
+      await loadMovements();
+
+      setSelectedShippingMovement(null);
+
+      setOperationMessage(
+        shippingAction === 'start'
+          ? 'El proceso de Embarque fue iniciado correctamente.'
+          : shippingAction === 'progress'
+            ? 'El avance del proceso de Embarque fue registrado correctamente.'
+            : 'El Embarque fue finalizado y quedó pendiente la Confirmación de Salida.'
+      );
+    } catch (error) {
+      console.error(
+        'Error durante el proceso de embarque:',
+        error
+      );
+
+      setOperationError(
+        error instanceof Error
+          ? error.message
+          : 'No fue posible completar la operación de Embarque.'
+      );
+    } finally {
+      setSubmittingShipping(false);
+    }
+  }
+
   function handleEdit() {
     alert('La edición de movimientos se migrará en D.7.3.');
   }
@@ -881,8 +1009,20 @@ function MovementsPage() {
                   const packingInProgress =
                     isPackingInProgress(movement);
 
-                  const readyForShipping =
-                    isReadyForShipping(movement);
+                  const shippingCanStart =
+                    canStartShipping(movement);
+
+                  const shippingCanRegisterProgress =
+                    canRegisterShippingProgress(movement);
+
+                  const shippingCanComplete =
+                    canCompleteShipping(movement);
+
+                  const shippingInProgress =
+                    isShippingInProgress(movement);
+
+                  const shippingCompleted =
+                    isShippingCompleted(movement);
 
                   return (
                     <tr
@@ -1135,9 +1275,72 @@ function MovementsPage() {
                                   Finalizar Empaque
                                 </button>
                               </div>
-                            ) : readyForShipping ? (
-                              <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                                Liberado para Embarque
+                            ) : shippingCanStart ? (
+                              <div className="space-y-2">
+                                <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                  Liberado para Embarque
+                                </span>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleOpenShipping(movement, 'start')
+                                  }
+                                  className="block rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-700"
+                                >
+                                  Iniciar Embarque
+                                </button>
+                              </div>
+                            ) : shippingCanRegisterProgress ? (
+                              <div className="space-y-2">
+                                <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
+                                  Embarque Iniciado
+                                </span>
+
+                                <div className="flex flex-col gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleOpenShipping(movement, 'progress')
+                                    }
+                                    className="rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-700"
+                                  >
+                                    Registrar Avance
+                                  </button>
+
+                                  {shippingCanComplete && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleOpenShipping(movement, 'complete')
+                                      }
+                                      className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                                    >
+                                      Finalizar Embarque
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ) : shippingInProgress &&
+                              shippingCanComplete ? (
+                              <div className="space-y-2">
+                                <span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                                  Embarque en Proceso
+                                </span>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleOpenShipping(movement, 'complete')
+                                  }
+                                  className="block rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                                >
+                                  Finalizar Embarque
+                                </button>
+                              </div>
+                            ) : shippingCompleted ? (
+                              <span className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">
+                                Pendiente de Confirmación de Salida
                               </span>
                             ) : (
                               <span className="text-slate-400">—</span>
@@ -1235,6 +1438,15 @@ function MovementsPage() {
         submitting={submittingPacking}
         onClose={handleClosePacking}
         onConfirm={handleConfirmPacking}
+      />
+
+      <ShippingProgressModal
+        open={selectedShippingMovement !== null}
+        movement={selectedShippingMovement}
+        action={shippingAction}
+        submitting={submittingShipping}
+        onClose={handleCloseShipping}
+        onConfirm={handleConfirmShipping}
       />
 
     </div>

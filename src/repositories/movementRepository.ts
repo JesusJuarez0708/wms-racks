@@ -105,6 +105,24 @@ export type CompleteMovementPackingRecord = {
   created_by?: string | null;
 };
 
+export type StartMovementShippingRecord = {
+  notes: string;
+  decision_explanation?: string;
+  created_by?: string | null;
+};
+
+export type UpdateMovementShippingProgressRecord = {
+  notes: string;
+  decision_explanation?: string;
+  created_by?: string | null;
+};
+
+export type CompleteMovementShippingRecord = {
+  notes: string;
+  decision_explanation?: string;
+  created_by?: string | null;
+};
+
 export async function fetchMovements(): Promise<MovementRecord[]> {
   const { data, error } = await supabase
     .from('movements')
@@ -414,6 +432,100 @@ export async function completeMovementPacking(
   if (error) {
     throw new Error(
       `Error al finalizar el proceso de empaque: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+export async function startMovementShipping(
+  movementId: string,
+  shipping: StartMovementShippingRecord
+): Promise<MovementRecord> {
+  const { data, error } = await supabase
+    .from('movements')
+    .update({
+      notes: shipping.notes,
+      decision_explanation:
+        shipping.decision_explanation ??
+        'Embarque Iniciado: carga física de la mercancía confirmada.',
+      created_by: shipping.created_by ?? 'Usuario CJWMS',
+    })
+    .eq('id', movementId)
+    .eq('movement_type', 'salida')
+    .eq('status', 'completed')
+    .or(
+      'decision_explanation.ilike.%Verificación Operativa: liberado para embarque%,decision_explanation.ilike.%Empaque Finalizado: mercancía liberada para embarque%'
+    )
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al iniciar el proceso de embarque: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+export async function updateMovementShippingProgress(
+  movementId: string,
+  progress: UpdateMovementShippingProgressRecord
+): Promise<MovementRecord> {
+  const { data, error } = await supabase
+    .from('movements')
+    .update({
+      notes: progress.notes,
+      decision_explanation:
+        progress.decision_explanation ??
+        'Embarque en Proceso: avance operativo de carga confirmado.',
+      created_by: progress.created_by ?? 'Usuario CJWMS',
+    })
+    .eq('id', movementId)
+    .eq('movement_type', 'salida')
+    .eq('status', 'completed')
+    .ilike(
+      'decision_explanation',
+      '%Embarque Iniciado: carga física de la mercancía confirmada%'
+    )
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al registrar el avance del proceso de embarque: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+export async function completeMovementShipping(
+  movementId: string,
+  completion: CompleteMovementShippingRecord
+): Promise<MovementRecord> {
+  const { data, error } = await supabase
+    .from('movements')
+    .update({
+      notes: completion.notes,
+      decision_explanation:
+        completion.decision_explanation ??
+        'Embarque Finalizado: carga física completada y pendiente de confirmación de salida.',
+      created_by: completion.created_by ?? 'Usuario CJWMS',
+    })
+    .eq('id', movementId)
+    .eq('movement_type', 'salida')
+    .eq('status', 'completed')
+    .or(
+      'decision_explanation.ilike.%Embarque Iniciado: carga física de la mercancía confirmada%,decision_explanation.ilike.%Embarque en Proceso: avance operativo de carga confirmado%'
+    )
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al finalizar el proceso de embarque: ${error.message}`
     );
   }
 

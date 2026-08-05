@@ -30,6 +30,15 @@ export const MOVEMENT_OPERATIONAL_EXPLANATIONS = {
 
   PACKING_COMPLETED:
     'Empaque Finalizado: mercancía liberada para embarque.',
+
+  SHIPPING_STARTED:
+    'Embarque Iniciado: carga física de la mercancía confirmada.',
+
+  SHIPPING_IN_PROGRESS:
+    'Embarque en Proceso: avance operativo de carga confirmado.',
+
+  SHIPPING_COMPLETED:
+    'Embarque Finalizado: carga física completada y pendiente de confirmación de salida.',
 } as const;
 
 export type MovementOperationalState =
@@ -44,6 +53,9 @@ export type MovementOperationalState =
   | 'packing_started'
   | 'packing_in_progress'
   | 'packing_completed_ready_for_shipping'
+  | 'shipping_started'
+  | 'shipping_in_progress'
+  | 'shipping_completed_pending_exit_confirmation'
   | 'not_applicable'
   | 'unknown';
 
@@ -60,6 +72,30 @@ export function getMovementOperationalState(
 ): MovementOperationalState {
   if (movement.movement_type !== 'salida') {
     return 'not_applicable';
+  }
+
+  if (
+    movement.status === 'completed' &&
+    movement.decision_explanation ===
+      MOVEMENT_OPERATIONAL_EXPLANATIONS.SHIPPING_COMPLETED
+  ) {
+    return 'shipping_completed_pending_exit_confirmation';
+  }
+
+  if (
+    movement.status === 'completed' &&
+    movement.decision_explanation ===
+      MOVEMENT_OPERATIONAL_EXPLANATIONS.SHIPPING_IN_PROGRESS
+  ) {
+    return 'shipping_in_progress';
+  }
+
+  if (
+    movement.status === 'completed' &&
+    movement.decision_explanation ===
+      MOVEMENT_OPERATIONAL_EXPLANATIONS.SHIPPING_STARTED
+  ) {
+    return 'shipping_started';
   }
 
   if (
@@ -293,5 +329,56 @@ export function isReadyForShipping(
       'verification_completed_ready_for_shipping' ||
     operationalState ===
       'packing_completed_ready_for_shipping'
+  );
+}
+
+export function canStartShipping(
+  movement: MovementItem
+) {
+  return isReadyForShipping(movement);
+}
+
+export function isShippingStarted(
+  movement: MovementItem
+) {
+  return (
+    getMovementOperationalState(movement) ===
+    'shipping_started'
+  );
+}
+
+export function isShippingInProgress(
+  movement: MovementItem
+) {
+  return (
+    getMovementOperationalState(movement) ===
+    'shipping_in_progress'
+  );
+}
+
+export function canRegisterShippingProgress(
+  movement: MovementItem
+) {
+  return isShippingStarted(movement);
+}
+
+export function canCompleteShipping(
+  movement: MovementItem
+) {
+  const operationalState =
+    getMovementOperationalState(movement);
+
+  return (
+    operationalState === 'shipping_started' ||
+    operationalState === 'shipping_in_progress'
+  );
+}
+
+export function isShippingCompleted(
+  movement: MovementItem
+) {
+  return (
+    getMovementOperationalState(movement) ===
+    'shipping_completed_pending_exit_confirmation'
   );
 }

@@ -5,22 +5,28 @@ import {
   createMovement,
   finishPackingMovement,
   finishPickingMovement,
+  finishShippingMovement,
   getMovements,
   registerPackingProgress,
   registerPickingProgress,
+  registerShippingProgress,
   startPackingMovement,
   startPickingMovement,
+  startShippingMovement,
   type CompleteMovementPackingInput,
   type CompleteMovementPickingInput,
+  type CompleteMovementShippingInput,
   type ConfirmMovementDeliveryArrivalInput,
   type ConfirmMovementOperationalVerificationInput,
   type CreateMovementInput,
   type MovementItem,
   type StartMovementPackingInput,
   type StartMovementPickingInput,
+  type StartMovementShippingInput,
   type UpdateMovementAssignmentInput,
   type UpdateMovementPackingProgressInput,
   type UpdateMovementPickingProgressInput,
+  type UpdateMovementShippingProgressInput,
 } from './movementService';
 
 import {
@@ -36,9 +42,12 @@ import { registerOperationalMemory } from './operationalMemoryService';
 
 import {
   canCompletePacking,
+  canCompleteShipping,
   canRegisterPackingProgress,
+  canRegisterShippingProgress,
   canStartOperationalVerification,
   canStartPacking,
+  canStartShipping,
   isPickingCompleted,
 } from '../utils/movementOperationalState';
 
@@ -53,6 +62,11 @@ type OperationalVerificationInput =
 type StartPackingInput = StartMovementPackingInput;
 type PackingProgressInput = UpdateMovementPackingProgressInput;
 type CompletePackingInput = CompleteMovementPackingInput;
+type StartShippingInput = StartMovementShippingInput;
+type ShippingProgressInput =
+  UpdateMovementShippingProgressInput;
+type CompleteShippingInput =
+  CompleteMovementShippingInput;
 
 export async function executeMovementWorkflow(
   movement: ExecuteMovementInput
@@ -738,6 +752,238 @@ export async function completePackingWorkflow(
       operationalState: 'packing_completed_ready_for_shipping',
       logicalLocation: 'Área de Empaque',
       nextProcess: 'OP-010 Embarque',
+    },
+  });
+
+  return updatedMovement;
+}
+
+export async function startShippingWorkflow(
+  movementId: string,
+  shipping: StartShippingInput
+): Promise<MovementItem> {
+  const [movements, inventory] = await Promise.all([
+    getMovements(),
+    getInventory(),
+  ]);
+
+  const movementToStart = movements.find(
+    (movement) =>
+      movement.id === movementId &&
+      canStartShipping(movement)
+  );
+
+  if (!movementToStart) {
+    throw new Error(
+      'No se encontró mercancía liberada para iniciar el proceso de embarque.'
+    );
+  }
+
+  if (!movementToStart.pallet_id) {
+    throw new Error(
+      'El movimiento no tiene un pallet asociado para iniciar el embarque.'
+    );
+  }
+
+  const reservedInventoryItem = inventory.find(
+    (item) =>
+      item.pallet_id === movementToStart.pallet_id &&
+      item.status === 'reserved'
+  );
+
+  if (!reservedInventoryItem) {
+    throw new Error(
+      'No se encontró inventario reservado para iniciar el proceso de embarque.'
+    );
+  }
+
+  const updatedMovement = await startShippingMovement(
+    movementId,
+    shipping
+  );
+
+  await registerOperationalMemory({
+    memoryType: 'movement',
+    entityId: updatedMovement.id,
+    entityType: 'movement',
+    title: 'Inicio de Embarque confirmado',
+    description:
+      'La carga física de la mercancía en la unidad de transporte fue iniciada formalmente.',
+    score: updatedMovement.decision_score ?? 99,
+    metadata: {
+      phase: '21.26A',
+      source: 'movementWorkflowService',
+      movementId: updatedMovement.id,
+      warehouseId: updatedMovement.warehouse_id,
+      movementType: updatedMovement.movement_type,
+      palletId: updatedMovement.pallet_id,
+      productId: updatedMovement.product_id,
+      originPositionId: updatedMovement.origin_position_id,
+      operatorId: updatedMovement.operator_id,
+      forkliftUnitId: updatedMovement.forklift_unit_id,
+      quantity: updatedMovement.quantity,
+      unit: updatedMovement.unit,
+      status: updatedMovement.status,
+      inventoryId: reservedInventoryItem.id,
+      inventoryStatus: reservedInventoryItem.status,
+      operationalState: 'shipping_started',
+      logicalLocation: 'Área de Embarque',
+      nextAction: 'register_shipping_progress',
+    },
+  });
+
+  return updatedMovement;
+}
+
+export async function registerShippingProgressWorkflow(
+  movementId: string,
+  progress: ShippingProgressInput
+): Promise<MovementItem> {
+  const [movements, inventory] = await Promise.all([
+    getMovements(),
+    getInventory(),
+  ]);
+
+  const movementToUpdate = movements.find(
+    (movement) =>
+      movement.id === movementId &&
+      canRegisterShippingProgress(movement)
+  );
+
+  if (!movementToUpdate) {
+    throw new Error(
+      'No se encontró un proceso de embarque iniciado para registrar su avance.'
+    );
+  }
+
+  if (!movementToUpdate.pallet_id) {
+    throw new Error(
+      'El movimiento no tiene un pallet asociado para registrar el avance del embarque.'
+    );
+  }
+
+  const reservedInventoryItem = inventory.find(
+    (item) =>
+      item.pallet_id === movementToUpdate.pallet_id &&
+      item.status === 'reserved'
+  );
+
+  if (!reservedInventoryItem) {
+    throw new Error(
+      'No se encontró inventario reservado para registrar el avance del embarque.'
+    );
+  }
+
+  const updatedMovement = await registerShippingProgress(
+    movementId,
+    progress
+  );
+
+  await registerOperationalMemory({
+    memoryType: 'movement',
+    entityId: updatedMovement.id,
+    entityType: 'movement',
+    title: 'Avance de Embarque confirmado',
+    description:
+      'Se registró un avance operativo de la carga física de la mercancía.',
+    score: updatedMovement.decision_score ?? 99,
+    metadata: {
+      phase: '21.26B',
+      source: 'movementWorkflowService',
+      movementId: updatedMovement.id,
+      warehouseId: updatedMovement.warehouse_id,
+      movementType: updatedMovement.movement_type,
+      palletId: updatedMovement.pallet_id,
+      productId: updatedMovement.product_id,
+      originPositionId: updatedMovement.origin_position_id,
+      operatorId: updatedMovement.operator_id,
+      forkliftUnitId: updatedMovement.forklift_unit_id,
+      quantity: updatedMovement.quantity,
+      unit: updatedMovement.unit,
+      status: updatedMovement.status,
+      inventoryId: reservedInventoryItem.id,
+      inventoryStatus: reservedInventoryItem.status,
+      operationalState: 'shipping_in_progress',
+      logicalLocation: 'Área de Embarque',
+      nextAction: 'complete_shipping',
+    },
+  });
+
+  return updatedMovement;
+}
+
+export async function completeShippingWorkflow(
+  movementId: string,
+  completion: CompleteShippingInput
+): Promise<MovementItem> {
+  const [movements, inventory] = await Promise.all([
+    getMovements(),
+    getInventory(),
+  ]);
+
+  const movementToComplete = movements.find(
+    (movement) =>
+      movement.id === movementId &&
+      canCompleteShipping(movement)
+  );
+
+  if (!movementToComplete) {
+    throw new Error(
+      'No se encontró un proceso de embarque activo para finalizar.'
+    );
+  }
+
+  if (!movementToComplete.pallet_id) {
+    throw new Error(
+      'El movimiento no tiene un pallet asociado para finalizar el embarque.'
+    );
+  }
+
+  const reservedInventoryItem = inventory.find(
+    (item) =>
+      item.pallet_id === movementToComplete.pallet_id &&
+      item.status === 'reserved'
+  );
+
+  if (!reservedInventoryItem) {
+    throw new Error(
+      'No se encontró inventario reservado para finalizar el proceso de embarque.'
+    );
+  }
+
+  const updatedMovement = await finishShippingMovement(
+    movementId,
+    completion
+  );
+
+  await registerOperationalMemory({
+    memoryType: 'movement',
+    entityId: updatedMovement.id,
+    entityType: 'movement',
+    title: 'Embarque Finalizado confirmado',
+    description:
+      'La carga física fue completada y la mercancía quedó pendiente de la Confirmación de Salida.',
+    score: updatedMovement.decision_score ?? 100,
+    metadata: {
+      phase: '21.26C',
+      source: 'movementWorkflowService',
+      movementId: updatedMovement.id,
+      warehouseId: updatedMovement.warehouse_id,
+      movementType: updatedMovement.movement_type,
+      palletId: updatedMovement.pallet_id,
+      productId: updatedMovement.product_id,
+      originPositionId: updatedMovement.origin_position_id,
+      operatorId: updatedMovement.operator_id,
+      forkliftUnitId: updatedMovement.forklift_unit_id,
+      quantity: updatedMovement.quantity,
+      unit: updatedMovement.unit,
+      status: updatedMovement.status,
+      inventoryId: reservedInventoryItem.id,
+      inventoryStatus: reservedInventoryItem.status,
+      operationalState:
+        'shipping_completed_pending_exit_confirmation',
+      logicalLocation: 'Unidad de Transporte',
+      nextProcess: 'OP-011 Confirmación de Salida',
     },
   });
 
