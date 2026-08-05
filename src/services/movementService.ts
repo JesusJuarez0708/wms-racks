@@ -1,4 +1,7 @@
 import {
+  completeMovementPicking,
+  confirmMovementDeliveryArrival,
+  confirmMovementOperationalVerification,
   fetchMovements,
   insertMovement,
   startMovementPicking,
@@ -7,6 +10,9 @@ import {
 } from '../repositories/movementRepository';
 
 import type {
+  CompleteMovementPickingRecord,
+  ConfirmMovementDeliveryArrivalRecord,
+  ConfirmMovementOperationalVerificationRecord,
   CreateMovementRecord,
   MovementRecord,
   StartMovementPickingRecord,
@@ -21,6 +27,14 @@ export type UpdateMovementAssignmentInput = UpdateMovementAssignmentRecord;
 export type StartMovementPickingInput = StartMovementPickingRecord;
 export type UpdateMovementPickingProgressInput =
   UpdateMovementPickingProgressRecord;
+export type CompleteMovementPickingInput =
+  CompleteMovementPickingRecord;
+
+export type ConfirmMovementDeliveryArrivalInput =
+  ConfirmMovementDeliveryArrivalRecord;
+
+export type ConfirmMovementOperationalVerificationInput =
+  ConfirmMovementOperationalVerificationRecord;
 
 export async function getMovements(): Promise<MovementItem[]> {
   return fetchMovements();
@@ -51,4 +65,28 @@ export async function registerPickingProgress(
   progress: UpdateMovementPickingProgressInput
 ): Promise<MovementItem> {
   return updateMovementPickingProgress(movementId, progress);
+}
+
+export async function finishPickingMovement(
+  movementId: string,
+  completion: CompleteMovementPickingInput
+): Promise<MovementItem> {
+  return completeMovementPicking(movementId, completion);
+}
+
+export async function confirmDeliveryAreaArrival(
+  movementId: string,
+  arrival: ConfirmMovementDeliveryArrivalInput
+): Promise<MovementItem> {
+  return confirmMovementDeliveryArrival(movementId, arrival);
+}
+
+export async function confirmOperationalVerification(
+  movementId: string,
+  verification: ConfirmMovementOperationalVerificationInput
+): Promise<MovementItem> {
+  return confirmMovementOperationalVerification(
+    movementId,
+    verification
+  );
 }

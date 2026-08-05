@@ -173,7 +173,10 @@ function MovementFormModal({
         destination_position_id: destinationPositionId || null,
         quantity: Number(quantity) || null,
         unit: unit || null,
-        status: 'completed',
+        status:
+          movementType === 'salida'
+            ? 'pending'
+            : 'completed',
         reason: 'Movimiento manual',
         notes: notes || null,
         decision_score: 60,

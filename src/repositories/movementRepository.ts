@@ -68,6 +68,25 @@ export type UpdateMovementPickingProgressRecord = {
   created_by?: string | null;
 };
 
+export type CompleteMovementPickingRecord = {
+  notes: string;
+  decision_explanation?: string | null;
+  created_by?: string | null;
+};
+
+export type ConfirmMovementDeliveryArrivalRecord = {
+  notes: string;
+  decision_explanation?: string;
+  created_by?: string | null;
+};
+
+export type ConfirmMovementOperationalVerificationRecord = {
+  requires_packing: boolean;
+  notes: string;
+  decision_explanation?: string;
+  created_by?: string | null;
+};
+
 export async function fetchMovements(): Promise<MovementRecord[]> {
   const { data, error } = await supabase
     .from('movements')
@@ -184,6 +203,106 @@ export async function updateMovementPickingProgress(
   if (error) {
     throw new Error(
       `Error al registrar el avance parcial del picking: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+export async function completeMovementPicking(
+  movementId: string,
+  completion: CompleteMovementPickingRecord
+): Promise<MovementRecord> {
+  const { data, error } = await supabase
+    .from('movements')
+    .update({
+      status: 'completed',
+      notes: completion.notes,
+      decision_explanation:
+        completion.decision_explanation ??
+        'Picking Finalizado: extracción total confirmada.',
+      created_by: completion.created_by ?? 'Usuario CJWMS',
+    })
+    .eq('id', movementId)
+    .eq('movement_type', 'salida')
+    .eq('status', 'pending')
+    .or(
+      'decision_explanation.ilike.%Inicio Operativo del Picking confirmado%,decision_explanation.ilike.%Picking en Proceso%'
+    )
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al finalizar el movimiento de picking: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+export async function confirmMovementDeliveryArrival(
+  movementId: string,
+  arrival: ConfirmMovementDeliveryArrivalRecord
+): Promise<MovementRecord> {
+  const { data, error } = await supabase
+    .from('movements')
+    .update({
+      notes: arrival.notes,
+      decision_explanation:
+        arrival.decision_explanation ??
+        'Área de Entrega: mercancía recibida para verificación operativa.',
+      created_by: arrival.created_by ?? 'Usuario CJWMS',
+    })
+    .eq('id', movementId)
+    .eq('movement_type', 'salida')
+    .eq('status', 'completed')
+    .ilike(
+      'decision_explanation',
+      '%Picking Finalizado: extracción total confirmada%'
+    )
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al confirmar la llegada al Área de Entrega: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+export async function confirmMovementOperationalVerification(
+  movementId: string,
+  verification: ConfirmMovementOperationalVerificationRecord
+): Promise<MovementRecord> {
+  const { data, error } = await supabase
+    .from('movements')
+    .update({
+      notes: verification.notes,
+      decision_explanation:
+        verification.decision_explanation ??
+        (
+          verification.requires_packing
+            ? 'Verificación Operativa: requiere empaque.'
+            : 'Verificación Operativa: liberado para embarque.'
+        ),
+      created_by: verification.created_by ?? 'Usuario CJWMS',
+    })
+    .eq('id', movementId)
+    .eq('movement_type', 'salida')
+    .eq('status', 'completed')
+    .ilike(
+      'decision_explanation',
+      '%Área de Entrega: mercancía recibida para verificación operativa%'
+    )
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al confirmar la verificación operativa: ${error.message}`
     );
   }
 

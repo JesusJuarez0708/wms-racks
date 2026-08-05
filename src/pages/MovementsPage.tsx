@@ -9,8 +9,19 @@ import PickingProgressModal, {
   type PickingProgressData,
 } from '../components/PickingProgressModal';
 
+import DeliveryAreaArrivalModal, {
+  type DeliveryAreaArrivalData,
+} from '../components/DeliveryAreaArrivalModal';
+
+import OperationalVerificationModal, {
+  type OperationalVerificationData,
+} from '../components/OperationalVerificationModal';
+
 import {
   assignPickingWorkflow,
+  completePickingWorkflow,
+  confirmDeliveryAreaArrivalWorkflow,
+  confirmOperationalVerificationWorkflow,
   registerPickingProgressWorkflow,
   startPickingWorkflow,
 } from '../services/movementWorkflowService';
@@ -27,6 +38,15 @@ import {
   enrichMovements,
   type EnrichedMovement,
 } from '../utils/enrichMovement';
+
+import {
+  canConfirmDeliveryAreaArrival,
+  canStartOperationalVerification,
+  hasPickingPartialProgress,
+  isPickingInProgress,
+  isReadyForShippingAfterVerification,
+  requiresPackingAfterVerification,
+} from '../utils/movementOperationalState';
 
 function getStatusClass(status: MovementItem['status']) {
   if (status === 'completed') return 'bg-emerald-100 text-emerald-700';
@@ -128,22 +148,6 @@ function getAssignedPickingOperator(notes: string | null) {
     : '';
 }
 
-function isPickingInProgress(movement: MovementItem) {
-  return (
-    movement.decision_explanation ===
-      'Inicio Operativo del Picking confirmado.' ||
-    movement.decision_explanation ===
-      'Picking en Proceso: extracción parcial confirmada.'
-  );
-}
-
-function hasPickingPartialProgress(movement: MovementItem) {
-  return (
-    movement.decision_explanation ===
-    'Picking en Proceso: extracción parcial confirmada.'
-  );
-}
-
 function MovementsPage() {
   const [movements, setMovements] = useState<EnrichedMovement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -164,6 +168,29 @@ function MovementsPage() {
 
   const [submittingPickingProgress, setSubmittingPickingProgress] =
     useState(false);
+
+  const [finishingPickingMovementId, setFinishingPickingMovementId] =
+    useState<string | null>(null);
+
+  const [
+    selectedDeliveryArrivalMovement,
+    setSelectedDeliveryArrivalMovement,
+  ] = useState<EnrichedMovement | null>(null);
+
+  const [
+    selectedOperationalVerificationMovement,
+    setSelectedOperationalVerificationMovement,
+  ] = useState<EnrichedMovement | null>(null);
+
+  const [
+    submittingOperationalVerification,
+    setSubmittingOperationalVerification,
+  ] = useState(false);
+
+  const [
+    submittingDeliveryArrival,
+    setSubmittingDeliveryArrival,
+  ] = useState(false);
 
   const [operationMessage, setOperationMessage] = useState('');
   const [operationError, setOperationError] = useState('');
@@ -397,6 +424,172 @@ function MovementsPage() {
       );
     } finally {
       setSubmittingPickingProgress(false);
+    }
+  }
+
+  async function handleCompletePicking(
+    movement: EnrichedMovement
+  ) {
+    try {
+      setFinishingPickingMovementId(movement.id);
+      setOperationMessage('');
+      setOperationError('');
+
+      const completionNotes = [
+        movement.notes,
+        `Cantidad total extraída: ${movement.quantity ?? 0} ${movement.unit ?? ''}`,
+        'Estado operativo: Picking finalizado',
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      await completePickingWorkflow(movement.id, {
+        notes: completionNotes,
+        decision_explanation:
+          'Picking Finalizado: extracción total confirmada.',
+        created_by: 'Usuario CJWMS',
+      });
+
+      await loadMovements();
+
+      setOperationMessage(
+        `Picking finalizado correctamente para el movimiento ${movement.id}.`
+      );
+    } catch (error) {
+      console.error(
+        'Error al finalizar el picking:',
+        error
+      );
+
+      setOperationError(
+        error instanceof Error
+          ? error.message
+          : 'No fue posible finalizar el picking.'
+      );
+    } finally {
+      setFinishingPickingMovementId(null);
+    }
+  }
+
+  function handleOpenDeliveryArrival(
+    movement: EnrichedMovement
+  ) {
+    setSelectedDeliveryArrivalMovement(movement);
+    setOperationMessage('');
+    setOperationError('');
+  }
+
+  function handleCloseDeliveryArrival() {
+    if (submittingDeliveryArrival) {
+      return;
+    }
+
+    setSelectedDeliveryArrivalMovement(null);
+  }
+
+  async function handleConfirmDeliveryArrival(
+    movement: EnrichedMovement,
+    data: DeliveryAreaArrivalData
+  ) {
+    try {
+      setSubmittingDeliveryArrival(true);
+      setOperationMessage('');
+      setOperationError('');
+
+      await confirmDeliveryAreaArrivalWorkflow(
+        movement.id,
+        {
+          notes: data.notes,
+          created_by: 'Usuario CJWMS',
+        }
+      );
+
+      await loadMovements();
+
+      setSelectedDeliveryArrivalMovement(null);
+
+      setOperationMessage(
+        'La llegada al Área de Entrega fue confirmada correctamente.'
+      );
+    } catch (error) {
+      console.error(error);
+
+      setOperationError(
+        error instanceof Error
+          ? error.message
+          : 'No fue posible confirmar la llegada al Área de Entrega.'
+      );
+    } finally {
+      setSubmittingDeliveryArrival(false);
+    }
+  }
+
+  function handleOpenOperationalVerification(
+    movement: EnrichedMovement
+  ) {
+    setSelectedOperationalVerificationMovement(movement);
+    setOperationMessage('');
+    setOperationError('');
+  }
+
+  function handleCloseOperationalVerification() {
+    if (submittingOperationalVerification) {
+      return;
+    }
+
+    setSelectedOperationalVerificationMovement(null);
+  }
+
+  async function handleConfirmOperationalVerification(
+    movement: EnrichedMovement,
+    data: OperationalVerificationData
+  ) {
+    try {
+      setSubmittingOperationalVerification(true);
+      setOperationMessage('');
+      setOperationError('');
+
+      const verificationNotes = [
+        movement.notes,
+        data.notes,
+        data.requiresPacking
+          ? 'Decisión operativa: requiere empaque.'
+          : 'Decisión operativa: liberado para embarque.',
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      await confirmOperationalVerificationWorkflow(
+        movement.id,
+        {
+          requires_packing: data.requiresPacking,
+          notes: verificationNotes,
+          created_by: 'Usuario CJWMS',
+        }
+      );
+
+      await loadMovements();
+
+      setSelectedOperationalVerificationMovement(null);
+
+      setOperationMessage(
+        data.requiresPacking
+          ? 'Verificación completada. La mercancía quedó pendiente de Empaque.'
+          : 'Verificación completada. La mercancía quedó liberada para Embarque.'
+      );
+    } catch (error) {
+      console.error(
+        'Error al confirmar la verificación operativa:',
+        error
+      );
+
+      setOperationError(
+        error instanceof Error
+          ? error.message
+          : 'No fue posible completar la verificación operativa.'
+      );
+    } finally {
+      setSubmittingOperationalVerification(false);
     }
   }
 
@@ -679,17 +872,65 @@ function MovementsPage() {
                               </div>
                             </div>
 
+                            <div className="flex flex-col gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenPickingProgress(movement)}
+                                disabled={finishingPickingMovementId === movement.id}
+                                className="rounded-lg bg-cyan-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                Confirmar avance parcial
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleCompletePicking(movement)}
+                                disabled={finishingPickingMovementId === movement.id}
+                                className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                {finishingPickingMovementId === movement.id
+                                  ? 'Finalizando...'
+                                  : 'Finalizar Picking'}
+                              </button>
+                            </div>
+
+                          </div>
+
+                          ) : canConfirmDeliveryAreaArrival(movement) ? (
                             <button
                               type="button"
-                              onClick={() => handleOpenPickingProgress(movement)}
-                              className="rounded-lg bg-cyan-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-700"
+                              onClick={() => handleOpenDeliveryArrival(movement)}
+                              className="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
                             >
-                              Confirmar avance parcial
+                              Área de Entrega
                             </button>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
+                            ) : canStartOperationalVerification(movement) ? (
+                              <div className="space-y-2">
+                                <span className="inline-flex rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+                                  En Área de Entrega
+                                </span>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleOpenOperationalVerification(movement)
+                                  }
+                                  className="block rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                                >
+                                  Verificar mercancía
+                                </button>
+                              </div>
+                            ) : requiresPackingAfterVerification(movement) ? (
+                              <span className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                                Pendiente de Empaque
+                              </span>
+                            ) : isReadyForShippingAfterVerification(movement) ? (
+                              <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                Liberado para Embarque
+                              </span>
+                            ) : (
+                              <span className="text-slate-400">—</span>
+                            )}
                       </td>
 
                       <td className="px-4 py-4 whitespace-nowrap">
@@ -758,6 +999,22 @@ function MovementsPage() {
         submitting={submittingPickingProgress}
         onClose={handleClosePickingProgress}
         onConfirm={handleConfirmPickingProgress}
+      />
+
+      <DeliveryAreaArrivalModal
+        open={selectedDeliveryArrivalMovement !== null}
+        movement={selectedDeliveryArrivalMovement}
+        submitting={submittingDeliveryArrival}
+        onClose={handleCloseDeliveryArrival}
+        onConfirm={handleConfirmDeliveryArrival}
+      />
+
+      <OperationalVerificationModal
+        open={selectedOperationalVerificationMovement !== null}
+        movement={selectedOperationalVerificationMovement}
+        submitting={submittingOperationalVerification}
+        onClose={handleCloseOperationalVerification}
+        onConfirm={handleConfirmOperationalVerification}
       />
 
     </div>

@@ -1,8 +1,15 @@
 import {
   assignMovementPicking,
+  confirmDeliveryAreaArrival,
+  confirmOperationalVerification,
   createMovement,
+  finishPickingMovement,
+  getMovements,
   registerPickingProgress,
   startPickingMovement,
+  type CompleteMovementPickingInput,
+  type ConfirmMovementDeliveryArrivalInput,
+  type ConfirmMovementOperationalVerificationInput,
   type CreateMovementInput,
   type MovementItem,
   type StartMovementPickingInput,
@@ -21,10 +28,18 @@ import { getPallets } from './palletService';
 
 import { registerOperationalMemory } from './operationalMemoryService';
 
+import {
+  canStartOperationalVerification,
+  isPickingCompleted,
+} from '../utils/movementOperationalState';
+
 type ExecuteMovementInput = CreateMovementInput;
 type AssignPickingInput = UpdateMovementAssignmentInput;
 type StartPickingInput = StartMovementPickingInput;
 type PickingProgressInput = UpdateMovementPickingProgressInput;
+type CompletePickingInput = CompleteMovementPickingInput;
+type ConfirmDeliveryArrivalInput = ConfirmMovementDeliveryArrivalInput;
+type OperationalVerificationInput = ConfirmMovementOperationalVerificationInput;
 
 export async function executeMovementWorkflow(
   movement: ExecuteMovementInput
@@ -235,6 +250,250 @@ export async function registerPickingProgressWorkflow(
       unit: updatedMovement.unit,
       status: updatedMovement.status,
       operationalState: 'picking_partial_extraction_confirmed',
+    },
+  });
+
+  return updatedMovement;
+}
+
+export async function completePickingWorkflow(
+  movementId: string,
+  completion: CompletePickingInput
+): Promise<MovementItem> {
+  const [movements, inventory] = await Promise.all([
+    getMovements(),
+    getInventory(),
+  ]);
+
+  const movementToComplete = movements.find(
+    (movement) =>
+      movement.id === movementId &&
+      movement.movement_type === 'salida' &&
+      movement.status === 'pending'
+  );
+
+  if (!movementToComplete) {
+    throw new Error(
+      'No se encontró un movimiento de picking pendiente para finalizar.'
+    );
+  }
+
+  if (!movementToComplete.pallet_id) {
+    throw new Error(
+      'El movimiento de picking no tiene un pallet asociado.'
+    );
+  }
+
+  const movementInventoryItem = inventory.find(
+    (item) =>
+      item.status === 'reserved' &&
+      item.pallet_id === movementToComplete.pallet_id
+  );
+
+  if (!movementInventoryItem) {
+    throw new Error(
+      'No se encontró inventario reservado para confirmar la extracción total.'
+    );
+  }
+
+  const updatedMovement = await finishPickingMovement(
+    movementId,
+    completion
+  );
+
+  await registerOperationalMemory({
+    memoryType: 'movement',
+    entityId: updatedMovement.id,
+    entityType: 'movement',
+    title: 'Picking Finalizado confirmado',
+    description:
+      'La extracción total del surtido fue confirmada y la mercancía quedó reservada en el Área de Entrega, pendiente de verificación del supervisor.',
+    score: updatedMovement.decision_score ?? 92,
+    metadata: {
+      phase: '21.23',
+      source: 'movementWorkflowService',
+      movementId: updatedMovement.id,
+      warehouseId: updatedMovement.warehouse_id,
+      movementType: updatedMovement.movement_type,
+      palletId: updatedMovement.pallet_id,
+      productId: updatedMovement.product_id,
+      originPositionId: updatedMovement.origin_position_id,
+      operatorId: updatedMovement.operator_id,
+      forkliftUnitId: updatedMovement.forklift_unit_id,
+      quantity: updatedMovement.quantity,
+      unit: updatedMovement.unit,
+      status: updatedMovement.status,
+      inventoryId: movementInventoryItem.id,
+      inventoryStatus: movementInventoryItem.status,
+      logicalDestination: 'Área de Entrega',
+      operationalState: 'picking_total_extraction_confirmed',
+      nextProcess: 'verification_and_loading',
+    },
+  });
+
+  return updatedMovement;
+}
+
+export async function confirmDeliveryAreaArrivalWorkflow(
+  movementId: string,
+  arrival: ConfirmDeliveryArrivalInput
+): Promise<MovementItem> {
+  const [movements, inventory] = await Promise.all([
+    getMovements(),
+    getInventory(),
+  ]);
+
+  const movementToConfirm = movements.find(
+    (movement) =>
+      movement.id === movementId &&
+      isPickingCompleted(movement)
+  );
+
+  if (!movementToConfirm) {
+    throw new Error(
+      'No se encontró un picking finalizado pendiente de llegada al Área de Entrega.'
+    );
+  }
+
+  if (!movementToConfirm.pallet_id) {
+    throw new Error(
+      'El movimiento no tiene un pallet asociado para confirmar su llegada.'
+    );
+  }
+
+  const reservedInventoryItem = inventory.find(
+    (item) =>
+      item.pallet_id === movementToConfirm.pallet_id &&
+      item.status === 'reserved'
+  );
+
+  if (!reservedInventoryItem) {
+    throw new Error(
+      'No se encontró inventario reservado para confirmar la llegada al Área de Entrega.'
+    );
+  }
+
+  const updatedMovement = await confirmDeliveryAreaArrival(
+    movementId,
+    arrival
+  );
+
+  await registerOperationalMemory({
+    memoryType: 'movement',
+    entityId: updatedMovement.id,
+    entityType: 'movement',
+    title: 'Llegada al Área de Entrega confirmada',
+    description:
+      'El pallet fue recibido físicamente en el Área de Entrega y quedó pendiente de verificación operativa por el supervisor.',
+    score: updatedMovement.decision_score ?? 94,
+    metadata: {
+      phase: '21.24',
+      source: 'movementWorkflowService',
+      movementId: updatedMovement.id,
+      warehouseId: updatedMovement.warehouse_id,
+      movementType: updatedMovement.movement_type,
+      palletId: updatedMovement.pallet_id,
+      productId: updatedMovement.product_id,
+      originPositionId: updatedMovement.origin_position_id,
+      operatorId: updatedMovement.operator_id,
+      forkliftUnitId: updatedMovement.forklift_unit_id,
+      quantity: updatedMovement.quantity,
+      unit: updatedMovement.unit,
+      status: updatedMovement.status,
+      inventoryId: reservedInventoryItem.id,
+      inventoryStatus: reservedInventoryItem.status,
+      operationalState: 'delivery_area_pending_verification',
+      logicalLocation: 'Área de Entrega',
+      nextAction: 'supervisor_verification',
+    },
+  });
+
+  return updatedMovement;
+}
+
+export async function confirmOperationalVerificationWorkflow(
+  movementId: string,
+  verification: OperationalVerificationInput
+): Promise<MovementItem> {
+  const [movements, inventory] = await Promise.all([
+    getMovements(),
+    getInventory(),
+  ]);
+
+  const movementToVerify = movements.find(
+    (movement) =>
+      movement.id === movementId &&
+      canStartOperationalVerification(movement)
+  );
+
+  if (!movementToVerify) {
+    throw new Error(
+      'No se encontró mercancía en el Área de Entrega pendiente de verificación operativa.'
+    );
+  }
+
+  if (!movementToVerify.pallet_id) {
+    throw new Error(
+      'El movimiento no tiene un pallet asociado para realizar la verificación operativa.'
+    );
+  }
+
+  const reservedInventoryItem = inventory.find(
+    (item) =>
+      item.pallet_id === movementToVerify.pallet_id &&
+      item.status === 'reserved'
+  );
+
+  if (!reservedInventoryItem) {
+    throw new Error(
+      'No se encontró inventario reservado para completar la verificación operativa.'
+    );
+  }
+
+  const updatedMovement =
+    await confirmOperationalVerification(
+      movementId,
+      verification
+    );
+
+  const requiresPacking =
+    verification.requires_packing;
+
+  await registerOperationalMemory({
+    memoryType: 'movement',
+    entityId: updatedMovement.id,
+    entityType: 'movement',
+    title: requiresPacking
+      ? 'Verificación Operativa: requiere empaque'
+      : 'Verificación Operativa: liberado para embarque',
+    description: requiresPacking
+      ? 'El supervisor verificó físicamente la mercancía y determinó que debe pasar al proceso de Empaque.'
+      : 'El supervisor verificó físicamente la mercancía y determinó que puede continuar directamente al proceso de Embarque.',
+    score: updatedMovement.decision_score ?? 96,
+    metadata: {
+      phase: '21.24B',
+      source: 'movementWorkflowService',
+      movementId: updatedMovement.id,
+      warehouseId: updatedMovement.warehouse_id,
+      movementType: updatedMovement.movement_type,
+      palletId: updatedMovement.pallet_id,
+      productId: updatedMovement.product_id,
+      originPositionId: updatedMovement.origin_position_id,
+      operatorId: updatedMovement.operator_id,
+      forkliftUnitId: updatedMovement.forklift_unit_id,
+      quantity: updatedMovement.quantity,
+      unit: updatedMovement.unit,
+      status: updatedMovement.status,
+      inventoryId: reservedInventoryItem.id,
+      inventoryStatus: reservedInventoryItem.status,
+      requiresPacking,
+      operationalState: requiresPacking
+        ? 'verification_completed_requires_packing'
+        : 'verification_completed_ready_for_shipping',
+      logicalLocation: 'Área de Entrega',
+      nextProcess: requiresPacking
+        ? 'OP-009 Empaque'
+        : 'OP-010 Embarque',
     },
   });
 
