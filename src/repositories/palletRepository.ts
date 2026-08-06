@@ -1,5 +1,11 @@
 import { supabase } from '../lib/supabase';
 
+export type PalletStatus =
+  | 'active'
+  | 'out'
+  | 'blocked'
+  | 'damaged';
+
 export type PalletRecord = {
   id: string;
   product_id: string;
@@ -7,7 +13,7 @@ export type PalletRecord = {
   lot: string | null;
   quantity: number | null;
   unit: string | null;
-  status: 'active' | 'out' | 'blocked' | 'damaged';
+  status: PalletStatus;
   created_at?: string;
   updated_at?: string | null;
 };
@@ -18,7 +24,13 @@ export type CreatePalletRecord = {
   lot?: string | null;
   quantity?: number | null;
   unit?: string | null;
-  status?: 'active' | 'out' | 'blocked' | 'damaged';
+  status?: PalletStatus;
+};
+
+export type UpdatePalletQuantityRecord = {
+  quantity: number;
+  unit: string;
+  status: PalletStatus;
 };
 
 export async function fetchPallets(): Promise<PalletRecord[]> {
@@ -50,6 +62,31 @@ export async function insertPallet(
 
   if (error) {
     throw new Error(`Error al crear pallet: ${error.message}`);
+  }
+
+  return data;
+}
+
+export async function updatePalletQuantity(
+  palletId: string,
+  update: UpdatePalletQuantityRecord
+): Promise<PalletRecord> {
+  const { data, error } = await supabase
+    .from('pallets')
+    .update({
+      quantity: update.quantity,
+      unit: update.unit,
+      status: update.status,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', palletId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al actualizar cantidad del pallet: ${error.message}`
+    );
   }
 
   return data;

@@ -35,11 +35,26 @@ import {
   changeInventoryPosition,
   changeInventoryStatus,
   createInventoryItem,
-  deleteInventory,
   getInventory,
 } from './inventoryService';
 
 import { getPallets } from './palletService';
+
+import {
+  createOutboundExecutionPlan,
+  persistOutboundExecutionPlan,
+} from './outboundPlanningService';
+
+import {
+  executePickingAllocationsByMovementId,
+  getMovementAllocationsByMovementId,
+  reserveMovementAllocationsByMovementId,
+} from './movementAllocationService';
+
+import {
+  applyOutboundInventory,
+  finalizeOutboundInventory,
+} from './inventoryExecutionService';
 
 import { registerOperationalMemory } from './operationalMemoryService';
 
@@ -73,6 +88,111 @@ type CompleteShippingInput =
   CompleteMovementShippingInput;
 type ConfirmExitInput =
   ConfirmMovementExitInput;
+
+async function getExecutedOutboundAllocations(
+  movementId: string
+) {
+  const allocations =
+    await getMovementAllocationsByMovementId(movementId);
+
+  if (allocations.length === 0) {
+    throw new Error(
+      'El movimiento no tiene asignaciones de surtido registradas.'
+    );
+  }
+
+  const nonExecutedAllocation = allocations.find(
+    (allocation) => allocation.status !== 'executed'
+  );
+
+  if (nonExecutedAllocation) {
+    throw new Error(
+      `La asignación ${nonExecutedAllocation.id} no está ejecutada. Estado actual: ${nonExecutedAllocation.status}.`
+    );
+  }
+
+  const allocationWithoutInventory = allocations.find(
+    (allocation) => !allocation.inventory_id
+  );
+
+  if (allocationWithoutInventory) {
+    throw new Error(
+      `La asignación ${allocationWithoutInventory.id} no tiene inventario asociado.`
+    );
+  }
+
+  const allocationWithoutExecutedQuantity = allocations.find(
+    (allocation) =>
+      !Number.isFinite(allocation.executed_quantity) ||
+      allocation.executed_quantity <= 0
+  );
+
+  if (allocationWithoutExecutedQuantity) {
+    throw new Error(
+      `La asignación ${allocationWithoutExecutedQuantity.id} no tiene una cantidad ejecutada válida.`
+    );
+  }
+
+  return allocations;
+}
+
+async function applyOutboundExecutionByMovement(
+  movementId: string
+) {
+  const allocations =
+    await getExecutedOutboundAllocations(movementId);
+
+  const results = [];
+
+  for (const allocation of allocations) {
+    const inventoryId = allocation.inventory_id;
+
+    if (!inventoryId) {
+      throw new Error(
+        `La asignación ${allocation.id} no tiene inventario asociado.`
+      );
+    }
+
+    const result = await applyOutboundInventory({
+      inventoryId,
+      palletId: allocation.pallet_id,
+      requestedQuantity: allocation.executed_quantity,
+      requestedUnit: allocation.unit,
+    });
+
+    results.push(result);
+  }
+
+  return results;
+}
+
+async function finalizeOutboundExecutionByMovement(
+  movementId: string
+) {
+  const allocations =
+    await getExecutedOutboundAllocations(movementId);
+
+  const results = [];
+
+  for (const allocation of allocations) {
+    const inventoryId = allocation.inventory_id;
+
+    if (!inventoryId) {
+      throw new Error(
+        `La asignación ${allocation.id} no tiene inventario asociado.`
+      );
+    }
+
+    const result = await finalizeOutboundInventory({
+      inventoryId,
+      palletId: allocation.pallet_id,
+    });
+
+    results.push(result);
+  }
+
+  return results;
+}
 
 export async function executeMovementWorkflow(
   movement: ExecuteMovementInput
@@ -147,13 +267,35 @@ export async function executeMovementWorkflow(
     }
   }
 
+  let outboundPlan = null;
+
   if (movement.movement_type === 'salida') {
-    if (existingInventoryItem) {
-      await changeInventoryStatus(existingInventoryItem.id, 'reserved');
+    if (
+      !movement.product_id ||
+      movement.quantity === null ||
+      movement.quantity === undefined ||
+      !movement.unit
+    ) {
+      throw new Error(
+        'La salida requiere producto, cantidad y unidad para generar el plan de surtido.'
+      );
     }
+
+    outboundPlan = await createOutboundExecutionPlan({
+      productId: movement.product_id,
+      requestedQuantity: movement.quantity,
+      requestedUnit: movement.unit,
+    });
   }
 
   const createdMovement = await createMovement(movementToCreate);
+
+  if (outboundPlan) {
+    await persistOutboundExecutionPlan({
+      movementId: createdMovement.id,
+      plan: outboundPlan,
+    });
+  }
 
   await registerOperationalMemory({
     memoryType: 'movement',
@@ -219,6 +361,11 @@ export async function startPickingWorkflow(
   movementId: string,
   picking: StartPickingInput
 ): Promise<MovementItem> {
+  const allocationReservation =
+    await reserveMovementAllocationsByMovementId(
+      movementId
+    );
+
   const updatedMovement = await startPickingMovement(
     movementId,
     picking
@@ -244,6 +391,19 @@ export async function startPickingWorkflow(
       operatorId: updatedMovement.operator_id,
       forkliftUnitId: updatedMovement.forklift_unit_id,
       status: updatedMovement.status,
+      allocationCount:
+        allocationReservation.allocations.length,
+      allocationIds:
+        allocationReservation.allocations.map(
+          (allocation) => allocation.id
+        ),
+      totalReservedQuantity:
+        allocationReservation.totalReservedQuantity,
+      reservedInventoryIds:
+        allocationReservation.reservedInventoryItems.map(
+          (item) => item.id
+        ),
+      allocationStatus: 'reserved',
       operationalState: 'picking_in_progress',
     },
   });
@@ -329,6 +489,11 @@ export async function completePickingWorkflow(
     );
   }
 
+  const allocationExecution =
+    await executePickingAllocationsByMovementId(
+      movementId
+    );
+
   const updatedMovement = await finishPickingMovement(
     movementId,
     completion
@@ -358,6 +523,15 @@ export async function completePickingWorkflow(
       status: updatedMovement.status,
       inventoryId: movementInventoryItem.id,
       inventoryStatus: movementInventoryItem.status,
+      allocationCount:
+        allocationExecution.allocations.length,
+      allocationIds:
+        allocationExecution.allocations.map(
+          (allocation) => allocation.id
+        ),
+      totalExecutedQuantity:
+        allocationExecution.totalExecutedQuantity,
+      allocationStatus: 'executed',
       logicalDestination: 'Área de Entrega',
       operationalState: 'picking_total_extraction_confirmed',
       nextProcess: 'verification_and_loading',
@@ -491,6 +665,12 @@ export async function confirmOperationalVerificationWorkflow(
 
   const requiresPacking =
     verification.requires_packing;
+
+  if (!requiresPacking) {
+    await applyOutboundExecutionByMovement(
+      updatedMovement.id
+    );
+  }
 
   await registerOperationalMemory({
     memoryType: 'movement',
@@ -729,6 +909,10 @@ export async function completePackingWorkflow(
   const updatedMovement = await finishPackingMovement(
     movementId,
     completion
+  );
+
+  await applyOutboundExecutionByMovement(
+    updatedMovement.id
   );
 
   await registerOperationalMemory({
@@ -1000,10 +1184,7 @@ export async function confirmExitWorkflow(
   movementId: string,
   confirmation: ConfirmExitInput
 ): Promise<MovementItem> {
-  const [movements, inventory] = await Promise.all([
-    getMovements(),
-    getInventory(),
-  ]);
+  const movements = await getMovements();
 
   const movementToConfirm = movements.find(
     (movement) =>
@@ -1017,30 +1198,40 @@ export async function confirmExitWorkflow(
     );
   }
 
-  if (!movementToConfirm.pallet_id) {
-    throw new Error(
-      'El movimiento no tiene un pallet asociado para confirmar la salida.'
-    );
-  }
-
-  const reservedInventoryItem = inventory.find(
-    (item) =>
-      item.pallet_id === movementToConfirm.pallet_id &&
-      item.status === 'reserved'
-  );
-
-  if (!reservedInventoryItem) {
-    throw new Error(
-      'No se encontró inventario reservado para confirmar la salida.'
-    );
-  }
-
   const updatedMovement = await confirmExitMovement(
     movementId,
     confirmation
   );
 
-  await deleteInventory(reservedInventoryItem.id);
+  const inventoryFinalizationResults =
+    await finalizeOutboundExecutionByMovement(
+      updatedMovement.id
+    );
+
+  const deletedInventoryIds =
+    inventoryFinalizationResults
+      .filter(
+        (result) =>
+          result.inventoryAction === 'deleted'
+      )
+      .map((result) => result.inventoryItem.id);
+
+  const releasedInventoryIds =
+    inventoryFinalizationResults
+      .filter(
+        (result) =>
+          result.inventoryAction === 'released'
+      )
+      .map((result) => result.inventoryItem.id);
+
+  const palletResults =
+    inventoryFinalizationResults.map((result) => ({
+      palletId: result.pallet.id,
+      remainingQuantity: result.remainingQuantity,
+      unit: result.pallet.unit,
+      palletStatus: result.pallet.status,
+      inventoryAction: result.inventoryAction,
+    }));
 
   await registerOperationalMemory({
     memoryType: 'movement',
@@ -1048,10 +1239,10 @@ export async function confirmExitWorkflow(
     entityType: 'movement',
     title: 'Confirmación de Salida completada',
     description:
-      'La salida física de la mercancía fue confirmada, el movimiento quedó cerrado y el inventario reservado fue dado de baja.',
+      'La salida física fue confirmada. Los inventarios de pallets vacíos fueron dados de baja y los pallets con remanente quedaron nuevamente disponibles.',
     score: updatedMovement.decision_score ?? 100,
     metadata: {
-      phase: '21.27',
+      phase: '22.2',
       source: 'movementWorkflowService',
       movementId: updatedMovement.id,
       warehouseId: updatedMovement.warehouse_id,
@@ -1064,11 +1255,13 @@ export async function confirmExitWorkflow(
       quantity: updatedMovement.quantity,
       unit: updatedMovement.unit,
       status: updatedMovement.status,
-      deletedInventoryId: reservedInventoryItem.id,
-      previousInventoryStatus: reservedInventoryItem.status,
+      deletedInventoryIds,
+      releasedInventoryIds,
+      palletResults,
       operationalState: 'exit_confirmed',
       logicalLocation: 'Fuera del Almacén',
-      processCompleted: 'OP-011 Confirmación de Salida',
+      processCompleted:
+        'OP-011 Confirmación de Salida',
     },
   });
 

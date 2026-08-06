@@ -1222,14 +1222,20 @@ function MovementsPage() {
                             </div>
 
                             <div className="flex flex-col gap-2">
-                              <button
-                                type="button"
-                                onClick={() => handleOpenPickingProgress(movement)}
-                                disabled={finishingPickingMovementId === movement.id}
-                                className="rounded-lg bg-cyan-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-60"
-                              >
-                                Confirmar avance parcial
-                              </button>
+                              {movement.quantity !== null &&
+                                movement.quantity !== undefined &&
+                                movement.quantity > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenPickingProgress(movement)}
+                                    disabled={
+                                      finishingPickingMovementId === movement.id
+                                    }
+                                    className="rounded-lg bg-cyan-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                  >
+                                    Confirmar avance parcial
+                                  </button>
+                              )}
 
                               <button
                                 type="button"
