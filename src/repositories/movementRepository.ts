@@ -570,3 +570,18 @@ export async function confirmMovementExit(
 
   return data;
 }
+
+export async function deleteMovementRecord(
+  movementId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('movements')
+    .delete()
+    .eq('id', movementId);
+
+  if (error) {
+    throw new Error(
+      `Error al eliminar movimiento: ${error.message}`
+    );
+  }
+}

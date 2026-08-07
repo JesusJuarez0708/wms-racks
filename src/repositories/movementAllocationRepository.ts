@@ -153,3 +153,18 @@ export async function updateMovementAllocationExecution(
 
   return data;
 }
+
+export async function deleteMovementAllocationRecord(
+  allocationId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('movement_allocations')
+    .delete()
+    .eq('id', allocationId);
+
+  if (error) {
+    throw new Error(
+      `Error al eliminar asignación de movimiento: ${error.message}`
+    );
+  }
+}

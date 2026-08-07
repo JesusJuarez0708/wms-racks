@@ -91,3 +91,18 @@ export async function updatePalletQuantity(
 
   return data;
 }
+
+export async function deletePalletRecord(
+  palletId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('pallets')
+    .delete()
+    .eq('id', palletId);
+
+  if (error) {
+    throw new Error(
+      `Error al eliminar pallet: ${error.message}`
+    );
+  }
+}

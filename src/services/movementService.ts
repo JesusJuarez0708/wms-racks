@@ -5,6 +5,7 @@ import {
   confirmMovementDeliveryArrival,
   confirmMovementOperationalVerification,
   confirmMovementExit,
+  deleteMovementRecord,
   fetchMovements,
   insertMovement,
   startMovementPacking,
@@ -172,4 +173,18 @@ export async function confirmExitMovement(
   confirmation: ConfirmMovementExitInput
 ): Promise<MovementItem> {
   return confirmMovementExit(movementId, confirmation);
+}
+
+export async function deleteMovement(
+  movementId: string
+): Promise<void> {
+  const normalizedMovementId = movementId.trim();
+
+  if (!normalizedMovementId) {
+    throw new Error(
+      'Debe indicarse el movimiento que será eliminado.'
+    );
+  }
+
+  return deleteMovementRecord(normalizedMovementId);
 }

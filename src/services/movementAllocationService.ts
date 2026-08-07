@@ -1,4 +1,5 @@
 import {
+  deleteMovementAllocationRecord,
   fetchMovementAllocations,
   fetchMovementAllocationsByMovementId,
   insertMovementAllocation,
@@ -614,5 +615,21 @@ export async function failMovementAllocation(
     {
       status: 'failed',
     }
+  );
+}
+
+export async function deleteMovementAllocation(
+  allocationId: string
+): Promise<void> {
+  const normalizedAllocationId = allocationId.trim();
+
+  if (!normalizedAllocationId) {
+    throw new Error(
+      'Debe indicarse la asignación que será eliminada.'
+    );
+  }
+
+  return deleteMovementAllocationRecord(
+    normalizedAllocationId
   );
 }

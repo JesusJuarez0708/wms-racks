@@ -1,4 +1,5 @@
 import {
+  deletePalletRecord,
   fetchPallets,
   insertPallet,
   updatePalletQuantity,
@@ -117,4 +118,18 @@ export async function applyPalletOutbound(
     remainingQuantity,
     isTotalOutbound,
   };
+}
+
+export async function deletePallet(
+  palletId: string
+): Promise<void> {
+  const normalizedPalletId = palletId.trim();
+
+  if (!normalizedPalletId) {
+    throw new Error(
+      'Debe indicarse el pallet que será eliminado.'
+    );
+  }
+
+  return deletePalletRecord(normalizedPalletId);
 }
