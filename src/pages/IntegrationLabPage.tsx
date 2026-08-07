@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import { seedCJWMSDemoData } from '../seeders/cjwmsSeeder';
+import {
+  resetCJWMSDemoData,
+  seedCJWMSDemoData,
+} from '../seeders/cjwmsSeeder';
+
 import { getWarehouses } from '../services/warehouseService';
 import { getProducts } from '../services/productService';
 import { getRacks } from '../services/rackService';
@@ -45,6 +49,84 @@ type LabStats = {
   movements: number;
 };
 
+type SeederExecutionSummary = {
+  warehouseCode: string;
+  warehouseName: string;
+  products: number;
+  racks: number;
+  positions: number;
+  pallets: number;
+  inventory: number;
+  movements: number;
+  confirmedAt: string;
+};
+
+type SeederResult = Awaited<
+  ReturnType<typeof seedCJWMSDemoData>
+>;
+
+function validateSeederResult(result: SeederResult): string[] {
+  const errors: string[] = [];
+
+  const warehouseId = result.warehouse.id;
+
+  const warehouseRacks = result.racks.filter(
+    (rack) => rack.warehouse_id === warehouseId
+  );
+
+  const warehousePositions = result.positions.filter(
+    (position) => position.warehouse_id === warehouseId
+  );
+
+  const warehouseInventory = result.inventory.filter(
+    (item) => item.warehouse_id === warehouseId
+  );
+
+  const warehouseMovements = result.movements.filter(
+    (movement) => movement.warehouse_id === warehouseId
+  );
+
+  if (result.warehouse.code !== 'CJWMS-01') {
+    errors.push(
+      'El almacén operativo CJWMS-01 no fue identificado correctamente.'
+    );
+  }
+
+  if (result.products.length === 0) {
+    errors.push('No existen productos disponibles después del Seeder.');
+  }
+
+  if (warehouseRacks.length === 0) {
+    errors.push(
+      'El almacén CJWMS-01 no contiene racks después del Seeder.'
+    );
+  }
+
+  if (warehousePositions.length === 0) {
+    errors.push(
+      'El almacén CJWMS-01 no contiene posiciones después del Seeder.'
+    );
+  }
+
+  if (result.pallets.length === 0) {
+    errors.push('No existen pallets disponibles después del Seeder.');
+  }
+
+  if (warehouseInventory.length === 0) {
+    errors.push(
+      'El almacén CJWMS-01 no contiene inventario después del Seeder.'
+    );
+  }
+
+  if (warehouseMovements.length === 0) {
+    errors.push(
+      'El almacén CJWMS-01 no contiene movimientos después del Seeder.'
+    );
+  }
+
+  return errors;
+}
+
 function IntegrationLabPage() {
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
@@ -59,6 +141,21 @@ function IntegrationLabPage() {
   const [recommendations, setRecommendations] = useState<
     IntelligenceRecommendation[]
   >([]);
+
+  const [seederRunning, setSeederRunning] = useState(false);
+
+  const [seederSummary, setSeederSummary] = useState<SeederExecutionSummary | null>(null);
+
+    type SeederStage =
+    | 'idle'
+    | 'reset'
+    | 'seeding'
+    | 'validating'
+    | 'completed'
+    | 'error';
+
+  const [seederStage, setSeederStage] =
+    useState<SeederStage>('idle');
 
   const filteredMemories =
     memoryFilter === 'all'
@@ -163,19 +260,94 @@ function IntegrationLabPage() {
   // Seeder
   async function runSeeder() {
     setLoading(true);
+    setSeederRunning(true);
+    setSeederStage('reset');
+    setSeederSummary(null);
 
     try {
-      await seedCJWMSDemoData();
-      addLog('Seeder CJWMS ejecutado correctamente.');
+      addLog(
+        'Centro de Control: iniciando ejecución del Laboratorio Operativo.'
+      );
+
+      addLog('Paso 1/4 — Ejecutando Reset Inteligente...');
+      await resetCJWMSDemoData();
+      addLog('Paso 1/4 — Reset Inteligente completado.');
+
+      setSeederStage('seeding');
+
+      addLog('Paso 2/4 — Ejecutando Seeder Operativo...');
+      const result = await seedCJWMSDemoData();
+      addLog('Paso 2/4 — Seeder Operativo completado.');
+
+      setSeederStage('validating');
+
+      addLog('Paso 3/4 — Validando Laboratorio Operativo...');
+
+      const validationErrors = validateSeederResult(result);
+
+      if (validationErrors.length > 0) {
+        for (const validationError of validationErrors) {
+          addLog(`Validación fallida: ${validationError}`);
+        }
+
+        throw new Error(
+          `La validación del Laboratorio encontró ${validationErrors.length} problema(s).`
+        );
+      }
+
+      const warehouseId = result.warehouse.id;
+
+      const warehouseRacks = result.racks.filter(
+        (rack) => rack.warehouse_id === warehouseId
+      ).length;
+
+      const warehousePositions = result.positions.filter(
+        (position) => position.warehouse_id === warehouseId
+      ).length;
+
+      const warehouseInventory = result.inventory.filter(
+        (item) => item.warehouse_id === warehouseId
+      ).length;
+
+      const warehouseMovements = result.movements.filter(
+        (movement) => movement.warehouse_id === warehouseId
+      ).length;
+
+      setSeederSummary({
+        warehouseCode: result.warehouse.code,
+        warehouseName: result.warehouse.name,
+        products: result.products.length,
+        racks: warehouseRacks,
+        positions: warehousePositions,
+        pallets: result.pallets.length,
+        inventory: warehouseInventory,
+        movements: warehouseMovements,
+        confirmedAt: new Date().toLocaleTimeString(),
+      });
+
+      addLog(
+        `Paso 3/4 — Validación correcta: ${warehouseRacks} racks, ${warehousePositions} posiciones, ${warehouseInventory} inventarios y ${warehouseMovements} movimientos en CJWMS-01.`
+      );
+
+      setSeederStage('completed');
+
+      addLog(
+        'Paso 4/4 — Ejecución confirmada. Laboratorio Operativo CJWMS listo.'
+      );
+
       await loadStats();
     } catch (error) {
       console.error(error);
+
+      setSeederStage('error');
+
       addLog(
         error instanceof Error
-          ? `Error al ejecutar Seeder CJWMS: ${error.message}`
-          : 'Error al ejecutar Seeder CJWMS.'
+          ? `Centro de Control: ejecución detenida — ${error.message}`
+          : 'Centro de Control: error inesperado durante la ejecución.'
       );
     } finally {
+      setSeederRunning(false);
       setLoading(false);
     }
   }
@@ -310,6 +482,24 @@ function IntegrationLabPage() {
     return 'bg-slate-100 text-slate-700';
   }
 
+  const seederStageLabel: Record<SeederStage, string> = {
+    idle: 'LISTO',
+    reset: 'RESET INTELIGENTE',
+    seeding: 'SEEDER OPERATIVO',
+    validating: 'VALIDANDO',
+    completed: 'COMPLETADO',
+    error: 'ERROR',
+  };
+
+  const seederStageDescription: Record<SeederStage, string> = {
+    idle: 'Laboratorio preparado para una nueva ejecución.',
+    reset: 'Restableciendo de forma selectiva los datos del Laboratorio.',
+    seeding: 'Generando el escenario operativo base de CJWMS.',
+    validating: 'Comprobando que los datos generados sean operativamente válidos.',
+    completed: 'Ejecución finalizada y Laboratorio Operativo listo.',
+    error: 'La ejecución se detuvo antes de completar el Laboratorio.',
+  };
+
   return (
     <div className="space-y-6">
       <div className="rounded-2xl bg-white p-8 shadow-sm">
@@ -335,9 +525,11 @@ function IntegrationLabPage() {
         <button
           onClick={runSeeder}
           disabled={loading}
-          className="rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white disabled:opacity-50"
+          className="rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Ejecutar Seeder
+          {seederRunning
+            ? 'Ejecutando Laboratorio...'
+            : 'Ejecutar Seeder'}
         </button>
 
         <button
@@ -379,7 +571,138 @@ function IntegrationLabPage() {
         >
           Cargar memorias
         </button>
+      </div>
 
+      <div
+        className={`rounded-2xl border p-5 ${
+          seederRunning
+            ? 'border-blue-200 bg-blue-50'
+            : 'border-slate-200 bg-white'
+        }`}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <h2 className="font-bold text-slate-900">
+              Centro de Control del Laboratorio
+            </h2>
+
+            <p className="mt-1 text-sm text-slate-600">
+              Ejecuta automáticamente Reset Inteligente → Seeder Operativo →
+              Validación → Confirmación.
+            </p>
+
+            <p className="mt-3 text-sm font-medium text-slate-700">
+              {seederStageDescription[seederStage]}
+            </p>
+
+            <div className="mt-4 grid gap-2 md:grid-cols-4">
+              {[
+                ['reset', '1. Reset Inteligente'],
+                ['seeding', '2. Seeder Operativo'],
+                ['validating', '3. Validación'],
+                ['completed', '4. Confirmación'],
+              ].map(([stage, label]) => {
+                const isActive = seederStage === stage;
+
+                const isCompleted =
+                  seederStage === 'completed' ||
+                  (stage === 'reset' &&
+                    ['seeding', 'validating'].includes(seederStage)) ||
+                  (stage === 'seeding' &&
+                    seederStage === 'validating');
+
+                return (
+                  <div
+                    key={stage}
+                    className={`rounded-xl border px-3 py-2 text-center text-xs font-semibold ${
+                      isActive
+                        ? 'border-blue-300 bg-blue-100 text-blue-800'
+                        : isCompleted
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                          : 'border-slate-200 bg-slate-50 text-slate-500'
+                    }`}
+                  >
+                    {label}
+                  </div>
+                );
+              })}
+            </div>
+
+            {seederSummary && seederStage === 'completed' && (
+              <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold text-emerald-800">
+                      Última ejecución validada
+                    </p>
+
+                    <p className="mt-1 text-sm text-emerald-700">
+                      {seederSummary.warehouseCode} — {seederSummary.warehouseName}
+                    </p>
+                  </div>
+
+                  <span className="text-xs font-semibold text-emerald-700">
+                    Confirmado: {seederSummary.confirmedAt}
+                  </span>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+                  <div className="min-w-0 rounded-lg bg-white px-4 py-3">
+                    <p className="text-xs text-slate-500">Productos</p>
+                    <p className="font-bold text-slate-900">
+                      {seederSummary.products}
+                    </p>
+                  </div>
+
+                  <div className="min-w-0 rounded-lg bg-white px-4 py-3">
+                    <p className="text-xs text-slate-500">Racks</p>
+                    <p className="font-bold text-slate-900">
+                      {seederSummary.racks}
+                    </p>
+                  </div>
+
+                  <div className="min-w-0 rounded-lg bg-white px-4 py-3">
+                    <p className="text-xs text-slate-500">Posiciones</p>
+                    <p className="font-bold text-slate-900">
+                      {seederSummary.positions}
+                    </p>
+                  </div>
+
+                  <div className="min-w-0 rounded-lg bg-white px-4 py-3">
+                    <p className="text-xs text-slate-500">Pallets</p>
+                    <p className="font-bold text-slate-900">
+                      {seederSummary.pallets}
+                    </p>
+                  </div>
+
+                  <div className="min-w-0 rounded-lg bg-white px-4 py-3">
+                    <p className="text-xs text-slate-500">Inventario</p>
+                    <p className="font-bold text-slate-900">
+                      {seederSummary.inventory}
+                    </p>
+                  </div>
+
+                  <div className="min-w-0 rounded-lg bg-white px-4 py-3">
+                    <p className="text-xs text-slate-500">Movimientos</p>
+                    <p className="font-bold text-slate-900">
+                      {seederSummary.movements}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-bold ${
+              seederRunning
+                ? 'bg-blue-100 text-blue-700'
+                : 'bg-slate-100 text-slate-600'
+            }`}
+          >
+            {seederStageLabel[seederStage]}
+          </span>
+        </div>
       </div>
 
       <div className="rounded-2xl bg-white p-8 shadow-sm">
