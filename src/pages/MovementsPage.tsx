@@ -48,6 +48,11 @@ import {
   type MovementItem,
 } from '../services/movementService';
 
+import {
+  getMovementAllocations,
+  type MovementAllocation,
+} from '../services/movementAllocationService';
+
 import { getProducts } from '../services/productService';
 import { getPallets } from '../services/palletService';
 import { getRackPositions } from '../services/rackPositionService';
@@ -73,6 +78,8 @@ import {
   isShippingCompleted,
   isShippingInProgress,
 } from '../utils/movementOperationalState';
+
+import { formatQuantityUnit } from '../utils/formatQuantityUnit';
 
 function getStatusClass(status: MovementItem['status']) {
   if (status === 'completed') return 'bg-emerald-100 text-emerald-700';
@@ -178,6 +185,8 @@ function MovementsPage() {
   const [movements, setMovements] = useState<EnrichedMovement[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [movementAllocations, setMovementAllocations] = useState<MovementAllocation[]>([]);
+
   const [showMovementModal, setShowMovementModal] = useState(false);
 
   const [selectedPickingMovement, setSelectedPickingMovement] =
@@ -257,13 +266,19 @@ function MovementsPage() {
     try {
       setLoading(true);
 
-      const [movementsData, productsData, palletsData, positionsData] =
-        await Promise.all([
-          getMovements(),
-          getProducts(),
-          getPallets(),
-          getRackPositions(),
-        ]);
+      const [
+        movementsData,
+        productsData,
+        palletsData,
+        positionsData,
+        movementAllocationsData,
+      ] = await Promise.all([
+        getMovements(),
+        getProducts(),
+        getPallets(),
+        getRackPositions(),
+        getMovementAllocations(),
+      ]);
 
       const enriched = enrichMovements(
         movementsData,
@@ -273,6 +288,7 @@ function MovementsPage() {
       );
 
       setMovements(enriched);
+      setMovementAllocations(movementAllocationsData);
     } catch (error) {
       console.error('Error al cargar movimientos desde Supabase:', error);
     } finally {
@@ -452,6 +468,7 @@ function MovementsPage() {
         .join('\n');
 
       await registerPickingProgressWorkflow(movement.id, {
+        partial_quantity: progress.extractedQuantity,
         notes: progressNotes,
         decision_explanation:
           'Picking en Proceso: extracción parcial confirmada.',
@@ -491,7 +508,10 @@ function MovementsPage() {
 
       const completionNotes = [
         movement.notes,
-        `Cantidad total extraída: ${movement.quantity ?? 0} ${movement.unit ?? ''}`,
+        `Cantidad total extraída: ${formatQuantityUnit(
+          movement.quantity ?? 0,
+          movement.unit
+        )}`,
         'Estado operativo: Picking finalizado',
       ]
         .filter(Boolean)
@@ -861,7 +881,7 @@ function MovementsPage() {
     movement: EnrichedMovement
   ) {
     const confirmed = window.confirm(
-      '¿Confirmas que la mercancía salió físicamente del almacén? Esta acción dará de baja definitiva el inventario reservado.'
+      '¿Confirmas que la mercancía salió físicamente del almacén? Esta acción finalizará la salida y actualizará el inventario reservado según el remanente disponible.'
     );
 
     if (!confirmed) {
@@ -891,7 +911,7 @@ function MovementsPage() {
       await loadMovements();
 
       setOperationMessage(
-        'La salida fue confirmada correctamente y el inventario reservado fue dado de baja.'
+        'La salida fue confirmada correctamente y el inventario fue actualizado según el remanente disponible.'
       );
     } catch (error) {
       console.error(
@@ -1056,6 +1076,33 @@ function MovementsPage() {
                   const pickingInProgress = isPickingInProgress(movement);
 
                   const pickingPartialProgress = hasPickingPartialProgress(movement);
+
+                  const pickingAllocations = movementAllocations.filter(
+                    (allocation) => allocation.movement_id === movement.id
+                  );
+
+                  const allocatedPickingQuantity = pickingAllocations.reduce(
+                    (total, allocation) =>
+                      total + allocation.allocated_quantity,
+                    0
+                  );
+
+                  const executedPickingQuantity = pickingAllocations.reduce(
+                    (total, allocation) =>
+                      total + allocation.executed_quantity,
+                    0
+                  );
+
+                  const pendingPickingQuantity = Math.max(
+                    allocatedPickingQuantity - executedPickingQuantity,
+                    0
+                  );
+
+                  const hasPickingAllocations = pickingAllocations.length > 0;
+
+                  const canFinalizePicking =
+                    hasPickingAllocations &&
+                    pendingPickingQuantity === 0;
 
                   const packingCanStart =
                     canStartPacking(movement);
@@ -1224,7 +1271,9 @@ function MovementsPage() {
                             <div className="flex flex-col gap-2">
                               {movement.quantity !== null &&
                                 movement.quantity !== undefined &&
-                                movement.quantity > 1 && (
+                                movement.quantity > 1 &&
+                                hasPickingAllocations &&
+                                pendingPickingQuantity > 0 && (
                                   <button
                                     type="button"
                                     onClick={() => handleOpenPickingProgress(movement)}
@@ -1240,7 +1289,10 @@ function MovementsPage() {
                               <button
                                 type="button"
                                 onClick={() => handleCompletePicking(movement)}
-                                disabled={finishingPickingMovementId === movement.id}
+                                disabled={
+                                  finishingPickingMovementId === movement.id ||
+                                  !canFinalizePicking
+                                }
                                 className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                               >
                                 {finishingPickingMovementId === movement.id

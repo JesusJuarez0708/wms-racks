@@ -1,4 +1,8 @@
+import { useEffect, useState } from 'react';
+
 import type { InventoryQueryItem } from '../services/inventoryService';
+
+import { formatQuantityUnit } from '../utils/formatQuantityUnit';
 
 type PickingRequestModalProps = {
   open: boolean;
@@ -15,16 +19,59 @@ function PickingRequestModal({
   onClose,
   onConfirm,
 }: PickingRequestModalProps) {
+  const [requestedQuantity, setRequestedQuantity] = useState('');
+
+  useEffect(() => {
+    if (open && item) {
+      setRequestedQuantity('');
+    }
+  }, [open, item]);
+
   if (!open || !item) {
     return null;
   }
 
+  const availableQuantity = Number(item.quantity);
+  const numericRequestedQuantity = Number(requestedQuantity);
+
+  const hasValidRequestedQuantity =
+    requestedQuantity.trim() !== '' &&
+    Number.isFinite(numericRequestedQuantity) &&
+    numericRequestedQuantity > 0 &&
+    numericRequestedQuantity <= availableQuantity;
+
+  let quantityError = '';
+
+  if (requestedQuantity.trim() !== '') {
+    if (
+      !Number.isFinite(numericRequestedQuantity) ||
+      numericRequestedQuantity <= 0
+    ) {
+      quantityError =
+        'La cantidad solicitada debe ser mayor que cero.';
+    } else if (numericRequestedQuantity > availableQuantity) {
+      quantityError =
+        `La cantidad solicitada no puede superar las ${availableQuantity} ${item.unit} disponibles.`;
+    }
+  }
+
+  function handleConfirm() {
+    if (!item || !hasValidRequestedQuantity) {
+      return;
+    }
+
+    onConfirm({
+      ...item,
+      quantity: numericRequestedQuantity,
+    });
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-      <div className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
+            <p className="text-sm font-bold uppercase tracking-wide text-blue-600">
               OP-008 — Surtido
             </p>
 
@@ -33,7 +80,8 @@ function PickingRequestModal({
             </h2>
 
             <p className="mt-2 text-sm text-slate-600">
-              Revisa la mercancía seleccionada antes de generar la solicitud.
+              Revisa la mercancía seleccionada e indica la cantidad
+              que será solicitada.
             </p>
           </div>
 
@@ -80,11 +128,14 @@ function PickingRequestModal({
 
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Cantidad
+              Cantidad disponible
             </p>
 
             <p className="mt-1 font-semibold text-slate-900">
-              {item.quantity} {item.unit}
+              {formatQuantityUnit(
+                item.quantity,
+                item.unit
+              )}
             </p>
           </div>
         </div>
@@ -99,6 +150,46 @@ function PickingRequestModal({
           </p>
         </div>
 
+        <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4">
+          <label
+            htmlFor="requested-picking-quantity"
+            className="text-xs font-semibold uppercase tracking-wide text-slate-600"
+          >
+            Cantidad solicitada
+          </label>
+
+          <div className="mt-2 flex items-center gap-3">
+            <input
+              id="requested-picking-quantity"
+              type="number"
+              min="0"
+              step="any"
+              max={availableQuantity}
+              value={requestedQuantity}
+              disabled={submitting}
+              onChange={(event) =>
+                setRequestedQuantity(event.target.value)
+              }
+              placeholder="Ej. 20"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
+
+            <span className="min-w-fit font-semibold text-slate-700">
+              {item.unit}
+            </span>
+          </div>
+
+          {quantityError ? (
+            <p className="mt-2 text-sm font-medium text-red-600">
+              {quantityError}
+            </p>
+          ) : (
+            <p className="mt-2 text-sm text-slate-600">
+              Disponible: {availableQuantity} {item.unit}
+            </p>
+          )}
+        </div>
+
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"
@@ -111,13 +202,13 @@ function PickingRequestModal({
 
           <button
             type="button"
-            disabled={submitting}
-            onClick={() => onConfirm(item)}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+            disabled={submitting || !hasValidRequestedQuantity}
+            onClick={handleConfirm}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {submitting
-                ? 'Generando solicitud...'
-                : 'Confirmar solicitud'}
+              ? 'Generando solicitud...'
+              : 'Confirmar solicitud'}
           </button>
         </div>
       </div>

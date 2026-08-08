@@ -9,6 +9,8 @@ import PickingRequestModal from '../components/PickingRequestModal';
 
 import { executeMovementWorkflow } from '../services/movementWorkflowService';
 
+import { formatQuantityUnit } from '../utils/formatQuantityUnit';
+
 function getInventoryStatusLabel(
   status: InventoryQueryItem['inventory']['status']
 ) {
@@ -273,7 +275,10 @@ function InventoryQueryPage() {
                     </td>
 
                     <td className="whitespace-nowrap px-4 py-4 text-sm text-slate-700">
-                      {item.quantity} {item.unit}
+                      {formatQuantityUnit(
+                        item.quantity,
+                        item.unit
+                      )}
                     </td>
 
                     <td className="whitespace-nowrap px-4 py-4">

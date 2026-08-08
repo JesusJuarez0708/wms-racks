@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 
 import type { EnrichedMovement } from '../utils/enrichMovement';
 
+import { formatQuantityUnit } from '../utils/formatQuantityUnit';
+
 export type PickingProgressData = {
   extractedQuantity: number;
   notes: string;
@@ -142,7 +144,10 @@ function PickingProgressModal({
             </p>
 
             <p className="mt-1 font-semibold text-slate-900">
-              {requestedQuantity} {movement.unit ?? ''}
+              {formatQuantityUnit(
+                requestedQuantity,
+                movement.unit
+              )}
             </p>
           </div>
         </div>

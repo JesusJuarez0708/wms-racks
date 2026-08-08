@@ -5,6 +5,8 @@ import {
   type MovementItem,
 } from '../services/movementService';
 
+import { formatQuantityUnit } from '../utils/formatQuantityUnit';
+
 function getTypeClass(type: MovementItem['movement_type']) {
   switch (type) {
     case 'entrada':
@@ -127,7 +129,10 @@ function MovementsTable() {
                   </td>
 
                   <td className="py-4 pr-4">
-                    {movement.quantity ?? '-'} {movement.unit ?? ''}
+                    {formatQuantityUnit(
+                      movement.quantity,
+                      movement.unit
+                    )}
                   </td>
 
                   <td className="py-4 pr-4">

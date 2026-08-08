@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 
 import type { EnrichedMovement } from '../utils/enrichMovement';
 
+import { formatQuantityUnit } from '../utils/formatQuantityUnit';
+
 export type PackingAction =
   | 'start'
   | 'progress'
@@ -176,7 +178,10 @@ function PackingProgressModal({
             </p>
 
             <p className="mt-1 font-semibold text-slate-900">
-              {movement.quantity ?? 0} {movement.unit ?? ''}
+              {formatQuantityUnit(
+                movement.quantity ?? 0,
+                movement.unit
+              )}
             </p>
           </div>
         </div>

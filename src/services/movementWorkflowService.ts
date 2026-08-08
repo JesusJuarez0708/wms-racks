@@ -48,6 +48,7 @@ import {
 import {
   executePickingAllocationsByMovementId,
   getMovementAllocationsByMovementId,
+  registerPickingProgressByMovementId,
   reserveMovementAllocationsByMovementId,
 } from './movementAllocationService';
 
@@ -285,6 +286,7 @@ export async function executeMovementWorkflow(
       productId: movement.product_id,
       requestedQuantity: movement.quantity,
       requestedUnit: movement.unit,
+      preferredPalletId: movement.pallet_id,
     });
   }
 
@@ -415,6 +417,11 @@ export async function registerPickingProgressWorkflow(
   movementId: string,
   progress: PickingProgressInput
 ): Promise<MovementItem> {
+  await registerPickingProgressByMovementId(
+    movementId,
+    progress.partial_quantity
+  );
+
   const updatedMovement = await registerPickingProgress(
     movementId,
     progress

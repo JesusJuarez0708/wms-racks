@@ -28,13 +28,16 @@ export type OutboundExecutionPlan = {
   unit: string;
   allocations: OutboundExecutionAllocation[];
   requiresMultiplePallets: boolean;
-  strategy: 'smallest_available_quantity_first';
+  strategy:
+    | 'preferred_pallet_first'
+    | 'smallest_available_quantity_first';
 };
 
 export type CreateOutboundExecutionPlanInput = {
   productId: string;
   requestedQuantity: number;
   requestedUnit: string;
+  preferredPalletId?: string | null;
 };
 
 export type PersistOutboundExecutionPlanInput = {
@@ -79,6 +82,8 @@ export async function createOutboundExecutionPlan(
   const productId = input.productId.trim();
   const requestedQuantity = Number(input.requestedQuantity);
   const requestedUnit = normalizeUnit(input.requestedUnit);
+
+  const preferredPalletId = input.preferredPalletId?.trim() || null;
 
   if (!productId) {
     throw new Error(
@@ -151,8 +156,26 @@ export async function createOutboundExecutionPlan(
       inventoryItem:
         availableInventoryByPalletId.get(pallet.id)!,
       availableQuantity: pallet.quantity!,
-    }))
-    .sort(compareEligiblePallets);
+    }));
+
+    eligiblePallets.sort((first, second) => {
+      if (preferredPalletId) {
+        const firstIsPreferred =
+          first.pallet.id === preferredPalletId;
+        const secondIsPreferred =
+          second.pallet.id === preferredPalletId;
+
+        if (firstIsPreferred && !secondIsPreferred) {
+          return -1;
+        }
+
+        if (!firstIsPreferred && secondIsPreferred) {
+          return 1;
+        }
+      }
+
+      return compareEligiblePallets(first, second);
+    });
 
   const availableQuantity = eligiblePallets.reduce(
     (total, item) => total + item.availableQuantity,
@@ -210,7 +233,9 @@ export async function createOutboundExecutionPlan(
     unit: requestedUnit,
     allocations,
     requiresMultiplePallets: allocations.length > 1,
-    strategy: 'smallest_available_quantity_first',
+    strategy: preferredPalletId
+      ? 'preferred_pallet_first'
+      : 'smallest_available_quantity_first',
   };
 }
 

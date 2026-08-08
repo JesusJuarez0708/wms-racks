@@ -63,6 +63,7 @@ export type StartMovementPickingRecord = {
 };
 
 export type UpdateMovementPickingProgressRecord = {
+  partial_quantity: number;
   notes: string;
   decision_explanation?: string | null;
   created_by?: string | null;
@@ -238,7 +239,9 @@ export async function updateMovementPickingProgress(
     .eq('id', movementId)
     .eq('movement_type', 'salida')
     .eq('status', 'pending')
-    .ilike('decision_explanation', '%Inicio Operativo del Picking confirmado%')
+    .or(
+      'decision_explanation.ilike.%Inicio Operativo del Picking confirmado%,decision_explanation.ilike.%Picking en Proceso%'
+    )
     .select()
     .single();
 

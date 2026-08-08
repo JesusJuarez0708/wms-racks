@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 
 import type { EnrichedMovement } from '../utils/enrichMovement';
 
+import { formatQuantityUnit } from '../utils/formatQuantityUnit';
+
 export type DeliveryAreaArrivalData = {
   notes: string;
 };
@@ -88,7 +90,10 @@ export default function DeliveryAreaArrivalModal({
 
             <div className="mt-2 text-sm">
               <strong>Cantidad:</strong>{' '}
-              {movement.quantity} {movement.unit}
+              {formatQuantityUnit(
+                movement.quantity,
+                movement.unit
+              )}
             </div>
           </div>
 

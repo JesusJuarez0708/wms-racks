@@ -405,11 +405,15 @@ export async function executeMovementAllocation(
     );
   }
 
+  const isCompleted =
+    normalizedExecutedQuantity ===
+    allocation.allocated_quantity;
+
   return updateMovementAllocationExecution(
     normalizedAllocationId,
     {
       executed_quantity: normalizedExecutedQuantity,
-      status: 'executed',
+      status: isCompleted ? 'executed' : 'reserved',
     }
   );
 }
@@ -474,6 +478,192 @@ export async function executePickingAllocation(
   };
 }
 
+export async function registerPickingProgressByMovementId(
+  movementId: string,
+  progressQuantity: number
+): Promise<ExecutePickingAllocationsResult> {
+  const normalizedMovementId = movementId.trim();
+  const normalizedProgressQuantity = validatePositiveQuantity(
+    progressQuantity,
+    'La cantidad extraída en este avance'
+  );
+
+  if (!normalizedMovementId) {
+    throw new Error(
+      'Debe indicarse el movimiento cuyo avance será registrado.'
+    );
+  }
+
+  const allocations =
+    await fetchMovementAllocationsByMovementId(
+      normalizedMovementId
+    );
+
+  if (allocations.length === 0) {
+    throw new Error(
+      'El movimiento no tiene asignaciones registradas.'
+    );
+  }
+
+  const invalidAllocation = allocations.find(
+    (allocation) =>
+      allocation.status !== 'reserved' &&
+      allocation.status !== 'executed'
+  );
+
+  if (invalidAllocation) {
+    throw new Error(
+      `La asignación ${invalidAllocation.id} no está disponible para registrar avance. Estado actual: ${invalidAllocation.status}.`
+    );
+  }
+
+  const allocationWithoutInventory = allocations.find(
+    (allocation) => !allocation.inventory_id
+  );
+
+  if (allocationWithoutInventory) {
+    throw new Error(
+      `La asignación ${allocationWithoutInventory.id} no tiene inventario asociado.`
+    );
+  }
+
+  const totalAllocatedQuantity = allocations.reduce(
+    (total, allocation) =>
+      total + allocation.allocated_quantity,
+    0
+  );
+
+  const currentExecutedQuantity = allocations.reduce(
+    (total, allocation) =>
+      total + allocation.executed_quantity,
+    0
+  );
+
+  const pendingQuantity =
+    totalAllocatedQuantity - currentExecutedQuantity;
+
+  if (pendingQuantity <= 0) {
+    throw new Error(
+      'La cantidad solicitada ya fue extraída completamente.'
+    );
+  }
+
+  if (normalizedProgressQuantity > pendingQuantity) {
+    throw new Error(
+      `La cantidad extraída en este avance (${normalizedProgressQuantity}) no puede superar la cantidad pendiente (${pendingQuantity}).`
+    );
+  }
+
+  let quantityToApply = normalizedProgressQuantity;
+
+  const updatedAllocations: MovementAllocation[] = [];
+  const previousAllocationStates = new Map<
+    string,
+    {
+      executedQuantity: number;
+      status: MovementAllocationStatus;
+    }
+  >();
+
+  try {
+    for (const allocation of allocations) {
+      if (quantityToApply <= 0) {
+        break;
+      }
+
+      if (allocation.status === 'executed') {
+        continue;
+      }
+
+      const allocationPendingQuantity =
+        allocation.allocated_quantity -
+        allocation.executed_quantity;
+
+      if (allocationPendingQuantity <= 0) {
+        continue;
+      }
+
+      const quantityForAllocation = Math.min(
+        quantityToApply,
+        allocationPendingQuantity
+      );
+
+      const newExecutedQuantity =
+        allocation.executed_quantity +
+        quantityForAllocation;
+
+      previousAllocationStates.set(allocation.id, {
+        executedQuantity: allocation.executed_quantity,
+        status: allocation.status,
+      });
+
+      const updatedAllocation =
+        await updateMovementAllocationExecution(
+          allocation.id,
+          {
+            executed_quantity: newExecutedQuantity,
+            status:
+              newExecutedQuantity ===
+              allocation.allocated_quantity
+                ? 'executed'
+                : 'reserved',
+          }
+        );
+
+      updatedAllocations.push(updatedAllocation);
+
+      quantityToApply -= quantityForAllocation;
+    }
+  } catch (error) {
+    for (const updatedAllocation of updatedAllocations) {
+      const previousState =
+        previousAllocationStates.get(
+          updatedAllocation.id
+        );
+
+      if (!previousState) {
+        continue;
+      }
+
+      try {
+        await updateMovementAllocationExecution(
+          updatedAllocation.id,
+          {
+            executed_quantity:
+              previousState.executedQuantity,
+            status: previousState.status,
+          }
+        );
+      } catch (rollbackError) {
+        console.error(
+          'No fue posible restaurar una asignación durante la compensación del avance parcial:',
+          rollbackError
+        );
+      }
+    }
+
+    throw error;
+  }
+
+  const refreshedAllocations =
+    await fetchMovementAllocationsByMovementId(
+      normalizedMovementId
+    );
+
+  const totalExecutedQuantity =
+    refreshedAllocations.reduce(
+      (total, allocation) =>
+        total + allocation.executed_quantity,
+      0
+    );
+
+  return {
+    movementId: normalizedMovementId,
+    allocations: refreshedAllocations,
+    totalExecutedQuantity,
+  };
+}
+
 export async function executePickingAllocationsByMovementId(
   movementId: string
 ): Promise<ExecutePickingAllocationsResult> {
@@ -481,7 +671,7 @@ export async function executePickingAllocationsByMovementId(
 
   if (!normalizedMovementId) {
     throw new Error(
-      'Debe indicarse el movimiento cuyas asignaciones serán ejecutadas.'
+      'Debe indicarse el movimiento cuyas asignaciones serán verificadas.'
     );
   }
 
@@ -496,16 +686,6 @@ export async function executePickingAllocationsByMovementId(
     );
   }
 
-  const nonReservedAllocation = allocations.find(
-    (allocation) => allocation.status !== 'reserved'
-  );
-
-  if (nonReservedAllocation) {
-    throw new Error(
-      `No es posible ejecutar el picking porque la asignación ${nonReservedAllocation.id} tiene estado ${nonReservedAllocation.status}.`
-    );
-  }
-
   const allocationWithoutInventory = allocations.find(
     (allocation) => !allocation.inventory_id
   );
@@ -516,66 +696,32 @@ export async function executePickingAllocationsByMovementId(
     );
   }
 
-  const executedAllocations: MovementAllocation[] = [];
-
-  try {
-    for (const allocation of allocations) {
-      const result = await executePickingAllocation(
-        allocation.id,
+  const incompleteAllocation = allocations.find(
+    (allocation) =>
+      allocation.status !== 'executed' ||
+      allocation.executed_quantity !==
         allocation.allocated_quantity
-      );
+  );
 
-      executedAllocations.push(result.allocation);
-    }
-  } catch (executionError) {
-    const rollbackErrors: string[] = [];
-
-    for (const executedAllocation of executedAllocations) {
-      try {
-        await updateMovementAllocationExecution(
-          executedAllocation.id,
-          {
-            executed_quantity: 0,
-            status: 'reserved',
-          }
-        );
-      } catch (rollbackError) {
-        rollbackErrors.push(
-          rollbackError instanceof Error
-            ? rollbackError.message
-            : 'Error desconocido durante la reversión.'
-        );
-      }
-    }
-
-    const executionMessage =
-      executionError instanceof Error
-        ? executionError.message
-        : 'Error desconocido durante la ejecución del picking.';
-
-    if (rollbackErrors.length > 0) {
-      throw new Error(
-        `La ejecución del picking falló: ${executionMessage} Además, no fue posible revertir completamente las asignaciones: ${rollbackErrors.join(
-          ' | '
-        )}`
-      );
-    }
+  if (incompleteAllocation) {
+    const pendingQuantity =
+      incompleteAllocation.allocated_quantity -
+      incompleteAllocation.executed_quantity;
 
     throw new Error(
-      `La ejecución del picking falló y las asignaciones ejecutadas fueron revertidas: ${executionMessage}`
+      `No es posible finalizar el picking. La asignación ${incompleteAllocation.id} todavía tiene ${pendingQuantity} ${incompleteAllocation.unit} pendientes por extraer.`
     );
   }
 
-  const totalExecutedQuantity =
-    executedAllocations.reduce(
-      (total, allocation) =>
-        total + allocation.executed_quantity,
-      0
-    );
+  const totalExecutedQuantity = allocations.reduce(
+    (total, allocation) =>
+      total + allocation.executed_quantity,
+    0
+  );
 
   return {
     movementId: normalizedMovementId,
-    allocations: executedAllocations,
+    allocations,
     totalExecutedQuantity,
   };
 }
