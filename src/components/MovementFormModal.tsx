@@ -18,6 +18,8 @@ import {
   type RelocationDecision,
 } from '../services/decisionEngineService';
 
+import { formatQuantityUnit } from '../utils/formatQuantityUnit';
+
 type MovementFormModalProps = {
   open: boolean;
   onClose: () => void;
@@ -706,8 +708,10 @@ function MovementFormModal({
               {movementType === 'salida' && productId && (
                 <p className="mt-2 text-xs font-semibold text-slate-500">
                   Existencia total disponible:{' '}
-                  {availableQuantityForProduct}{' '}
-                  {normalizeUnit(unit)}
+                  {formatQuantityUnit(
+                    availableQuantityForProduct,
+                    unit
+                  )}
                 </p>
               )}
 
@@ -715,8 +719,10 @@ function MovementFormModal({
                 selectedPalletQuantity !== null && (
                   <p className="mt-1 text-xs font-semibold text-blue-700">
                     Disponible en el pallet seleccionado:{' '}
-                    {selectedPalletQuantity}{' '}
-                    {normalizeUnit(selectedPallet?.unit)}
+                    {formatQuantityUnit(
+                      selectedPalletQuantity,
+                      selectedPallet?.unit
+                    )}
                   </p>
                 )}
             </div>

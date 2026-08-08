@@ -63,10 +63,10 @@ function PickingProgressModal({
 
     if (
       requestedQuantity > 0 &&
-      normalizedQuantity >= requestedQuantity
+      normalizedQuantity > requestedQuantity
     ) {
       setValidationMessage(
-        'La cantidad parcial debe ser menor que la cantidad total solicitada.'
+        'La cantidad extraída no puede superar la cantidad total solicitada.'
       );
       return;
     }
@@ -175,7 +175,7 @@ function PickingProgressModal({
           />
 
           <p className="mt-2 text-xs text-slate-500">
-            Debe ser mayor que cero y menor que la cantidad total solicitada.
+            Debe ser mayor que cero y no puede superar la cantidad pendiente por extraer.
           </p>
         </div>
 

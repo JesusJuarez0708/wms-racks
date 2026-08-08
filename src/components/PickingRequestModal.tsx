@@ -51,7 +51,10 @@ function PickingRequestModal({
         'La cantidad solicitada debe ser mayor que cero.';
     } else if (numericRequestedQuantity > availableQuantity) {
       quantityError =
-        `La cantidad solicitada no puede superar las ${availableQuantity} ${item.unit} disponibles.`;
+        `La cantidad solicitada no puede superar las ${formatQuantityUnit(
+          availableQuantity,
+          item.unit
+        )} disponibles.`;
     }
   }
 
@@ -175,7 +178,7 @@ function PickingRequestModal({
             />
 
             <span className="min-w-fit font-semibold text-slate-700">
-              {item.unit}
+              {item.unit ? `${item.unit}(S)` : ''}
             </span>
           </div>
 
@@ -185,7 +188,11 @@ function PickingRequestModal({
             </p>
           ) : (
             <p className="mt-2 text-sm text-slate-600">
-              Disponible: {availableQuantity} {item.unit}
+              Disponible:{' '}
+              {formatQuantityUnit(
+                availableQuantity,
+                item.unit
+              )}
             </p>
           )}
         </div>
