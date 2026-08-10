@@ -77,6 +77,12 @@ type PalletSeed = {
   palletCode: string;
   lot: string;
   quantity: number;
+  maxQuantity?: number;
+  currentWeightKg?: number;
+  maxWeightKg?: number;
+  widthM?: number;
+  lengthM?: number;
+  heightM?: number;
   palletStatus?: 'active' | 'out' | 'blocked' | 'damaged';
 };
 
@@ -217,6 +223,9 @@ const altaRotationPalletSeeds: PalletSeed[] = [
     palletCode: 'PLT-ALT001-01',
     lot: 'LOT-ALT001-01',
     quantity: 50,
+    maxQuantity: 50,
+    widthM: 1.02,
+    lengthM: 1.20,
     palletStatus: 'active',
   },
   {
@@ -224,6 +233,9 @@ const altaRotationPalletSeeds: PalletSeed[] = [
     palletCode: 'PLT-ALT001-02',
     lot: 'LOT-ALT001-01',
     quantity: 30,
+    maxQuantity: 50,
+    widthM: 1.02,
+    lengthM: 1.20,
     palletStatus: 'active',
   },
   {
@@ -231,6 +243,9 @@ const altaRotationPalletSeeds: PalletSeed[] = [
     palletCode: 'PLT-ALT001-03',
     lot: 'LOT-ALT001-01',
     quantity: 20,
+    maxQuantity: 50,
+    widthM: 1.02,
+    lengthM: 1.20,
     palletStatus: 'active',
   },
   {
@@ -238,6 +253,9 @@ const altaRotationPalletSeeds: PalletSeed[] = [
     palletCode: 'PLT-ALT001-04',
     lot: 'LOT-ALT001-02',
     quantity: 50,
+    maxQuantity: 50,
+    widthM: 1.02,
+    lengthM: 1.20,
     palletStatus: 'active',
   },
   {
@@ -1026,14 +1044,20 @@ export async function seedCJWMSDemoData() {
       continue;
     }
 
-    await createPallet({
-      product_id: product.id,
-      pallet_code: seed.palletCode,
-      lot: seed.lot,
-      quantity: seed.quantity,
-      unit: product.unit ?? 'CAJA',
-      status: seed.palletStatus ?? 'active',
-    });
+  await createPallet({
+    product_id: product.id,
+    pallet_code: seed.palletCode,
+    lot: seed.lot,
+    quantity: seed.quantity,
+    unit: product.unit ?? 'CAJA',
+    max_quantity: seed.maxQuantity ?? null,
+    current_weight_kg: seed.currentWeightKg ?? null,
+    max_weight_kg: seed.maxWeightKg ?? null,
+    width_m: seed.widthM ?? null,
+    length_m: seed.lengthM ?? null,
+    height_m: seed.heightM ?? null,
+    status: seed.palletStatus ?? 'active',
+  });
 
     pallets = await getPallets();
   }

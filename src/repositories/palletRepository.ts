@@ -13,6 +13,12 @@ export type PalletRecord = {
   lot: string | null;
   quantity: number | null;
   unit: string | null;
+  max_quantity: number | null;
+  current_weight_kg: number | null;
+  max_weight_kg: number | null;
+  width_m: number | null;
+  length_m: number | null;
+  height_m: number | null;
   status: PalletStatus;
   created_at?: string;
   updated_at?: string | null;
@@ -24,6 +30,12 @@ export type CreatePalletRecord = {
   lot?: string | null;
   quantity?: number | null;
   unit?: string | null;
+  max_quantity?: number | null;
+  current_weight_kg?: number | null;
+  max_weight_kg?: number | null;
+  width_m?: number | null;
+  length_m?: number | null;
+  height_m?: number | null;
   status?: PalletStatus;
 };
 
