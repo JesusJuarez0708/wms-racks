@@ -15,6 +15,7 @@ export type PalletRecord = {
   unit: string | null;
   max_quantity: number | null;
   current_weight_kg: number | null;
+  tare_weight_kg: number | null;
   max_weight_kg: number | null;
   width_m: number | null;
   length_m: number | null;
@@ -32,6 +33,7 @@ export type CreatePalletRecord = {
   unit?: string | null;
   max_quantity?: number | null;
   current_weight_kg?: number | null;
+  tare_weight_kg?: number | null;
   max_weight_kg?: number | null;
   width_m?: number | null;
   length_m?: number | null;
@@ -43,6 +45,15 @@ export type UpdatePalletQuantityRecord = {
   quantity: number;
   unit: string;
   status: PalletStatus;
+};
+
+export type UpdatePalletPhysicalRecord = {
+  current_weight_kg: number | null;
+  tare_weight_kg: number | null;
+  max_weight_kg: number | null;
+  width_m: number | null;
+  length_m: number | null;
+  height_m: number | null;
 };
 
 export async function fetchPallets(): Promise<PalletRecord[]> {
@@ -98,6 +109,34 @@ export async function updatePalletQuantity(
   if (error) {
     throw new Error(
       `Error al actualizar cantidad del pallet: ${error.message}`
+    );
+  }
+
+  return data;
+}
+
+export async function updatePalletPhysicalData(
+  palletId: string,
+  update: UpdatePalletPhysicalRecord
+): Promise<PalletRecord> {
+  const { data, error } = await supabase
+    .from('pallets')
+    .update({
+      current_weight_kg: update.current_weight_kg,
+      tare_weight_kg: update.tare_weight_kg,
+      max_weight_kg: update.max_weight_kg,
+      width_m: update.width_m,
+      length_m: update.length_m,
+      height_m: update.height_m,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', palletId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al actualizar datos físicos del pallet: ${error.message}`
     );
   }
 

@@ -32,6 +32,7 @@ import {
 import {
   createRackPosition,
   getRackPositions,
+  updateRackPositionPhysical,
 } from '../services/rackPositionService';
 
 import {
@@ -86,6 +87,16 @@ type PalletSeed = {
   palletStatus?: 'active' | 'out' | 'blocked' | 'damaged';
 };
 
+type PalletPhysicalProfile = {
+  maxQuantity: number;
+  unitWeightKg: number;
+  palletTareKg: number;
+  maxWeightKg: number;
+  widthM: number;
+  lengthM: number;
+  heightM: number;
+};
+
 type InventorySeed = {
   palletCode: string;
   positionCode: string;
@@ -100,6 +111,183 @@ const warehouseSeed = {
   code: 'CJWMS-01',
   name: 'Almacén Principal CJWMS',
 } as const;
+
+// ============================================================
+// 2.1 Perfiles físicos reproducibles del Laboratorio
+// ============================================================
+//
+// Los pesos unitarios son coeficientes operativos de simulación
+// del Laboratorio CJWMS. No representan especificaciones
+// comerciales oficiales de los productos.
+//
+// currentWeightKg se calcula posteriormente como:
+//
+//   tara del pallet + cantidad actual × peso unitario
+//
+// maxWeightKg representa la capacidad estructural del pallet.
+// ============================================================
+
+function getPalletPhysicalSeedData(seed: PalletSeed) {
+  const profile = palletPhysicalProfiles[seed.productSku];
+
+  if (!profile) {
+    throw new Error(
+      `No existe perfil físico para el producto ${seed.productSku}.`
+    );
+  }
+
+  const maxQuantity =
+    seed.maxQuantity ?? profile.maxQuantity;
+
+  if (seed.quantity > maxQuantity) {
+    throw new Error(
+      `El pallet ${seed.palletCode} contiene ${seed.quantity} unidades y supera su capacidad máxima de ${maxQuantity}.`
+    );
+  }
+
+  const calculatedCurrentWeightKg =
+    profile.palletTareKg +
+    seed.quantity * profile.unitWeightKg;
+
+  const currentWeightKg =
+    seed.currentWeightKg ??
+    Number(calculatedCurrentWeightKg.toFixed(4));
+
+  const maxWeightKg =
+    seed.maxWeightKg ?? profile.maxWeightKg;
+
+  if (currentWeightKg > maxWeightKg) {
+    throw new Error(
+      `El pallet ${seed.palletCode} pesa ${currentWeightKg} kg y supera su capacidad máxima de ${maxWeightKg} kg.`
+    );
+  }
+
+  return {
+    maxQuantity,
+    currentWeightKg,
+    tareWeightKg: profile.palletTareKg,
+    maxWeightKg,
+    widthM: seed.widthM ?? profile.widthM,
+    lengthM: seed.lengthM ?? profile.lengthM,
+    heightM: seed.heightM ?? profile.heightM,
+  };
+}
+
+const palletPhysicalProfiles: Record<
+  string,
+  PalletPhysicalProfile
+> = {
+  'ALT-001': {
+    maxQuantity: 50,
+    unitWeightKg: 14.4,
+    palletTareKg: 25,
+    maxWeightKg: 1200,
+    widthM: 1.02,
+    lengthM: 1.2,
+    heightM: 1.55,
+  },
+  'ALT-002': {
+    maxQuantity: 60,
+    unitWeightKg: 12,
+    palletTareKg: 25,
+    maxWeightKg: 1200,
+    widthM: 1.02,
+    lengthM: 1.2,
+    heightM: 1.5,
+  },
+  'ALT-003': {
+    maxQuantity: 100,
+    unitWeightKg: 9,
+    palletTareKg: 25,
+    maxWeightKg: 1200,
+    widthM: 1.02,
+    lengthM: 1.2,
+    heightM: 1.45,
+  },
+  'ALT-004': {
+    maxQuantity: 40,
+    unitWeightKg: 20,
+    palletTareKg: 25,
+    maxWeightKg: 1200,
+    widthM: 1.02,
+    lengthM: 1.2,
+    heightM: 1.35,
+  },
+
+  'MED-001': {
+    maxQuantity: 30,
+    unitWeightKg: 20,
+    palletTareKg: 25,
+    maxWeightKg: 1200,
+    widthM: 1.02,
+    lengthM: 1.2,
+    heightM: 1.3,
+  },
+  'MED-002': {
+    maxQuantity: 50,
+    unitWeightKg: 12,
+    palletTareKg: 25,
+    maxWeightKg: 1200,
+    widthM: 1.02,
+    lengthM: 1.2,
+    heightM: 1.4,
+  },
+  'MED-003': {
+    maxQuantity: 80,
+    unitWeightKg: 4,
+    palletTareKg: 25,
+    maxWeightKg: 1200,
+    widthM: 1.02,
+    lengthM: 1.2,
+    heightM: 1.6,
+  },
+  'MED-004': {
+    maxQuantity: 25,
+    unitWeightKg: 15,
+    palletTareKg: 25,
+    maxWeightKg: 1200,
+    widthM: 1.02,
+    lengthM: 1.2,
+    heightM: 1.2,
+  },
+
+  'BAJ-001': {
+    maxQuantity: 20,
+    unitWeightKg: 40,
+    palletTareKg: 25,
+    maxWeightKg: 1200,
+    widthM: 1.02,
+    lengthM: 1.2,
+    heightM: 1.5,
+  },
+  'BAJ-002': {
+    maxQuantity: 40,
+    unitWeightKg: 20,
+    palletTareKg: 25,
+    maxWeightKg: 1200,
+    widthM: 1.02,
+    lengthM: 1.2,
+    heightM: 1.45,
+  },
+  'BAJ-003': {
+    maxQuantity: 15,
+    unitWeightKg: 8,
+    palletTareKg: 25,
+    maxWeightKg: 1200,
+    widthM: 1.02,
+    lengthM: 1.2,
+    heightM: 1.1,
+  },
+  'BAJ-004': {
+    maxQuantity: 24,
+    unitWeightKg: 8,
+    palletTareKg: 25,
+    maxWeightKg: 1200,
+    widthM: 1.02,
+    lengthM: 1.2,
+    heightM: 1.3,
+  },
+};
 
 // ============================================================
 // 3. Catálogo oficial de productos MOE
@@ -716,6 +904,8 @@ function getRackPositionPayload(
       rack_type: 'drive_in' as const,
       zone: parts[0],
       max_depth: parts[2] === '1' ? 5 : 6,
+      max_height_m: 1.6,
+      max_weight_kg: 1000,
     };
   }
 
@@ -728,6 +918,8 @@ function getRackPositionPayload(
     position_number: Number(location.id.slice(1, 3)),
     rack_type: 'selectivo' as const,
     zone: location.rack,
+    max_height_m: 1.8,
+    max_weight_kg: 1200,
   };
 }
 
@@ -983,7 +1175,28 @@ export async function seedCJWMSDemoData() {
       .trim()
       .toUpperCase();
 
-    if (existingPositionCodes.has(locationCode)) {
+    const existingPosition = positions.find(
+      (item) =>
+        item.code.trim().toUpperCase() === locationCode
+    );
+
+    if (existingPosition) {
+      const payload = getRackPositionPayload(
+        location.id,
+        existingPosition.rack_id,
+        warehouse.id
+      );
+
+      if (!payload) {
+        continue;
+      }
+
+      await updateRackPositionPhysical({
+        positionId: existingPosition.id,
+        maxHeightM: payload.max_height_m ?? null,
+        maxWeightKg: payload.max_weight_kg ?? null,
+      });
+
       continue;
     }
 
@@ -1044,18 +1257,21 @@ export async function seedCJWMSDemoData() {
       continue;
     }
 
+  const physicalData = getPalletPhysicalSeedData(seed);
+
   await createPallet({
     product_id: product.id,
     pallet_code: seed.palletCode,
     lot: seed.lot,
     quantity: seed.quantity,
     unit: product.unit ?? 'CAJA',
-    max_quantity: seed.maxQuantity ?? null,
-    current_weight_kg: seed.currentWeightKg ?? null,
-    max_weight_kg: seed.maxWeightKg ?? null,
-    width_m: seed.widthM ?? null,
-    length_m: seed.lengthM ?? null,
-    height_m: seed.heightM ?? null,
+    max_quantity: physicalData.maxQuantity,
+    current_weight_kg: physicalData.currentWeightKg,
+    tare_weight_kg: physicalData.tareWeightKg,
+    max_weight_kg: physicalData.maxWeightKg,
+    width_m: physicalData.widthM,
+    length_m: physicalData.lengthM,
+    height_m: physicalData.heightM,
     status: seed.palletStatus ?? 'active',
   });
 

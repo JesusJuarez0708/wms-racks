@@ -13,6 +13,8 @@ export type RackPositionRecord = {
   zone: string | null;
   aisle: string | null;
   max_depth: number | null;
+  max_height_m: number | null;
+  max_weight_kg: number | null;
   position_status: string | null;
   is_active: boolean;
   created_at?: string;
@@ -31,8 +33,15 @@ export type CreateRackPositionRecord = {
   zone?: string | null;
   aisle?: string | null;
   max_depth?: number | null;
+  max_height_m?: number | null;
+  max_weight_kg?: number | null;
   position_status?: string | null;
   is_active?: boolean;
+};
+
+export type UpdateRackPositionPhysicalCapacityRecord = {
+  max_height_m: number | null;
+  max_weight_kg: number | null;
 };
 
 export async function fetchRackPositions(): Promise<RackPositionRecord[]> {
@@ -82,6 +91,30 @@ export async function insertRackPosition(
 
   if (error) {
     throw new Error(`Error al crear posición: ${error.message}`);
+  }
+
+  return data;
+}
+
+export async function updateRackPositionPhysicalCapacity(
+  positionId: string,
+  update: UpdateRackPositionPhysicalCapacityRecord
+): Promise<RackPositionRecord> {
+  const { data, error } = await supabase
+    .from('rack_positions')
+    .update({
+      max_height_m: update.max_height_m,
+      max_weight_kg: update.max_weight_kg,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', positionId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Error al actualizar capacidad física de posición: ${error.message}`
+    );
   }
 
   return data;

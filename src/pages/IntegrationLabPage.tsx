@@ -8,7 +8,12 @@ import {
 import { getWarehouses } from '../services/warehouseService';
 import { getProducts } from '../services/productService';
 import { getRacks } from '../services/rackService';
-import { getRackPositions } from '../services/rackPositionService';
+
+import {
+  getRackPositions,
+  validatePalletPositionPhysicalCompatibility,
+} from '../services/rackPositionService';
+
 import { getInventory } from '../services/inventoryService';
 import { getMovements } from '../services/movementService';
 import {
@@ -39,6 +44,8 @@ import { generateOperationalDecisions } from '../services/decisionEngineService'
 import { executeMovementWorkflow } from '../services/movementWorkflowService';
 
 import { testGateAccessConnection } from '../services/testGateAccessConnection';
+
+import { getPallets } from '../services/palletService';
 
 type LabStats = {
   warehouses: number;
@@ -430,6 +437,122 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testPhysicalCompatibility() {
+    setLoading(true);
+
+    try {
+      const [pallets, positions] = await Promise.all([
+        getPallets(),
+        getRackPositions(),
+      ]);
+
+      const pallet = pallets.find(
+        (item) =>
+          item.height_m !== null &&
+          item.current_weight_kg !== null
+      );
+
+      const position = positions.find(
+        (item) =>
+          item.max_height_m !== null &&
+          item.max_weight_kg !== null
+      );
+
+      if (!pallet || !position) {
+        addLog(
+          'Compatibilidad física: faltan pallets o posiciones con datos físicos completos. Ejecute primero el Seeder.'
+        );
+        return;
+      }
+
+      const compatiblePosition = {
+        ...position,
+        max_height_m: Math.max(
+          position.max_height_m ?? 0,
+          pallet.height_m ?? 0
+        ),
+        max_weight_kg: Math.max(
+          position.max_weight_kg ?? 0,
+          pallet.current_weight_kg ?? 0
+        ),
+      };
+
+      const compatibleResult =
+        validatePalletPositionPhysicalCompatibility(
+          pallet,
+          compatiblePosition
+        );
+
+      const incompatiblePosition = {
+        ...position,
+        max_height_m:
+          pallet.height_m !== null
+            ? Math.max(pallet.height_m - 0.1, 0.01)
+            : 0.01,
+        max_weight_kg:
+          pallet.current_weight_kg !== null
+            ? Math.max(
+                pallet.current_weight_kg - 1,
+                0.01
+              )
+            : 0.01,
+      };
+
+      const incompatibleResult =
+        validatePalletPositionPhysicalCompatibility(
+          pallet,
+          incompatiblePosition
+        );
+
+      const insufficientDataPosition = {
+        ...position,
+        max_height_m: null,
+        max_weight_kg: null,
+      };
+
+      const insufficientDataResult =
+        validatePalletPositionPhysicalCompatibility(
+          pallet,
+          insufficientDataPosition
+        );
+
+      if (compatibleResult.status !== 'compatible') {
+        throw new Error(
+          `Se esperaba compatible y se obtuvo ${compatibleResult.status}.`
+        );
+      }
+
+      if (incompatibleResult.status !== 'incompatible') {
+        throw new Error(
+          `Se esperaba incompatible y se obtuvo ${incompatibleResult.status}.`
+        );
+      }
+
+      if (
+        insufficientDataResult.status !==
+        'insufficient_data'
+      ) {
+        throw new Error(
+          `Se esperaba insufficient_data y se obtuvo ${insufficientDataResult.status}.`
+        );
+      }
+
+      addLog(
+        `Compatibilidad física OK: ${pallet.pallet_code} validó correctamente los escenarios compatible, incompatible e insufficient_data.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en compatibilidad física: ${error.message}`
+          : 'Error inesperado en compatibilidad física.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   // Memoria Operativa
   async function testOperationalMemory() {
     setLoading(true);
@@ -554,6 +677,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Gate Access
+        </button>
+
+        <button
+          onClick={testPhysicalCompatibility}
+          disabled={loading}
+          className="rounded-xl bg-rose-600 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Físico
         </button>
 
         <button
