@@ -1275,6 +1275,248 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testLocationDecisionTraceability() {
+    setLoading(true);
+
+    let inventoryItemId: string | null = null;
+    let originalPositionId: string | null = null;
+
+    try {
+      const [
+        pallets,
+        products,
+        positions,
+        inventory,
+      ] = await Promise.all([
+        getPallets(),
+        getProducts(),
+        getRackPositions(),
+        getInventory(),
+      ]);
+
+      const testInventoryItem = inventory.find((item) => {
+        if (item.status !== 'available') {
+          return false;
+        }
+
+        const pallet = pallets.find(
+          (candidate) => candidate.id === item.pallet_id
+        );
+
+        const product = products.find(
+          (candidate) =>
+            candidate.id === pallet?.product_id
+        );
+
+        const originPosition = positions.find(
+          (position) =>
+            position.id === item.rack_position_id
+        );
+
+        if (!pallet || !product || !originPosition) {
+          return false;
+        }
+
+        const recommendation =
+          rankPalletDestinationPositions({
+            warehouseId: item.warehouse_id,
+            pallet,
+            product,
+            pallets,
+            positions,
+            inventory,
+            originPositionId: originPosition.id,
+          });
+
+        return recommendation.candidates.length > 0;
+      });
+
+      if (!testInventoryItem) {
+        throw new Error(
+          'No existe un pallet con una recomendación válida para probar la trazabilidad 23.7.'
+        );
+      }
+
+      const pallet = pallets.find(
+        (item) => item.id === testInventoryItem.pallet_id
+      );
+
+      if (!pallet) {
+        throw new Error(
+          'No fue posible localizar el pallet de prueba para 23.7.'
+        );
+      }
+
+      const product = products.find(
+        (item) => item.id === pallet.product_id
+      );
+
+      if (!product) {
+        throw new Error(
+          'No fue posible localizar el producto del pallet de prueba para 23.7.'
+        );
+      }
+
+      const originPosition = positions.find(
+        (position) =>
+          position.id === testInventoryItem.rack_position_id
+      );
+
+      if (!originPosition) {
+        throw new Error(
+          'No fue posible localizar la posición origen para 23.7.'
+        );
+      }
+
+      const recommendation =
+        rankPalletDestinationPositions({
+          warehouseId: testInventoryItem.warehouse_id,
+          pallet,
+          product,
+          pallets,
+          positions,
+          inventory,
+          originPositionId: originPosition.id,
+        });
+
+      const selectedCandidate = recommendation.candidates[0];
+
+      if (!selectedCandidate) {
+        throw new Error(
+          'El motor no produjo un destino inteligente para probar 23.7.'
+        );
+      }
+
+      const expectedExplanation = [
+        `Reubicación evaluada por CJWMS para la posición ${selectedCandidate.position.code}.`,
+        `Recomendación: ${selectedCandidate.decision.explanation.recommendation}`,
+        `Interpretación: ${selectedCandidate.decision.explanation.interpretation}`,
+        `Confianza: ${selectedCandidate.decision.explanation.confidence}/100.`,
+      ].join(' ');
+
+      inventoryItemId = testInventoryItem.id;
+      originalPositionId = originPosition.id;
+
+      const createdMovement = await executeMovementWorkflow({
+        warehouse_id: testInventoryItem.warehouse_id,
+        movement_type: 'reubicacion',
+        pallet_id: pallet.id,
+        product_id: pallet.product_id,
+        origin_position_id: originPosition.id,
+        destination_position_id:
+          selectedCandidate.position.id,
+        quantity: pallet.quantity,
+        unit: pallet.unit,
+        status: 'completed',
+        reason:
+          'Integration Lab FASE 23.7 traceability',
+        notes:
+          'Prueba controlada de trazabilidad de decisión inteligente.',
+        decision_score: selectedCandidate.decision.score,
+        decision_explanation: expectedExplanation,
+        created_by: 'Integration Lab',
+      });
+
+      const movementsAfter = await getMovements();
+
+      const persistedMovement = movementsAfter.find(
+        (movement) => movement.id === createdMovement.id
+      );
+
+      if (!persistedMovement) {
+        throw new Error(
+          'El movimiento de prueba 23.7 no fue encontrado después de persistirse.'
+        );
+      }
+
+      if (
+        persistedMovement.decision_score !==
+        selectedCandidate.decision.score
+      ) {
+        throw new Error(
+          `El score persistido (${persistedMovement.decision_score}) no coincide con el score inteligente (${selectedCandidate.decision.score}).`
+        );
+      }
+
+      if (
+        persistedMovement.decision_explanation !==
+        expectedExplanation
+      ) {
+        throw new Error(
+          'La explicación inteligente persistida no coincide con la decisión ejecutada.'
+        );
+      }
+
+      const memoriesAfter =
+        await getOperationalMemories();
+
+      const movementMemory = memoriesAfter.find(
+        (memory) =>
+          memory.entity_id === createdMovement.id &&
+          memory.entity_type === 'movement' &&
+          memory.memory_type === 'movement'
+      );
+
+      if (!movementMemory) {
+        throw new Error(
+          'No se encontró la Memoria Operativa vinculada al movimiento 23.7.'
+        );
+      }
+
+      if (
+        movementMemory.score !==
+        selectedCandidate.decision.score
+      ) {
+        throw new Error(
+          `La Memoria Operativa conservó score ${movementMemory.score}, pero se esperaba ${selectedCandidate.decision.score}.`
+        );
+      }
+
+      addLog(
+        `FASE 23.7 OK: ${pallet.pallet_code} fue reubicado de ${originPosition.code} a ${selectedCandidate.position.code}. Movimiento ${createdMovement.id} conservó score ${selectedCandidate.decision.score} y la Memoria Operativa quedó vinculada con el mismo score.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en trazabilidad inteligente 23.7: ${error.message}`
+          : 'Error inesperado en trazabilidad inteligente 23.7.'
+      );
+    } finally {
+      if (
+        inventoryItemId &&
+        originalPositionId
+      ) {
+        try {
+          const currentInventory = await getInventory();
+
+          const currentItem = currentInventory.find(
+            (item) => item.id === inventoryItemId
+          );
+
+          if (
+            currentItem &&
+            currentItem.rack_position_id !==
+              originalPositionId
+          ) {
+            await changeInventoryPosition(
+              inventoryItemId,
+              originalPositionId
+            );
+          }
+        } catch (cleanupError) {
+          console.error(
+            'Error restaurando inventario después de la prueba 23.7:',
+            cleanupError
+          );
+        }
+      }
+
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -1824,6 +2066,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-violet-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Recomendación Física 23.6
+        </button>
+
+        <button
+          onClick={testLocationDecisionTraceability}
+          disabled={loading}
+          className="rounded-xl bg-sky-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Trazabilidad 23.7
         </button>
 
         <button

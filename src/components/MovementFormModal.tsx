@@ -582,6 +582,27 @@ function MovementFormModal({
     try {
       setSaving(true);
 
+      const selectedRecommendationCandidate =
+        movementType === 'reubicacion'
+          ? relocationRecommendation?.candidates.find(
+              (candidate) =>
+                candidate.position.id === destinationPositionId
+            ) ?? null
+          : null;
+
+      const movementDecisionScore =
+        selectedRecommendationCandidate?.decision.score ?? 60;
+
+      const movementDecisionExplanation =
+        selectedRecommendationCandidate
+          ? [
+              `Reubicación evaluada por CJWMS para la posición ${selectedRecommendationCandidate.position.code}.`,
+              `Recomendación: ${selectedRecommendationCandidate.decision.explanation.recommendation}`,
+              `Interpretación: ${selectedRecommendationCandidate.decision.explanation.interpretation}`,
+              `Confianza: ${selectedRecommendationCandidate.decision.explanation.confidence}/100.`,
+            ].join(' ')
+          : 'Movimiento capturado manualmente desde pantalla de Movimientos.';
+
       await executeMovementWorkflow({
         warehouse_id: warehouseId,
         movement_type: movementType,
@@ -598,9 +619,8 @@ function MovementFormModal({
             : 'completed',
         reason: 'Movimiento manual',
         notes: notes || null,
-        decision_score: 60,
-        decision_explanation:
-          'Movimiento capturado manualmente desde pantalla de Movimientos.',
+        decision_score: movementDecisionScore,
+        decision_explanation: movementDecisionExplanation,
         created_by: 'Usuario CJWMS',
       });
 
