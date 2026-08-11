@@ -181,3 +181,33 @@ export function validatePalletPositionPhysicalCompatibility(
     reasons,
   };
 }
+
+export function assertPalletPositionPhysicalCompatibility(
+  pallet: PalletRecord,
+  position: RackPositionRecord
+): PalletPositionPhysicalCompatibility {
+  const compatibility =
+    validatePalletPositionPhysicalCompatibility(
+      pallet,
+      position
+    );
+
+  if (compatibility.status === 'compatible') {
+    return compatibility;
+  }
+
+  const blockingReasons = compatibility.reasons
+    .filter(
+      (reason) =>
+        reason.status === 'incompatible' ||
+        reason.status === 'insufficient_data'
+    )
+    .map((reason) => reason.message);
+
+  throw new Error(
+    [
+      `La ubicación física del pallet ${compatibility.palletCode} en la posición ${compatibility.positionCode} fue rechazada.`,
+      ...blockingReasons,
+    ].join(' ')
+  );
+}

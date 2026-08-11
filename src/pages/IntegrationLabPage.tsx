@@ -11,10 +11,15 @@ import { getRacks } from '../services/rackService';
 
 import {
   getRackPositions,
+  updateRackPositionPhysical,
   validatePalletPositionPhysicalCompatibility,
 } from '../services/rackPositionService';
 
-import { getInventory } from '../services/inventoryService';
+import {
+  changeInventoryPosition,
+  getInventory,
+} from '../services/inventoryService';
+
 import { getMovements } from '../services/movementService';
 import {
   getOperationalMemories,
@@ -377,40 +382,237 @@ function IntegrationLabPage() {
   async function testWorkflow() {
     setLoading(true);
 
+    let inventoryItemId: string | null = null;
+    let originalPositionId: string | null = null;
+
     try {
-      const movements = await getMovements();
+      const [inventory, pallets, positions] =
+        await Promise.all([
+          getInventory(),
+          getPallets(),
+          getRackPositions(),
+        ]);
 
-      const lastMovement = movements[0];
+      const occupiedPositionIds = new Set(
+        inventory.map(
+          (item) => item.rack_position_id
+        )
+      );
 
-      if (!lastMovement) {
-        addLog('No hay movimientos disponibles para probar Workflow.');
-        return;
+      const candidate = inventory.find(
+        (item) => {
+          if (item.status !== 'available') {
+            return false;
+          }
+
+          const pallet = pallets.find(
+            (candidatePallet) =>
+              candidatePallet.id === item.pallet_id
+          );
+
+          const originPosition = positions.find(
+            (position) =>
+              position.id === item.rack_position_id
+          );
+
+          if (!pallet || !originPosition) {
+            return false;
+          }
+
+          return (
+            validatePalletPositionPhysicalCompatibility(
+              pallet,
+              originPosition
+            ).status === 'compatible'
+          );
+        }
+      );
+
+      if (!candidate) {
+        throw new Error(
+          'No existe inventario disponible en una posición físicamente compatible para ejecutar Test Workflow.'
+        );
       }
 
+      const pallet = pallets.find(
+        (item) =>
+          item.id === candidate.pallet_id
+      );
+
+      const originPosition = positions.find(
+        (position) =>
+          position.id === candidate.rack_position_id
+      );
+
+      if (!pallet || !originPosition) {
+        throw new Error(
+          'No fue posible obtener el pallet o la posición origen para Test Workflow.'
+        );
+      }
+
+      const destinationPosition = positions.find(
+        (position) =>
+          position.warehouse_id ===
+            candidate.warehouse_id &&
+          position.id !== originPosition.id &&
+          !occupiedPositionIds.has(position.id) &&
+          position.is_active &&
+          position.position_status === 'available' &&
+          validatePalletPositionPhysicalCompatibility(
+            pallet,
+            position
+          ).status === 'compatible'
+      );
+
+      if (!destinationPosition) {
+        throw new Error(
+          'No existe una posición libre físicamente compatible para ejecutar Test Workflow.'
+        );
+      }
+
+      inventoryItemId = candidate.id;
+      originalPositionId = originPosition.id;
+
       await executeMovementWorkflow({
-        warehouse_id: lastMovement.warehouse_id,
+        warehouse_id: candidate.warehouse_id,
         movement_type: 'reubicacion',
-        pallet_id: lastMovement.pallet_id,
-        product_id: lastMovement.product_id,
-        origin_position_id: lastMovement.destination_position_id,
-        destination_position_id: lastMovement.origin_position_id,
-        quantity: lastMovement.quantity,
-        unit: lastMovement.unit,
+        pallet_id: pallet.id,
+        product_id: pallet.product_id,
+        origin_position_id: originPosition.id,
+        destination_position_id:
+          destinationPosition.id,
+        quantity: pallet.quantity,
+        unit: pallet.unit,
         status: 'completed',
-        reason: 'Integration Lab Workflow Test',
-        notes: 'Prueba de workflow transaccional CJWMS.',
-        decision_score: 90,
+        reason:
+          'Integration Lab Workflow Compatible Test',
+        notes:
+          'Prueba positiva de reubicación físicamente compatible.',
+        decision_score: 100,
         decision_explanation:
-          'Test automático para validar Movement + Inventory.',
+          'La posición destino cumple las restricciones físicas obligatorias.',
         created_by: 'Integration Lab',
       });
 
-      addLog('Workflow OK: movimiento e inventario procesados.');
+      const inventoryAfterMovement =
+        await getInventory();
+
+      const movedInventoryItem =
+        inventoryAfterMovement.find(
+          (item) => item.id === candidate.id
+        );
+
+      if (!movedInventoryItem) {
+        throw new Error(
+          'El inventario de prueba no fue encontrado después de la reubicación.'
+        );
+      }
+
+      if (
+        movedInventoryItem.rack_position_id !==
+        destinationPosition.id
+      ) {
+        throw new Error(
+          `La reubicación compatible no llegó a la posición ${destinationPosition.code}.`
+        );
+      }
+
+      addLog(
+        `Workflow físico compatible OK: ${pallet.pallet_code} fue reubicado correctamente de ${originPosition.code} a ${destinationPosition.code}.`
+      );
+
+      await executeMovementWorkflow({
+        warehouse_id: candidate.warehouse_id,
+        movement_type: 'reubicacion',
+        pallet_id: pallet.id,
+        product_id: pallet.product_id,
+        origin_position_id:
+          destinationPosition.id,
+        destination_position_id:
+          originPosition.id,
+        quantity: pallet.quantity,
+        unit: pallet.unit,
+        status: 'completed',
+        reason:
+          'Integration Lab Workflow Compatible Test Restore',
+        notes:
+          'Restauración operativa posterior a la prueba positiva.',
+        decision_score: 100,
+        decision_explanation:
+          'Restauración del pallet a su ubicación original después de validar la reubicación compatible.',
+        created_by: 'Integration Lab',
+      });
+
+      const inventoryRestored =
+        await getInventory();
+
+      const restoredItem =
+        inventoryRestored.find(
+          (item) => item.id === candidate.id
+        );
+
+      if (
+        !restoredItem ||
+        restoredItem.rack_position_id !==
+          originPosition.id
+      ) {
+        throw new Error(
+          `La prueba positiva terminó correctamente, pero no fue posible confirmar el retorno a ${originPosition.code}.`
+        );
+      }
+
+      addLog(
+        `Workflow restaurado OK: ${pallet.pallet_code} regresó correctamente a ${originPosition.code}.`
+      );
+
       await loadStats();
     } catch (error) {
       console.error(error);
-      addLog('Error al probar Workflow.');
+
+      addLog(
+        error instanceof Error
+          ? `Error al probar Workflow: ${error.message}`
+          : 'Error inesperado al probar Workflow.'
+      );
     } finally {
+      /*
+      * Protección adicional:
+      * si la prueba se interrumpió después del primer movimiento,
+      * restauramos directamente la ubicación para no dejar alterado
+      * el inventario del laboratorio.
+      */
+      if (
+        inventoryItemId &&
+        originalPositionId
+      ) {
+        try {
+          const currentInventory =
+            await getInventory();
+
+          const currentItem =
+            currentInventory.find(
+              (item) =>
+                item.id === inventoryItemId
+            );
+
+          if (
+            currentItem &&
+            currentItem.rack_position_id !==
+              originalPositionId
+          ) {
+            await changeInventoryPosition(
+              inventoryItemId,
+              originalPositionId
+            );
+          }
+        } catch (cleanupError) {
+          console.error(
+            'Error restaurando inventario después de Test Workflow:',
+            cleanupError
+          );
+        }
+      }
+
       setLoading(false);
     }
   }
@@ -553,6 +755,250 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testMandatoryPhysicalPlacement() {
+    setLoading(true);
+
+    let destinationPositionId: string | null = null;
+    let originalMaxHeightM: number | null = null;
+    let originalMaxWeightKg: number | null = null;
+
+    let inventoryItemId: string | null = null;
+    let originalPositionId: string | null = null;
+
+    try {
+      const [pallets, positions, inventoryBefore] =
+        await Promise.all([
+          getPallets(),
+          getRackPositions(),
+          getInventory(),
+        ]);
+
+      const occupiedPositionIds = new Set(
+        inventoryBefore.map(
+          (item) => item.rack_position_id
+        )
+      );
+
+      const testInventoryItem = inventoryBefore.find(
+        (item) => {
+          if (item.status !== 'available') {
+            return false;
+          }
+
+          const pallet = pallets.find(
+            (candidate) =>
+              candidate.id === item.pallet_id
+          );
+
+          return Boolean(
+            pallet &&
+              pallet.height_m !== null &&
+              pallet.current_weight_kg !== null
+          );
+        }
+      );
+
+      if (!testInventoryItem) {
+        throw new Error(
+          'No existe inventario disponible con datos físicos completos para ejecutar la prueba obligatoria.'
+        );
+      }
+
+      const pallet = pallets.find(
+        (item) =>
+          item.id === testInventoryItem.pallet_id
+      );
+
+      if (
+        !pallet ||
+        pallet.height_m === null ||
+        pallet.current_weight_kg === null
+      ) {
+        throw new Error(
+          'No fue posible obtener el pallet físico de prueba.'
+        );
+      }
+
+      const originPosition = positions.find(
+        (position) =>
+          position.id ===
+          testInventoryItem.rack_position_id
+      );
+
+      if (!originPosition) {
+        throw new Error(
+          'No fue posible localizar la posición origen del pallet de prueba.'
+        );
+      }
+
+      const destinationPosition = positions.find(
+        (position) =>
+          position.warehouse_id ===
+            testInventoryItem.warehouse_id &&
+          position.id !== originPosition.id &&
+          !occupiedPositionIds.has(position.id) &&
+          position.is_active &&
+          position.position_status === 'available' &&
+          position.max_height_m !== null &&
+          position.max_weight_kg !== null
+      );
+
+      if (!destinationPosition) {
+        throw new Error(
+          'No existe una posición destino libre con capacidad física completa para ejecutar la prueba.'
+        );
+      }
+
+      destinationPositionId = destinationPosition.id;
+      originalMaxHeightM =
+        destinationPosition.max_height_m;
+      originalMaxWeightKg =
+        destinationPosition.max_weight_kg;
+
+      inventoryItemId = testInventoryItem.id;
+      originalPositionId = originPosition.id;
+
+      await updateRackPositionPhysical({
+        positionId: destinationPosition.id,
+        maxHeightM: Math.max(
+          pallet.height_m - 0.1,
+          0.01
+        ),
+        maxWeightKg: Math.max(
+          pallet.current_weight_kg - 1,
+          0.01
+        ),
+      });
+
+      let rejectionError: Error | null = null;
+
+      try {
+        await executeMovementWorkflow({
+          warehouse_id:
+            testInventoryItem.warehouse_id,
+          movement_type: 'reubicacion',
+          pallet_id: pallet.id,
+          product_id: pallet.product_id,
+          origin_position_id: originPosition.id,
+          destination_position_id:
+            destinationPosition.id,
+          quantity: pallet.quantity,
+          unit: pallet.unit,
+          status: 'completed',
+          reason:
+            'Integration Lab FASE 23.4',
+          notes:
+            'Prueba de restricción física obligatoria en reubicación.',
+          decision_score: 100,
+          decision_explanation:
+            'La reubicación debe ser rechazada antes de modificar el inventario.',
+          created_by: 'Integration Lab',
+        });
+      } catch (error) {
+        rejectionError =
+          error instanceof Error
+            ? error
+            : new Error(
+                'El workflow produjo un error inesperado.'
+              );
+      }
+
+      if (!rejectionError) {
+        throw new Error(
+          'La reubicación físicamente incompatible fue permitida y debía ser rechazada.'
+        );
+      }
+
+      const inventoryAfter = await getInventory();
+
+      const verifiedInventoryItem =
+        inventoryAfter.find(
+          (item) =>
+            item.id === testInventoryItem.id
+        );
+
+      if (!verifiedInventoryItem) {
+        throw new Error(
+          'El inventario de prueba desapareció durante la validación.'
+        );
+      }
+
+      if (
+        verifiedInventoryItem.rack_position_id !==
+        originPosition.id
+      ) {
+        throw new Error(
+          `La restricción física generó error, pero el inventario cambió de ${originPosition.code} a otra posición.`
+        );
+      }
+
+      addLog(
+        `Restricción física obligatoria OK: ${pallet.pallet_code} fue rechazado para ${destinationPosition.code} y permaneció correctamente en ${originPosition.code}. Motivo: ${rejectionError.message}`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en restricción física obligatoria: ${error.message}`
+          : 'Error inesperado en restricción física obligatoria.'
+      );
+    } finally {
+      if (
+        inventoryItemId &&
+        originalPositionId
+      ) {
+        try {
+          const inventoryCurrent =
+            await getInventory();
+
+          const currentItem =
+            inventoryCurrent.find(
+              (item) =>
+                item.id === inventoryItemId
+            );
+
+          if (
+            currentItem &&
+            currentItem.rack_position_id !==
+              originalPositionId
+          ) {
+            await changeInventoryPosition(
+              inventoryItemId,
+              originalPositionId
+            );
+          }
+        } catch (cleanupError) {
+          console.error(
+            'Error restaurando inventario de prueba:',
+            cleanupError
+          );
+        }
+      }
+
+      if (
+        destinationPositionId &&
+        originalMaxHeightM !== null &&
+        originalMaxWeightKg !== null
+      ) {
+        try {
+          await updateRackPositionPhysical({
+            positionId: destinationPositionId,
+            maxHeightM: originalMaxHeightM,
+            maxWeightKg: originalMaxWeightKg,
+          });
+        } catch (cleanupError) {
+          console.error(
+            'Error restaurando capacidad física de prueba:',
+            cleanupError
+          );
+        }
+      }
+
+      setLoading(false);
+    }
+  }
+
   // Memoria Operativa
   async function testOperationalMemory() {
     setLoading(true);
@@ -685,6 +1131,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-rose-600 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Físico
+        </button>
+
+        <button
+          onClick={testMandatoryPhysicalPlacement}
+          disabled={loading}
+          className="rounded-xl bg-red-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Restricción Física Obligatoria
         </button>
 
         <button

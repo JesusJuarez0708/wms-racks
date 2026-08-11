@@ -41,6 +41,11 @@ import {
 import { getPallets } from './palletService';
 
 import {
+  assertPalletPositionPhysicalCompatibility,
+  getRackPositions,
+} from './rackPositionService';
+
+import {
   createOutboundExecutionPlan,
   persistOutboundExecutionPlan,
 } from './outboundPlanningService';
@@ -208,12 +213,53 @@ export async function executeMovementWorkflow(
     ? inventory.find((item) => item.pallet_id === movement.pallet_id)
     : null;
 
+
+  async function assertPhysicalDestination(
+    palletId: string,
+    destinationPositionId: string
+  ) {
+    const [pallets, rackPositions] = await Promise.all([
+      getPallets(),
+      getRackPositions(),
+    ]);
+
+    const pallet = pallets.find(
+      (item) => item.id === palletId
+    );
+
+    if (!pallet) {
+      throw new Error(
+        `No fue posible validar físicamente la ubicación porque no se encontró el pallet ${palletId}.`
+      );
+    }
+
+    const destinationPosition = rackPositions.find(
+      (position) => position.id === destinationPositionId
+    );
+
+    if (!destinationPosition) {
+      throw new Error(
+        `No fue posible validar físicamente la ubicación porque no se encontró la posición destino ${destinationPositionId}.`
+      );
+    }
+
+    return assertPalletPositionPhysicalCompatibility(
+      pallet,
+      destinationPosition
+    );
+  }
+
   if (movement.movement_type === 'entrada') {
     if (
       movement.destination_position_id &&
       movement.pallet_id &&
       !existingInventoryItem
     ) {
+      await assertPhysicalDestination(
+        movement.pallet_id,
+        movement.destination_position_id
+      );
+
       await createInventoryItem({
         warehouse_id: movement.warehouse_id,
         rack_position_id: movement.destination_position_id,
@@ -223,6 +269,11 @@ export async function executeMovementWorkflow(
     }
 
     if (movement.destination_position_id && existingInventoryItem) {
+      await assertPhysicalDestination(
+        existingInventoryItem.pallet_id,
+        movement.destination_position_id
+      );
+
       await changeInventoryPosition(
         existingInventoryItem.id,
         movement.destination_position_id
@@ -246,6 +297,11 @@ export async function executeMovementWorkflow(
     const inventoryItemToMove = originInventoryItem ?? existingInventoryItem;
 
     if (movement.destination_position_id && inventoryItemToMove) {
+      await assertPhysicalDestination(
+        inventoryItemToMove.pallet_id,
+        movement.destination_position_id
+      );
+
       await changeInventoryPosition(
         inventoryItemToMove.id,
         movement.destination_position_id
