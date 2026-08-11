@@ -50,7 +50,10 @@ import { executeMovementWorkflow } from '../services/movementWorkflowService';
 
 import { testGateAccessConnection } from '../services/testGateAccessConnection';
 
-import { getPallets } from '../services/palletService';
+import {
+  getPallets,
+  updatePalletPhysical,
+} from '../services/palletService';
 
 type LabStats = {
   warehouses: number;
@@ -650,6 +653,8 @@ function IntegrationLabPage() {
 
       const pallet = pallets.find(
         (item) =>
+          item.width_m !== null &&
+          item.length_m !== null &&
           item.height_m !== null &&
           item.current_weight_kg !== null
       );
@@ -667,29 +672,228 @@ function IntegrationLabPage() {
         return;
       }
 
-      const compatiblePosition = {
+      const safeMaxHeightM = Math.max(
+        position.max_height_m ?? 0,
+        pallet.height_m ?? 0
+      );
+
+      const safeMaxWeightKg = Math.max(
+        position.max_weight_kg ?? 0,
+        pallet.current_weight_kg ?? 0
+      );
+
+      // --------------------------------------------------------
+      // FASE 23.5 — Geometría Selectivo
+      // 1.02 m ancho × 1.20 m largo
+      // --------------------------------------------------------
+
+      const selectivoPosition = {
         ...position,
-        max_height_m: Math.max(
-          position.max_height_m ?? 0,
-          pallet.height_m ?? 0
-        ),
-        max_weight_kg: Math.max(
-          position.max_weight_kg ?? 0,
-          pallet.current_weight_kg ?? 0
-        ),
+        code: 'TEST-SELECTIVO',
+        rack_type: 'selectivo',
+        level: '1',
+        max_height_m: safeMaxHeightM,
+        max_weight_kg: safeMaxWeightKg,
       };
 
-      const compatibleResult =
+      const selectivoResult =
         validatePalletPositionPhysicalCompatibility(
           pallet,
-          compatiblePosition
+          selectivoPosition
         );
 
-      const incompatiblePosition = {
+      if (selectivoResult.status !== 'compatible') {
+        throw new Error(
+          `Selectivo: se esperaba compatible y se obtuvo ${selectivoResult.status}.`
+        );
+      }
+
+      if (
+        selectivoResult.requiredOrientation !==
+        'standard'
+      ) {
+        throw new Error(
+          `Selectivo: se esperaba orientación standard y se obtuvo ${selectivoResult.requiredOrientation}.`
+        );
+      }
+
+      if (
+        selectivoResult.positionWidthM !== 1.02 ||
+        selectivoResult.positionLengthM !== 1.2
+      ) {
+        throw new Error(
+          'Selectivo: la geometría esperada es 1.02 m × 1.20 m.'
+        );
+      }
+
+      // --------------------------------------------------------
+      // FASE 23.5 — Drive In nivel de piso
+      // 1.02 m ancho × 1.20 m largo
+      // --------------------------------------------------------
+
+      const driveInFloorPosition = {
         ...position,
+        code: 'TEST-DRIVE-IN-N1',
+        rack_type: 'drive_in',
+        level: '1',
+        max_height_m: safeMaxHeightM,
+        max_weight_kg: safeMaxWeightKg,
+      };
+
+      const driveInFloorResult =
+        validatePalletPositionPhysicalCompatibility(
+          pallet,
+          driveInFloorPosition
+        );
+
+      if (
+        driveInFloorResult.status !== 'compatible'
+      ) {
+        throw new Error(
+          `Drive In nivel 1: se esperaba compatible y se obtuvo ${driveInFloorResult.status}.`
+        );
+      }
+
+      if (
+        driveInFloorResult.requiredOrientation !==
+        'standard'
+      ) {
+        throw new Error(
+          `Drive In nivel 1: se esperaba orientación standard y se obtuvo ${driveInFloorResult.requiredOrientation}.`
+        );
+      }
+
+      if (
+        driveInFloorResult.positionWidthM !== 1.02 ||
+        driveInFloorResult.positionLengthM !== 1.2
+      ) {
+        throw new Error(
+          'Drive In nivel 1: la geometría esperada es 1.02 m × 1.20 m.'
+        );
+      }
+
+      // --------------------------------------------------------
+      // FASE 23.5 — Drive In niveles superiores
+      // 1.20 m ancho × 1.02 m largo
+      // pallet girado 90°
+      // --------------------------------------------------------
+
+      const driveInUpperPosition = {
+        ...position,
+        code: 'TEST-DRIVE-IN-N2',
+        rack_type: 'drive_in',
+        level: '2',
+        max_height_m: safeMaxHeightM,
+        max_weight_kg: safeMaxWeightKg,
+      };
+
+      const driveInUpperResult =
+        validatePalletPositionPhysicalCompatibility(
+          pallet,
+          driveInUpperPosition
+        );
+
+      if (
+        driveInUpperResult.status !== 'compatible'
+      ) {
+        throw new Error(
+          `Drive In nivel superior: se esperaba compatible y se obtuvo ${driveInUpperResult.status}.`
+        );
+      }
+
+      if (
+        driveInUpperResult.requiredOrientation !==
+        'rotated_90'
+      ) {
+        throw new Error(
+          `Drive In nivel superior: se esperaba orientación rotated_90 y se obtuvo ${driveInUpperResult.requiredOrientation}.`
+        );
+      }
+
+      if (
+        driveInUpperResult.positionWidthM !== 1.2 ||
+        driveInUpperResult.positionLengthM !== 1.02
+      ) {
+        throw new Error(
+          'Drive In nivel superior: la geometría esperada es 1.20 m × 1.02 m.'
+        );
+      }
+
+      // --------------------------------------------------------
+      // FASE 23.5 — Incompatibilidad dimensional
+      // --------------------------------------------------------
+
+      const oversizedPallet = {
+        ...pallet,
+        width_m: 1.03,
+        length_m: 1.2,
+      };
+
+      const dimensionalIncompatibleResult =
+        validatePalletPositionPhysicalCompatibility(
+          oversizedPallet,
+          selectivoPosition
+        );
+
+      if (
+        dimensionalIncompatibleResult.status !==
+        'incompatible'
+      ) {
+        throw new Error(
+          `Dimensiones excedidas: se esperaba incompatible y se obtuvo ${dimensionalIncompatibleResult.status}.`
+        );
+      }
+
+      const dimensionalReason =
+        dimensionalIncompatibleResult.reasons.find(
+          (reason) =>
+            reason.field === 'dimensions'
+        );
+
+      if (
+        dimensionalReason?.status !== 'incompatible'
+      ) {
+        throw new Error(
+          'No se detectó correctamente la incompatibilidad dimensional.'
+        );
+      }
+
+      // --------------------------------------------------------
+      // FASE 23.5 — Datos dimensionales insuficientes
+      // --------------------------------------------------------
+
+      const incompletePallet = {
+        ...pallet,
+        width_m: null,
+      };
+
+      const insufficientDimensionsResult =
+        validatePalletPositionPhysicalCompatibility(
+          incompletePallet,
+          selectivoPosition
+        );
+
+      if (
+        insufficientDimensionsResult.status !==
+        'insufficient_data'
+      ) {
+        throw new Error(
+          `Dimensiones incompletas: se esperaba insufficient_data y se obtuvo ${insufficientDimensionsResult.status}.`
+        );
+      }
+
+      // --------------------------------------------------------
+      // Regresión FASE 23.3 — Altura y peso incompatibles
+      // --------------------------------------------------------
+
+      const incompatiblePosition = {
+        ...selectivoPosition,
         max_height_m:
           pallet.height_m !== null
-            ? Math.max(pallet.height_m - 0.1, 0.01)
+            ? Math.max(
+                pallet.height_m - 0.1,
+                0.01
+              )
             : 0.01,
         max_weight_kg:
           pallet.current_weight_kg !== null
@@ -706,8 +910,20 @@ function IntegrationLabPage() {
           incompatiblePosition
         );
 
+      if (
+        incompatibleResult.status !== 'incompatible'
+      ) {
+        throw new Error(
+          `Altura/peso: se esperaba incompatible y se obtuvo ${incompatibleResult.status}.`
+        );
+      }
+
+      // --------------------------------------------------------
+      // Regresión FASE 23.3 — Capacidad física incompleta
+      // --------------------------------------------------------
+
       const insufficientDataPosition = {
-        ...position,
+        ...selectivoPosition,
         max_height_m: null,
         max_weight_kg: null,
       };
@@ -718,29 +934,17 @@ function IntegrationLabPage() {
           insufficientDataPosition
         );
 
-      if (compatibleResult.status !== 'compatible') {
-        throw new Error(
-          `Se esperaba compatible y se obtuvo ${compatibleResult.status}.`
-        );
-      }
-
-      if (incompatibleResult.status !== 'incompatible') {
-        throw new Error(
-          `Se esperaba incompatible y se obtuvo ${incompatibleResult.status}.`
-        );
-      }
-
       if (
         insufficientDataResult.status !==
         'insufficient_data'
       ) {
         throw new Error(
-          `Se esperaba insufficient_data y se obtuvo ${insufficientDataResult.status}.`
+          `Capacidad incompleta: se esperaba insufficient_data y se obtuvo ${insufficientDataResult.status}.`
         );
       }
 
       addLog(
-        `Compatibilidad física OK: ${pallet.pallet_code} validó correctamente los escenarios compatible, incompatible e insufficient_data.`
+        `Compatibilidad física OK: ${pallet.pallet_code} validó Selectivo normal, Drive In nivel 1 normal, Drive In superior girado 90°, incompatibilidad dimensional y datos insuficientes.`
       );
     } catch (error) {
       console.error(error);
@@ -764,6 +968,14 @@ function IntegrationLabPage() {
 
     let inventoryItemId: string | null = null;
     let originalPositionId: string | null = null;
+
+    let testPalletId: string | null = null;
+    let originalCurrentWeightKg: number | null = null;
+    let originalTareWeightKg: number | null = null;
+    let originalMaxPalletWeightKg: number | null = null;
+    let originalWidthM: number | null = null;
+    let originalLengthM: number | null = null;
+    let originalHeightM: number | null = null;
 
     try {
       const [pallets, positions, inventoryBefore] =
@@ -792,8 +1004,12 @@ function IntegrationLabPage() {
 
           return Boolean(
             pallet &&
-              pallet.height_m !== null &&
-              pallet.current_weight_kg !== null
+              pallet.current_weight_kg !== null &&
+              pallet.tare_weight_kg !== null &&
+              pallet.max_weight_kg !== null &&
+              pallet.width_m !== null &&
+              pallet.length_m !== null &&
+              pallet.height_m !== null
           );
         }
       );
@@ -811,11 +1027,15 @@ function IntegrationLabPage() {
 
       if (
         !pallet ||
-        pallet.height_m === null ||
-        pallet.current_weight_kg === null
+        pallet.current_weight_kg === null ||
+        pallet.tare_weight_kg === null ||
+        pallet.max_weight_kg === null ||
+        pallet.width_m === null ||
+        pallet.length_m === null ||
+        pallet.height_m === null
       ) {
         throw new Error(
-          'No fue posible obtener el pallet físico de prueba.'
+          'No fue posible obtener un pallet con datos físicos completos para la prueba.'
         );
       }
 
@@ -840,12 +1060,20 @@ function IntegrationLabPage() {
           position.is_active &&
           position.position_status === 'available' &&
           position.max_height_m !== null &&
-          position.max_weight_kg !== null
+          position.max_weight_kg !== null &&
+          (
+            position.rack_type === 'selectivo' ||
+            (
+              position.rack_type === 'drive_in' &&
+              Number.isFinite(Number(position.level)) &&
+              Number(position.level) > 0
+            )
+          )
       );
 
       if (!destinationPosition) {
         throw new Error(
-          'No existe una posición destino libre con capacidad física completa para ejecutar la prueba.'
+          'No existe una posición destino libre con geometría y capacidad física completas para ejecutar la prueba.'
         );
       }
 
@@ -857,6 +1085,22 @@ function IntegrationLabPage() {
 
       inventoryItemId = testInventoryItem.id;
       originalPositionId = originPosition.id;
+
+      testPalletId = pallet.id;
+      originalCurrentWeightKg =
+        pallet.current_weight_kg;
+      originalTareWeightKg =
+        pallet.tare_weight_kg;
+      originalMaxPalletWeightKg =
+        pallet.max_weight_kg;
+      originalWidthM = pallet.width_m;
+      originalLengthM = pallet.length_m;
+      originalHeightM = pallet.height_m;
+
+      // ======================================================
+      // PRUEBA 1 — Regresión FASE 23.4
+      // Rechazo obligatorio por altura/peso
+      // ======================================================
 
       await updateRackPositionPhysical({
         positionId: destinationPosition.id,
@@ -870,7 +1114,7 @@ function IntegrationLabPage() {
         ),
       });
 
-      let rejectionError: Error | null = null;
+      let physicalRejectionError: Error | null = null;
 
       try {
         await executeMovementWorkflow({
@@ -886,16 +1130,16 @@ function IntegrationLabPage() {
           unit: pallet.unit,
           status: 'completed',
           reason:
-            'Integration Lab FASE 23.4',
+            'Integration Lab FASE 23.4 regression',
           notes:
-            'Prueba de restricción física obligatoria en reubicación.',
+            'Prueba obligatoria de rechazo por altura y peso.',
           decision_score: 100,
           decision_explanation:
             'La reubicación debe ser rechazada antes de modificar el inventario.',
           created_by: 'Integration Lab',
         });
       } catch (error) {
-        rejectionError =
+        physicalRejectionError =
           error instanceof Error
             ? error
             : new Error(
@@ -903,37 +1147,132 @@ function IntegrationLabPage() {
               );
       }
 
-      if (!rejectionError) {
+      if (!physicalRejectionError) {
         throw new Error(
-          'La reubicación físicamente incompatible fue permitida y debía ser rechazada.'
+          'La reubicación incompatible por altura/peso fue permitida y debía ser rechazada.'
         );
       }
 
-      const inventoryAfter = await getInventory();
+      const inventoryAfterPhysicalRejection =
+        await getInventory();
 
-      const verifiedInventoryItem =
-        inventoryAfter.find(
+      const itemAfterPhysicalRejection =
+        inventoryAfterPhysicalRejection.find(
           (item) =>
             item.id === testInventoryItem.id
         );
 
-      if (!verifiedInventoryItem) {
-        throw new Error(
-          'El inventario de prueba desapareció durante la validación.'
-        );
-      }
-
       if (
-        verifiedInventoryItem.rack_position_id !==
-        originPosition.id
+        !itemAfterPhysicalRejection ||
+        itemAfterPhysicalRejection.rack_position_id !==
+          originPosition.id
       ) {
         throw new Error(
-          `La restricción física generó error, pero el inventario cambió de ${originPosition.code} a otra posición.`
+          'El rechazo por altura/peso no conservó correctamente la posición origen.'
         );
       }
 
       addLog(
-        `Restricción física obligatoria OK: ${pallet.pallet_code} fue rechazado para ${destinationPosition.code} y permaneció correctamente en ${originPosition.code}. Motivo: ${rejectionError.message}`
+        `Restricción altura/peso OK: ${pallet.pallet_code} fue rechazado para ${destinationPosition.code} y permaneció en ${originPosition.code}.`
+      );
+
+      // Restauramos la capacidad real antes de probar dimensiones.
+      await updateRackPositionPhysical({
+        positionId: destinationPosition.id,
+        maxHeightM: originalMaxHeightM,
+        maxWeightKg: originalMaxWeightKg,
+      });
+
+      // ======================================================
+      // PRUEBA 2 — FASE 23.5
+      // Rechazo obligatorio por dimensiones
+      // ======================================================
+
+      await updatePalletPhysical({
+        palletId: pallet.id,
+        currentWeightKg:
+          pallet.current_weight_kg,
+        tareWeightKg:
+          pallet.tare_weight_kg,
+        maxWeightKg:
+          pallet.max_weight_kg,
+        widthM: 1.03,
+        lengthM: pallet.length_m,
+        heightM: pallet.height_m,
+      });
+
+      let dimensionalRejectionError:
+        | Error
+        | null = null;
+
+      try {
+        await executeMovementWorkflow({
+          warehouse_id:
+            testInventoryItem.warehouse_id,
+          movement_type: 'reubicacion',
+          pallet_id: pallet.id,
+          product_id: pallet.product_id,
+          origin_position_id: originPosition.id,
+          destination_position_id:
+            destinationPosition.id,
+          quantity: pallet.quantity,
+          unit: pallet.unit,
+          status: 'completed',
+          reason:
+            'Integration Lab FASE 23.5',
+          notes:
+            'Prueba obligatoria de rechazo por dimensiones del pallet.',
+          decision_score: 100,
+          decision_explanation:
+            'La reubicación debe ser rechazada por incompatibilidad dimensional antes de modificar el inventario.',
+          created_by: 'Integration Lab',
+        });
+      } catch (error) {
+        dimensionalRejectionError =
+          error instanceof Error
+            ? error
+            : new Error(
+                'El workflow produjo un error inesperado.'
+              );
+      }
+
+      if (!dimensionalRejectionError) {
+        throw new Error(
+          'La reubicación dimensionalmente incompatible fue permitida y debía ser rechazada.'
+        );
+      }
+
+      if (
+        !dimensionalRejectionError.message.includes(
+          'dimensiones'
+        )
+      ) {
+        throw new Error(
+          `El workflow rechazó la operación, pero no por dimensiones. Motivo recibido: ${dimensionalRejectionError.message}`
+        );
+      }
+
+      const inventoryAfterDimensionalRejection =
+        await getInventory();
+
+      const itemAfterDimensionalRejection =
+        inventoryAfterDimensionalRejection.find(
+          (item) =>
+            item.id === testInventoryItem.id
+        );
+
+      if (
+        !itemAfterDimensionalRejection ||
+        itemAfterDimensionalRejection.rack_position_id !==
+          originPosition.id
+      ) {
+        throw new Error(
+          'El rechazo dimensional no conservó correctamente la posición origen.'
+        );
+      }
+
+      addLog(
+        `Restricción dimensional obligatoria OK: ${pallet.pallet_code} con ancho temporal de 1.03 m fue rechazado para ${destinationPosition.code} y permaneció correctamente en ${originPosition.code}. Motivo: ${dimensionalRejectionError.message}`
       );
     } catch (error) {
       console.error(error);
@@ -971,6 +1310,36 @@ function IntegrationLabPage() {
         } catch (cleanupError) {
           console.error(
             'Error restaurando inventario de prueba:',
+            cleanupError
+          );
+        }
+      }
+
+      if (
+        testPalletId &&
+        originalCurrentWeightKg !== null &&
+        originalTareWeightKg !== null &&
+        originalMaxPalletWeightKg !== null &&
+        originalWidthM !== null &&
+        originalLengthM !== null &&
+        originalHeightM !== null
+      ) {
+        try {
+          await updatePalletPhysical({
+            palletId: testPalletId,
+            currentWeightKg:
+              originalCurrentWeightKg,
+            tareWeightKg:
+              originalTareWeightKg,
+            maxWeightKg:
+              originalMaxPalletWeightKg,
+            widthM: originalWidthM,
+            lengthM: originalLengthM,
+            heightM: originalHeightM,
+          });
+        } catch (cleanupError) {
+          console.error(
+            'Error restaurando dimensiones físicas del pallet de prueba:',
             cleanupError
           );
         }

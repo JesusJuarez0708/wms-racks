@@ -22,7 +22,7 @@ export type PhysicalCompatibilityStatus =
   | 'insufficient_data';
 
 export type PhysicalCompatibilityReason = {
-  field: 'height' | 'weight';
+  field: 'dimensions' | 'height' | 'weight';
   status: PhysicalCompatibilityStatus;
   message: string;
 };
@@ -33,6 +33,12 @@ export type PalletPositionPhysicalCompatibility = {
   palletCode: string;
   positionId: string;
   positionCode: string;
+  requiredOrientation:
+    | 'standard'
+    | 'rotated_90'
+    | null;
+  positionWidthM: number | null;
+  positionLengthM: number | null;
   reasons: PhysicalCompatibilityReason[];
 };
 
@@ -96,11 +102,119 @@ export async function updateRackPositionPhysical(
   );
 }
 
+type RackPositionFootprint = {
+  widthM: number | null;
+  lengthM: number | null;
+  requiredOrientation:
+    | 'standard'
+    | 'rotated_90'
+    | null;
+};
+
+function getRackPositionFootprint(
+  position: RackPositionRecord
+): RackPositionFootprint {
+  if (position.rack_type === 'selectivo') {
+    return {
+      widthM: 1.02,
+      lengthM: 1.2,
+      requiredOrientation: 'standard',
+    };
+  }
+
+  if (position.rack_type === 'drive_in') {
+    const level = Number(position.level);
+
+    if (!Number.isFinite(level) || level <= 0) {
+      return {
+        widthM: null,
+        lengthM: null,
+        requiredOrientation: null,
+      };
+    }
+
+    if (level === 1) {
+      return {
+        widthM: 1.02,
+        lengthM: 1.2,
+        requiredOrientation: 'standard',
+      };
+    }
+
+    return {
+      widthM: 1.2,
+      lengthM: 1.02,
+      requiredOrientation: 'rotated_90',
+    };
+  }
+
+  return {
+    widthM: null,
+    lengthM: null,
+    requiredOrientation: null,
+  };
+}
+
 export function validatePalletPositionPhysicalCompatibility(
   pallet: PalletRecord,
   position: RackPositionRecord
 ): PalletPositionPhysicalCompatibility {
   const reasons: PhysicalCompatibilityReason[] = [];
+
+  const footprint =
+    getRackPositionFootprint(position);
+
+  if (
+    pallet.width_m === null ||
+    pallet.length_m === null ||
+    footprint.widthM === null ||
+    footprint.lengthM === null ||
+    footprint.requiredOrientation === null
+  ) {
+    reasons.push({
+      field: 'dimensions',
+      status: 'insufficient_data',
+      message:
+        'No existen datos suficientes para validar las dimensiones del pallet contra la geometría operativa de la posición.',
+    });
+  } else {
+    const effectiveWidthM =
+      footprint.requiredOrientation === 'rotated_90'
+        ? pallet.length_m
+        : pallet.width_m;
+
+    const effectiveLengthM =
+      footprint.requiredOrientation === 'rotated_90'
+        ? pallet.width_m
+        : pallet.length_m;
+
+    if (
+      effectiveWidthM > footprint.widthM ||
+      effectiveLengthM > footprint.lengthM
+    ) {
+      reasons.push({
+        field: 'dimensions',
+        status: 'incompatible',
+        message:
+          `Las dimensiones del pallet (${pallet.width_m} m × ${pallet.length_m} m) no son compatibles con la posición (${footprint.widthM} m × ${footprint.lengthM} m) usando orientación ${
+            footprint.requiredOrientation === 'rotated_90'
+              ? 'girada 90°'
+              : 'normal'
+          }.`,
+      });
+    } else {
+      reasons.push({
+        field: 'dimensions',
+        status: 'compatible',
+        message:
+          `Las dimensiones del pallet (${pallet.width_m} m × ${pallet.length_m} m) son compatibles con la posición (${footprint.widthM} m × ${footprint.lengthM} m) usando orientación ${
+            footprint.requiredOrientation === 'rotated_90'
+              ? 'girada 90°'
+              : 'normal'
+          }.`,
+      });
+    }
+  }
 
   if (
     pallet.height_m === null ||
@@ -178,6 +292,10 @@ export function validatePalletPositionPhysicalCompatibility(
     palletCode: pallet.pallet_code,
     positionId: position.id,
     positionCode: position.code,
+    requiredOrientation:
+      footprint.requiredOrientation,
+    positionWidthM: footprint.widthM,
+    positionLengthM: footprint.lengthM,
     reasons,
   };
 }
