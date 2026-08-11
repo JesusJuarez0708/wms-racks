@@ -20,6 +20,10 @@ import {
 
 import { formatQuantityUnit } from '../utils/formatQuantityUnit';
 
+import {
+  rankPalletDestinationPositions,
+} from '../services/locationRecommendationService';
+
 type MovementFormModalProps = {
   open: boolean;
   onClose: () => void;
@@ -88,6 +92,90 @@ function MovementFormModal({
       ) ?? null,
     [positions, selectedInventoryItem]
   );
+
+  const selectedProduct = useMemo(
+    () =>
+      products.find(
+        (product) =>
+          product.id === selectedPallet?.product_id
+      ) ?? null,
+    [products, selectedPallet]
+  );
+
+  const relocationRecommendation = useMemo(() => {
+    if (
+      movementType !== 'reubicacion' ||
+      !warehouseId ||
+      !selectedPallet ||
+      !selectedProduct ||
+      !selectedOriginPosition
+    ) {
+      return null;
+    }
+
+    return rankPalletDestinationPositions({
+      warehouseId,
+      pallet: selectedPallet,
+      product: selectedProduct,
+      pallets,
+      positions,
+      inventory,
+      originPositionId: selectedOriginPosition.id,
+    });
+  }, [
+    movementType,
+    warehouseId,
+    selectedPallet,
+    selectedProduct,
+    selectedOriginPosition,
+    pallets,
+    positions,
+    inventory,
+  ]);
+
+  const destinationPositions = useMemo(() => {
+    if (
+      movementType === 'reubicacion' &&
+      relocationRecommendation
+    ) {
+      return relocationRecommendation.candidates.map(
+        (candidate) => candidate.position
+      );
+    }
+
+    return positions;
+  }, [
+    movementType,
+    relocationRecommendation,
+    positions,
+  ]);
+
+  useEffect(() => {
+    if (
+      movementType !== 'reubicacion' ||
+      !relocationRecommendation
+    ) {
+      return;
+    }
+
+    const destinationIsStillValid =
+      relocationRecommendation.candidates.some(
+        (candidate) =>
+          candidate.position.id === destinationPositionId
+      );
+
+    if (destinationIsStillValid) {
+      return;
+    }
+
+    setDestinationPositionId(
+      relocationRecommendation.candidates[0]?.position.id ?? ''
+    );
+  }, [
+    movementType,
+    relocationRecommendation,
+    destinationPositionId,
+  ]);
 
   const operationalPallets = useMemo(() => {
     if (movementType === 'entrada') {
@@ -780,12 +868,57 @@ function MovementFormModal({
               >
                 <option value="">Sin destino</option>
 
-                {positions.map((position) => (
-                  <option key={position.id} value={position.id}>
-                    {position.code}
-                  </option>
-                ))}
+                {destinationPositions.map((position) => {
+                  const recommendationCandidate =
+                    relocationRecommendation?.candidates.find(
+                      (candidate) =>
+                        candidate.position.id === position.id
+                    );
+
+                  return (
+                    <option key={position.id} value={position.id}>
+                      {position.code}
+                      {recommendationCandidate
+                        ? ` — Score ${recommendationCandidate.decision.score}`
+                        : ''}
+                    </option>
+                  );
+                })}
               </select>
+
+              {movementType === 'reubicacion' &&
+                selectedPallet &&
+                relocationRecommendation && (
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs font-semibold text-emerald-700">
+                      {relocationRecommendation.eligiblePositions}{' '}
+                      destinos físicamente válidos disponibles.
+                    </p>
+
+                    {relocationRecommendation.candidates[0] && (
+                      <p className="text-xs font-semibold text-blue-700">
+                        Recomendación CJWMS:{' '}
+                        {
+                          relocationRecommendation.candidates[0]
+                            .position.code
+                        }{' '}
+                        — Score{' '}
+                        {
+                          relocationRecommendation.candidates[0]
+                            .decision.score
+                        }
+                      </p>
+                    )}
+
+                    {relocationRecommendation.eligiblePositions === 0 && (
+                      <p className="text-xs font-semibold text-red-700">
+                        No existen destinos físicamente compatibles para
+                        este pallet.
+                      </p>
+                    )}
+                  </div>
+                )}
+
             </div>
 
             <div>

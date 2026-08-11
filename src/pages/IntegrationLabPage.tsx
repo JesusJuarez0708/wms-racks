@@ -55,6 +55,10 @@ import {
   updatePalletPhysical,
 } from '../services/palletService';
 
+import {
+  rankPalletDestinationPositions,
+} from '../services/locationRecommendationService';
+
 type LabStats = {
   warehouses: number;
   products: number;
@@ -959,6 +963,318 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testLocationRecommendationPhysicalFilter() {
+    setLoading(true);
+
+    try {
+      const [
+        pallets,
+        products,
+        positions,
+        inventory,
+      ] = await Promise.all([
+        getPallets(),
+        getProducts(),
+        getRackPositions(),
+        getInventory(),
+      ]);
+
+      const testInventoryItem = inventory.find(
+        (item) => {
+          if (item.status !== 'available') {
+            return false;
+          }
+
+          const pallet = pallets.find(
+            (candidate) =>
+              candidate.id === item.pallet_id
+          );
+
+          const originPosition = positions.find(
+            (position) =>
+              position.id === item.rack_position_id
+          );
+
+          const product = products.find(
+            (candidate) =>
+              candidate.id === pallet?.product_id
+          );
+
+          if (
+            !pallet ||
+            !originPosition ||
+            !product ||
+            pallet.width_m === null ||
+            pallet.length_m === null ||
+            pallet.height_m === null ||
+            pallet.current_weight_kg === null
+          ) {
+            return false;
+          }
+
+          return positions.some(
+            (position) =>
+              position.warehouse_id ===
+                item.warehouse_id &&
+              position.id !== originPosition.id &&
+              position.is_active &&
+              position.position_status ===
+                'available' &&
+              validatePalletPositionPhysicalCompatibility(
+                pallet,
+                position
+              ).status === 'compatible'
+          );
+        }
+      );
+
+      if (!testInventoryItem) {
+        throw new Error(
+          'No existe un pallet con datos físicos completos y una posición compatible para probar la recomendación 23.6.'
+        );
+      }
+
+      const pallet = pallets.find(
+        (item) =>
+          item.id === testInventoryItem.pallet_id
+      );
+
+      if (!pallet) {
+        throw new Error(
+          'No fue posible localizar el pallet de prueba para la recomendación 23.6.'
+        );
+      }
+
+      const product = products.find(
+        (item) => item.id === pallet.product_id
+      );
+
+      if (!product) {
+        throw new Error(
+          'No fue posible localizar el producto del pallet de prueba.'
+        );
+      }
+
+      const originPosition = positions.find(
+        (position) =>
+          position.id ===
+          testInventoryItem.rack_position_id
+      );
+
+      if (!originPosition) {
+        throw new Error(
+          'No fue posible localizar la posición origen del pallet de prueba.'
+        );
+      }
+
+      const compatibleBasePosition = positions.find(
+        (position) =>
+          position.warehouse_id ===
+            testInventoryItem.warehouse_id &&
+          position.id !== originPosition.id &&
+          position.is_active &&
+          position.position_status === 'available' &&
+          validatePalletPositionPhysicalCompatibility(
+            pallet,
+            position
+          ).status === 'compatible'
+      );
+
+      if (!compatibleBasePosition) {
+        throw new Error(
+          'No existe una posición base físicamente compatible para ejecutar la prueba 23.6.'
+        );
+      }
+
+      const safeMaxHeightM = Math.max(
+        compatibleBasePosition.max_height_m ?? 0,
+        pallet.height_m ?? 0
+      );
+
+      const safeMaxWeightKg = Math.max(
+        compatibleBasePosition.max_weight_kg ?? 0,
+        pallet.current_weight_kg ?? 0
+      );
+
+      const compatiblePositionA = {
+        ...compatibleBasePosition,
+        id: 'TEST-23-6-COMPATIBLE-A',
+        code: 'TEST-23-6-COMPATIBLE-A',
+        max_height_m: safeMaxHeightM,
+        max_weight_kg: safeMaxWeightKg,
+      };
+
+      const compatiblePositionB = {
+        ...compatibleBasePosition,
+        id: 'TEST-23-6-COMPATIBLE-B',
+        code: 'TEST-23-6-COMPATIBLE-B',
+        max_height_m: safeMaxHeightM,
+        max_weight_kg: safeMaxWeightKg,
+      };
+
+      const incompatiblePosition = {
+        ...compatibleBasePosition,
+        id: 'TEST-23-6-INCOMPATIBLE',
+        code: 'TEST-23-6-INCOMPATIBLE',
+        max_height_m: safeMaxHeightM,
+        max_weight_kg:
+          pallet.current_weight_kg !== null
+            ? Math.max(
+                pallet.current_weight_kg - 1,
+                0.01
+              )
+            : 0.01,
+      };
+
+      const insufficientDataPosition = {
+        ...compatibleBasePosition,
+        id: 'TEST-23-6-INSUFFICIENT',
+        code: 'TEST-23-6-INSUFFICIENT',
+        max_height_m: safeMaxHeightM,
+        max_weight_kg: null,
+      };
+
+      const recommendation =
+        rankPalletDestinationPositions({
+          warehouseId:
+            testInventoryItem.warehouse_id,
+          pallet,
+          product,
+          pallets,
+          positions: [
+            originPosition,
+            compatiblePositionA,
+            compatiblePositionB,
+            incompatiblePosition,
+            insufficientDataPosition,
+          ],
+          inventory,
+          originPositionId: originPosition.id,
+        });
+
+      if (recommendation.candidates.length !== 2) {
+        throw new Error(
+          `Se esperaban 2 posiciones físicamente elegibles y se obtuvieron ${recommendation.candidates.length}.`
+        );
+      }
+
+      const incompatibleCandidate =
+        recommendation.candidates.find(
+          (candidate) =>
+            candidate.position.id ===
+            incompatiblePosition.id
+        );
+
+      if (incompatibleCandidate) {
+        throw new Error(
+          'La posición físicamente incompatible entró al ranking y debía ser descartada.'
+        );
+      }
+
+      const insufficientCandidate =
+        recommendation.candidates.find(
+          (candidate) =>
+            candidate.position.id ===
+            insufficientDataPosition.id
+        );
+
+      if (insufficientCandidate) {
+        throw new Error(
+          'La posición con datos físicos insuficientes entró al ranking y debía ser descartada.'
+        );
+      }
+
+      const incompatibleDiscard =
+        recommendation.discarded.find(
+          (item) =>
+            item.position.id ===
+            incompatiblePosition.id
+        );
+
+      if (
+        incompatibleDiscard?.reason !==
+        'physical_incompatible'
+      ) {
+        throw new Error(
+          'La posición incompatible no fue registrada correctamente como descarte físico.'
+        );
+      }
+
+      const insufficientDiscard =
+        recommendation.discarded.find(
+          (item) =>
+            item.position.id ===
+            insufficientDataPosition.id
+        );
+
+      if (
+        insufficientDiscard?.reason !==
+        'insufficient_physical_data'
+      ) {
+        throw new Error(
+          'La posición con información física incompleta no fue descartada con el motivo esperado.'
+        );
+      }
+
+      const nonCompatibleCandidate =
+        recommendation.candidates.find(
+          (candidate) =>
+            candidate.physicalCompatibility.status !==
+            'compatible'
+        );
+
+      if (nonCompatibleCandidate) {
+        throw new Error(
+          `La posición ${nonCompatibleCandidate.position.code} llegó al ranking sin ser físicamente compatible.`
+        );
+      }
+
+      for (
+        let index = 1;
+        index < recommendation.candidates.length;
+        index += 1
+      ) {
+        const previous =
+          recommendation.candidates[index - 1];
+
+        const current =
+          recommendation.candidates[index];
+
+        if (
+          previous.decision.score <
+          current.decision.score
+        ) {
+          throw new Error(
+            'Las posiciones candidatas no fueron ordenadas correctamente de mayor a menor score.'
+          );
+        }
+      }
+
+      const bestCandidate =
+        recommendation.candidates[0];
+
+      if (!bestCandidate) {
+        throw new Error(
+          'El motor no produjo una mejor posición recomendada.'
+        );
+      }
+
+      addLog(
+        `FASE 23.6 OK: ${pallet.pallet_code} obtuvo ${recommendation.eligiblePositions} posiciones físicamente elegibles. La mejor fue ${bestCandidate.position.code} con score ${bestCandidate.decision.score}. La posición incompatible y la posición con datos físicos insuficientes fueron descartadas antes del ranking.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en recomendación física 23.6: ${error.message}`
+          : 'Error inesperado en recomendación física 23.6.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -1500,6 +1816,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-rose-600 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Físico
+        </button>
+
+        <button
+          onClick={testLocationRecommendationPhysicalFilter}
+          disabled={loading}
+          className="rounded-xl bg-violet-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Recomendación Física 23.6
         </button>
 
         <button
