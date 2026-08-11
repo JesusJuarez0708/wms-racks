@@ -1472,8 +1472,38 @@ function IntegrationLabPage() {
         );
       }
 
+      const movementMemoryMetadata =
+        movementMemory.metadata ?? {};
+
+      if (
+        movementMemoryMetadata.decisionScore !==
+        selectedCandidate.decision.score
+      ) {
+        throw new Error(
+          'La Memoria Operativa no conservó correctamente decisionScore en metadata.'
+        );
+      }
+
+      if (
+        movementMemoryMetadata.decisionExplanation !==
+        expectedExplanation
+      ) {
+        throw new Error(
+          'La Memoria Operativa no conservó la explicación original de la decisión ejecutada.'
+        );
+      }
+
+      if (
+        movementMemoryMetadata.recommendationId !==
+        persistedMovement.recommendation_id
+      ) {
+        throw new Error(
+          'La Memoria Operativa no conservó correctamente recommendationId.'
+        );
+      }
+
       addLog(
-        `FASE 23.7 OK: ${pallet.pallet_code} fue reubicado de ${originPosition.code} a ${selectedCandidate.position.code}. Movimiento ${createdMovement.id} conservó score ${selectedCandidate.decision.score} y la Memoria Operativa quedó vinculada con el mismo score.`
+        `FASE 23.8 OK: ${pallet.pallet_code} fue reubicado de ${originPosition.code} a ${selectedCandidate.position.code}. Movimiento ${createdMovement.id} conservó score ${selectedCandidate.decision.score} y la Memoria Operativa preservó score, explicación y recommendationId de la decisión ejecutada.`
       );
     } catch (error) {
       console.error(error);

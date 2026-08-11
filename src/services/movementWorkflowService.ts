@@ -363,7 +363,7 @@ export async function executeMovementWorkflow(
     description: `Movimiento ${createdMovement.movement_type} registrado correctamente en CJWMS.`,
     score: createdMovement.decision_score ?? 75,
     metadata: {
-      phase: '12.6',
+      phase: '23.8',
       source: 'movementWorkflowService',
       warehouseId: createdMovement.warehouse_id,
       movementType: createdMovement.movement_type,
@@ -373,6 +373,9 @@ export async function executeMovementWorkflow(
       destinationPositionId: createdMovement.destination_position_id,
       status: createdMovement.status,
       reason: createdMovement.reason,
+      decisionScore: createdMovement.decision_score,
+      decisionExplanation: createdMovement.decision_explanation,
+      recommendationId: createdMovement.recommendation_id,
     },
   });
 
