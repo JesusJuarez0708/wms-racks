@@ -6,12 +6,21 @@ export type MemoryPattern = {
   description: string;
   score: number;
   occurrences: number;
+  kind?: 'recommendation-deviation-recurrence';
+  context?: {
+    movementType: string;
+    deviationReason: string;
+  };
+  evidence?: {
+    memoryIds: string[];
+  };
 };
 
 type RecommendationDeviationPatternGroup = {
   movementType: string;
   deviationReason: string;
   occurrences: number;
+  memoryIds: string[];
 };
 
 const MIN_RECURRENT_DEVIATION_OCCURRENCES = 2;
@@ -65,9 +74,9 @@ function detectRecommendationDeviationPatterns(
     ]);
 
     const currentGroup = groupedDeviations.get(groupKey);
-
     if (currentGroup) {
       currentGroup.occurrences += 1;
+      currentGroup.memoryIds.push(memory.id);
       return;
     }
 
@@ -75,6 +84,7 @@ function detectRecommendationDeviationPatterns(
       movementType: normalizedMovementType,
       deviationReason: normalizedDeviationReason,
       occurrences: 1,
+      memoryIds: [memory.id],
     });
   });
 
@@ -97,6 +107,14 @@ function detectRecommendationDeviationPatterns(
         } en movimientos de tipo "${group.movementType}".`,
       score: Math.min(100, group.occurrences * 25),
       occurrences: group.occurrences,
+      kind: 'recommendation-deviation-recurrence',
+      context: {
+        movementType: group.movementType,
+        deviationReason: group.deviationReason,
+      },
+      evidence: {
+        memoryIds: [...group.memoryIds],
+      },
     }));
 }
 

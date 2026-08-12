@@ -32,6 +32,10 @@ import {
 } from '../services/memoryPatternService';
 
 import {
+  generateOperationalKnowledge,
+} from '../services/operationalKnowledgeService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -2136,6 +2140,225 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeGeneration() {
+    setLoading(true);
+
+    try {
+      const operationalMemories = await getOperationalMemories();
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recurrentDeviationPatterns = detectedPatterns.filter(
+        (pattern) =>
+          pattern.kind === 'recommendation-deviation-recurrence'
+      );
+
+      if (recurrentDeviationPatterns.length === 0) {
+        throw new Error(
+          'FASE 23.14 requiere al menos un patrón recurrente de desviación.'
+        );
+      }
+
+      const recommendationsBeforeKnowledge =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeKnowledge =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeKnowledge
+        );
+
+      const generatedKnowledge =
+        generateOperationalKnowledge(detectedPatterns);
+
+      if (
+        generatedKnowledge.length !==
+        recurrentDeviationPatterns.length
+      ) {
+        throw new Error(
+          `FASE 23.14 esperaba ${recurrentDeviationPatterns.length} conocimientos operativos, pero generó ${generatedKnowledge.length}.`
+        );
+      }
+
+      recurrentDeviationPatterns.forEach((pattern) => {
+        if (!pattern.context || !pattern.evidence) {
+          throw new Error(
+            `FASE 23.14 encontró el patrón ${pattern.id} sin contexto o evidencia estructurada.`
+          );
+        }
+
+        const matchingKnowledge = generatedKnowledge.find(
+          (knowledge) =>
+            knowledge.sourcePatternId === pattern.id
+        );
+
+        if (!matchingKnowledge) {
+          throw new Error(
+            `FASE 23.14 no generó conocimiento para el patrón ${pattern.id}.`
+          );
+        }
+
+        if (
+          matchingKnowledge.type !==
+          'recurrent-recommendation-deviation'
+        ) {
+          throw new Error(
+            `FASE 23.14 generó un tipo de conocimiento inesperado para ${pattern.id}.`
+          );
+        }
+
+        if (
+          matchingKnowledge.context.movementType !==
+            pattern.context.movementType ||
+          matchingKnowledge.context.deviationReason !==
+            pattern.context.deviationReason
+        ) {
+          throw new Error(
+            `FASE 23.14 no conservó correctamente el contexto del patrón ${pattern.id}.`
+          );
+        }
+
+        if (
+          matchingKnowledge.evidence.occurrences !==
+          pattern.occurrences
+        ) {
+          throw new Error(
+            `FASE 23.14 no conservó correctamente las ocurrencias del patrón ${pattern.id}.`
+          );
+        }
+
+        if (
+          matchingKnowledge.evidence.score !== pattern.score
+        ) {
+          throw new Error(
+            `FASE 23.14 no conservó correctamente la fuerza observacional del patrón ${pattern.id}.`
+          );
+        }
+
+        const patternMemoryIds = [
+          ...new Set(pattern.evidence.memoryIds),
+        ].sort();
+
+        const knowledgeMemoryIds = [
+          ...matchingKnowledge.evidence.memoryIds,
+        ].sort();
+
+        if (
+          JSON.stringify(patternMemoryIds) !==
+          JSON.stringify(knowledgeMemoryIds)
+        ) {
+          throw new Error(
+            `FASE 23.14 no conservó correctamente la evidencia del patrón ${pattern.id}.`
+          );
+        }
+
+        if (knowledgeMemoryIds.length < 2) {
+          throw new Error(
+            `FASE 23.14 generó conocimiento sin evidencia recurrente suficiente para ${pattern.id}.`
+          );
+        }
+
+        knowledgeMemoryIds.forEach((memoryId) => {
+          const sourceMemory = operationalMemories.find(
+            (memory) => memory.id === memoryId
+          );
+
+          if (!sourceMemory) {
+            throw new Error(
+              `FASE 23.14 no encontró la memoria fuente ${memoryId} del conocimiento ${matchingKnowledge.id}.`
+            );
+          }
+
+          if (
+            sourceMemory.memory_type !== 'movement' ||
+            sourceMemory.metadata?.recommendationComplied !== false
+          ) {
+            throw new Error(
+              `FASE 23.14 encontró evidencia no válida en la memoria ${memoryId}.`
+            );
+          }
+
+          const sourceMovementType =
+            sourceMemory.metadata?.movementType;
+
+          const sourceDeviationReason =
+            sourceMemory.metadata?.recommendationDeviationReason;
+
+          if (
+            typeof sourceMovementType !== 'string' ||
+            sourceMovementType.trim() !==
+              matchingKnowledge.context.movementType ||
+            typeof sourceDeviationReason !== 'string' ||
+            sourceDeviationReason.trim() !==
+              matchingKnowledge.context.deviationReason
+          ) {
+            throw new Error(
+              `FASE 23.14 perdió la trazabilidad contextual de la memoria ${memoryId}.`
+            );
+          }
+        });
+      });
+
+      const recommendationsAfterKnowledge =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterKnowledge =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterKnowledge
+        );
+
+      if (
+        JSON.stringify(recommendationsBeforeKnowledge) !==
+        JSON.stringify(recommendationsAfterKnowledge)
+      ) {
+        throw new Error(
+          'FASE 23.14 detectó que la generación de conocimiento modificó recomendaciones.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsBeforeKnowledge) !==
+        JSON.stringify(decisionsAfterKnowledge)
+      ) {
+        throw new Error(
+          'FASE 23.14 detectó que la generación de conocimiento modificó decisiones operativas.'
+        );
+      }
+
+      const evidenceMemoryIds = new Set(
+        generatedKnowledge.flatMap(
+          (knowledge) => knowledge.evidence.memoryIds
+        )
+      );
+
+      addLog(
+        `FASE 23.14 OK: CJWMS generó ${generatedKnowledge.length} ${
+          generatedKnowledge.length === 1
+            ? 'conocimiento operativo'
+            : 'conocimientos operativos'
+        } a partir de ${recurrentDeviationPatterns.length} ${
+          recurrentDeviationPatterns.length === 1
+            ? 'patrón recurrente'
+            : 'patrones recurrentes'
+        }, con trazabilidad hacia ${evidenceMemoryIds.size} ${
+          evidenceMemoryIds.size === 1
+            ? 'memoria fuente'
+            : 'memorias fuente'
+        }, manteniendo ${recommendationsAfterKnowledge.length} recomendaciones y ${decisionsAfterKnowledge.length} decisiones sin modificación.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en conocimiento operativo 23.14: ${error.message}`
+          : 'Error inesperado en conocimiento operativo 23.14.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -2701,6 +2924,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-indigo-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Patrones de Desviación 23.13
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeGeneration}
+          disabled={loading}
+          className="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Conocimiento Operativo 23.14
         </button>
 
         <button
