@@ -1936,6 +1936,206 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testRecommendationDeviationPatterns() {
+    setLoading(true);
+
+    try {
+      const operationalMemories = await getOperationalMemories();
+
+      const deviationMemories = operationalMemories.filter((memory) => {
+        if (memory.memory_type !== 'movement') {
+          return false;
+        }
+
+        if (memory.metadata?.recommendationComplied !== false) {
+          return false;
+        }
+
+        const movementType = memory.metadata?.movementType;
+        const deviationReason =
+          memory.metadata?.recommendationDeviationReason;
+
+        return (
+          typeof movementType === 'string' &&
+          movementType.trim().length > 0 &&
+          typeof deviationReason === 'string' &&
+          deviationReason.trim().length > 0
+        );
+      });
+
+      if (deviationMemories.length < 2) {
+        throw new Error(
+          'FASE 23.13 requiere al menos dos desviaciones con contexto operativo.'
+        );
+      }
+
+      const groupedDeviations = new Map<
+        string,
+        {
+          movementType: string;
+          deviationReason: string;
+          occurrences: number;
+        }
+      >();
+
+      deviationMemories.forEach((memory) => {
+        const movementType = String(
+          memory.metadata?.movementType
+        ).trim();
+
+        const deviationReason = String(
+          memory.metadata?.recommendationDeviationReason
+        ).trim();
+
+        const key = JSON.stringify([
+          movementType,
+          deviationReason,
+        ]);
+
+        const currentGroup = groupedDeviations.get(key);
+
+        if (currentGroup) {
+          currentGroup.occurrences += 1;
+          return;
+        }
+
+        groupedDeviations.set(key, {
+          movementType,
+          deviationReason,
+          occurrences: 1,
+        });
+      });
+
+      const expectedRecurrentGroups = [
+        ...groupedDeviations.values(),
+      ].filter((group) => group.occurrences >= 2);
+
+      if (expectedRecurrentGroups.length === 0) {
+        throw new Error(
+          'FASE 23.13 no encontró recurrencias de desviación suficientes para validar el patrón.'
+        );
+      }
+
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const deviationPatterns = detectedPatterns.filter(
+        (pattern) =>
+          pattern.id.startsWith(
+            'recommendation-deviation-pattern-'
+          )
+      );
+
+      if (
+        deviationPatterns.length !==
+        expectedRecurrentGroups.length
+      ) {
+        throw new Error(
+          `FASE 23.13 esperaba ${expectedRecurrentGroups.length} patrones recurrentes de desviación, pero detectó ${deviationPatterns.length}.`
+        );
+      }
+
+      expectedRecurrentGroups.forEach((expectedGroup) => {
+        const matchingPattern = deviationPatterns.find(
+          (pattern) =>
+            pattern.occurrences ===
+              expectedGroup.occurrences &&
+            pattern.description.includes(
+              `"${expectedGroup.deviationReason}"`
+            ) &&
+            pattern.description.includes(
+              `"${expectedGroup.movementType}"`
+            )
+        );
+
+        if (!matchingPattern) {
+          throw new Error(
+            `FASE 23.13 no detectó correctamente la recurrencia "${expectedGroup.deviationReason}" para movimientos "${expectedGroup.movementType}".`
+          );
+        }
+      });
+
+      const patternsWithoutDeviationKnowledge =
+        detectedPatterns.filter(
+          (pattern) =>
+            !pattern.id.startsWith(
+              'recommendation-deviation-pattern-'
+            )
+        );
+
+      const recommendationsWithDeviationPatterns =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const recommendationsWithoutDeviationPatterns =
+        generateRecommendationsFromPatterns(
+          patternsWithoutDeviationKnowledge
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsWithDeviationPatterns
+        ) !==
+        JSON.stringify(
+          recommendationsWithoutDeviationPatterns
+        )
+      ) {
+        throw new Error(
+          'FASE 23.13 detectó que los patrones de desviación ya están modificando recomendaciones.'
+        );
+      }
+
+      const decisionsWithDeviationPatterns =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsWithDeviationPatterns
+        );
+
+      const decisionsWithoutDeviationPatterns =
+        generateOperationalDecisions(
+          patternsWithoutDeviationKnowledge,
+          recommendationsWithoutDeviationPatterns
+        );
+
+      if (
+        JSON.stringify(decisionsWithDeviationPatterns) !==
+        JSON.stringify(decisionsWithoutDeviationPatterns)
+      ) {
+        throw new Error(
+          'FASE 23.13 detectó que los patrones de desviación ya están modificando decisiones operativas.'
+        );
+      }
+
+      const recurrentOccurrences =
+        expectedRecurrentGroups.reduce(
+          (total, group) => total + group.occurrences,
+          0
+        );
+
+      addLog(
+        `FASE 23.13 OK: CJWMS detectó ${deviationPatterns.length} ${
+          deviationPatterns.length === 1
+            ? 'patrón recurrente'
+            : 'patrones recurrentes'
+        } de desviación a partir de ${recurrentOccurrences} ${
+          recurrentOccurrences === 1
+            ? 'ocurrencia contextual'
+            : 'ocurrencias contextuales'
+        }, sin modificar recomendaciones ni decisiones operativas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en patrones recurrentes 23.13: ${error.message}`
+          : 'Error inesperado en patrones recurrentes 23.13.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -2493,6 +2693,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-sky-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Trazabilidad 23.7
+        </button>
+
+        <button
+          onClick={testRecommendationDeviationPatterns}
+          disabled={loading}
+          className="rounded-xl bg-indigo-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Patrones de Desviación 23.13
         </button>
 
         <button
