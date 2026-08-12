@@ -36,6 +36,12 @@ export type OperationalKnowledgeEligibility = {
   reason: OperationalKnowledgeEligibilityReason;
 };
 
+export type OperationalKnowledgeConsideration = {
+  knowledgeId: string;
+  sourcePatternId: string;
+  considered: true;
+};
+
 const createRecommendationDeviationKnowledge = (
   pattern: MemoryPattern,
 ): OperationalKnowledge | null => {
@@ -127,5 +133,19 @@ export function evaluateOperationalKnowledgeEligibility(
     reason: eligible
       ? 'context-compatible'
       : 'context-incompatible',
+  };
+}
+
+export function considerOperationalKnowledge(
+  eligibility: OperationalKnowledgeEligibility,
+): OperationalKnowledgeConsideration | null {
+  if (!eligibility.eligible) {
+    return null;
+  }
+
+  return {
+    knowledgeId: eligibility.knowledgeId,
+    sourcePatternId: eligibility.sourcePatternId,
+    considered: true,
   };
 }
