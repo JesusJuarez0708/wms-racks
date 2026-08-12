@@ -63,6 +63,10 @@ function MovementFormModal({
   const [quantity, setQuantity] = useState('1');
   const [unit, setUnit] = useState('CAJA');
   const [notes, setNotes] = useState('');
+  const [
+    recommendationDeviationReason,
+    setRecommendationDeviationReason,
+  ] = useState('');
   const [formError, setFormError] = useState('');
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -150,6 +154,17 @@ function MovementFormModal({
     positions,
   ]);
 
+  const primaryRecommendationCandidate =
+  movementType === 'reubicacion'
+    ? relocationRecommendation?.candidates[0] ?? null
+    : null;
+
+  const recommendationDeviationDetected =
+    Boolean(primaryRecommendationCandidate) &&
+    Boolean(destinationPositionId) &&
+    primaryRecommendationCandidate?.position.id !==
+      destinationPositionId;
+
   useEffect(() => {
     if (
       movementType !== 'reubicacion' ||
@@ -176,6 +191,12 @@ function MovementFormModal({
     relocationRecommendation,
     destinationPositionId,
   ]);
+
+  useEffect(() => {
+    if (!recommendationDeviationDetected) {
+      setRecommendationDeviationReason('');
+    }
+  }, [recommendationDeviationDetected]);
 
   const operationalPallets = useMemo(() => {
     if (movementType === 'entrada') {
@@ -407,6 +428,7 @@ function MovementFormModal({
         setQuantity('1');
         setUnit('CAJA');
         setNotes('');
+        setRecommendationDeviationReason('');
       } catch (error) {
         console.error(
           'Error cargando opciones de movimiento:',
@@ -579,6 +601,16 @@ function MovementFormModal({
       return;
     }
 
+    if (
+      recommendationDeviationDetected &&
+      !recommendationDeviationReason.trim()
+    ) {
+      setFormError(
+        'Debes indicar el motivo por el que no se seguirá la recomendación principal de CJWMS.'
+      );
+      return;
+    }
+
     try {
       setSaving(true);
 
@@ -588,11 +620,6 @@ function MovementFormModal({
               (candidate) =>
                 candidate.position.id === destinationPositionId
             ) ?? null
-          : null;
-
-      const primaryRecommendationCandidate =
-        movementType === 'reubicacion'
-          ? relocationRecommendation?.candidates[0] ?? null
           : null;
 
       const movementDecisionScore =
@@ -641,6 +668,10 @@ function MovementFormModal({
                 primaryRecommendationCandidate.position.id,
               recommendedDestinationPositionCode:
                 primaryRecommendationCandidate.position.code,
+              recommendationDeviationReason:
+                recommendationDeviationDetected
+                  ? recommendationDeviationReason.trim()
+                  : null,
             }
           : undefined
       );
@@ -959,6 +990,36 @@ function MovementFormModal({
                     )}
                   </div>
                 )}
+
+                {recommendationDeviationDetected &&
+                  primaryRecommendationCandidate && (
+                    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                      <p className="text-xs font-bold uppercase tracking-wide text-amber-800">
+                        Desviación de recomendación
+                      </p>
+
+                      <p className="mt-1 text-xs text-amber-800">
+                        CJWMS recomienda{' '}
+                        <span className="font-semibold">
+                          {primaryRecommendationCandidate.position.code}
+                        </span>
+                        , pero se seleccionó un destino diferente.
+                      </p>
+
+                      <label className="mt-3 block text-xs font-semibold text-amber-900">
+                        Motivo de la desviación
+                      </label>
+
+                      <input
+                        value={recommendationDeviationReason}
+                        onChange={(event) =>
+                          setRecommendationDeviationReason(event.target.value)
+                        }
+                        placeholder="Ej. instrucción operativa, condición observada o prioridad del momento"
+                        className="mt-2 w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm outline-none focus:border-amber-500"
+                      />
+                    </div>
+                  )}
 
             </div>
 

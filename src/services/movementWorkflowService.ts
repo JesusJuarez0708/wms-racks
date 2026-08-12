@@ -81,6 +81,7 @@ type ExecuteMovementInput = CreateMovementInput;
 export type MovementRecommendationContext = {
   recommendedDestinationPositionId: string;
   recommendedDestinationPositionCode: string;
+  recommendationDeviationReason?: string | null;
 };
 
 type AssignPickingInput = UpdateMovementAssignmentInput;
@@ -392,6 +393,12 @@ export async function executeMovementWorkflow(
             recommendationComplied:
               recommendationContext.recommendedDestinationPositionId ===
               createdMovement.destination_position_id,
+            ...(recommendationContext.recommendationDeviationReason
+              ? {
+                  recommendationDeviationReason:
+                    recommendationContext.recommendationDeviationReason,
+                }
+              : {}),
           }
         : {}),
     },

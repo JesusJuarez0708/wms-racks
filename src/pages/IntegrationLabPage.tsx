@@ -1561,6 +1561,15 @@ function IntegrationLabPage() {
         );
       }
 
+      if (
+        movementMemoryMetadata.recommendationDeviationReason !==
+        undefined
+      ) {
+        throw new Error(
+          'El cumplimiento A→A no debe registrar un motivo de desviación.'
+        );
+      }
+
       addLog(
         `FASE 23.10 cumplimiento OK: CJWMS recomendó ${primaryCandidate.position.code} y se ejecutó ${primaryCandidate.position.code}.`
       );
@@ -1581,6 +1590,9 @@ function IntegrationLabPage() {
 
       const deviationRecommendationId =
         crypto.randomUUID();
+
+      const expectedDeviationReason =
+        'Prioridad operativa controlada por Integration Lab para validar la desviación A→B.';
 
       const deviationMovement = await executeMovementWorkflow(
         {
@@ -1611,6 +1623,8 @@ function IntegrationLabPage() {
             primaryCandidate.position.id,
           recommendedDestinationPositionCode:
             primaryCandidate.position.code,
+          recommendationDeviationReason:
+            expectedDeviationReason,
         }
       );
 
@@ -1703,6 +1717,15 @@ function IntegrationLabPage() {
       }
 
       if (
+        deviationMemoryMetadata.recommendationDeviationReason !==
+        expectedDeviationReason
+      ) {
+        throw new Error(
+          'La Memoria Operativa no conservó correctamente el motivo de la desviación A→B.'
+        );
+      }
+
+      if (
         deviationMemoryMetadata.recommendationId !==
         deviationRecommendationId
       ) {
@@ -1712,7 +1735,7 @@ function IntegrationLabPage() {
       }
 
       addLog(
-        `FASE 23.10 OK: cumplimiento ${primaryCandidate.position.code}→${primaryCandidate.position.code} validado y desviación ${primaryCandidate.position.code}→${deviationCandidate.position.code} validada. CJWMS preservó separadamente la recomendación principal original y el destino realmente ejecutado.`
+        `FASE 23.11 OK: cumplimiento ${primaryCandidate.position.code}→${primaryCandidate.position.code} sin motivo de desviación y desviación ${primaryCandidate.position.code}→${deviationCandidate.position.code} con motivo operativo "${expectedDeviationReason}". CJWMS preservó recomendación original, destino ejecutado, cumplimiento/desviación y explicación de la desviación.`
       );
 
     } catch (error) {
