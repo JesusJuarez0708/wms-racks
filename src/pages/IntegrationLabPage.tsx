@@ -1328,12 +1328,12 @@ function IntegrationLabPage() {
             originPositionId: originPosition.id,
           });
 
-        return recommendation.candidates.length > 0;
+        return recommendation.candidates.length >= 2;
       });
 
       if (!testInventoryItem) {
         throw new Error(
-          'No existe un pallet con una recomendación válida para probar la trazabilidad 23.7.'
+          'No existe un pallet con al menos dos recomendaciones válidas para probar cumplimiento y desviación 23.10.'
         );
       }
 
@@ -1379,19 +1379,20 @@ function IntegrationLabPage() {
           originPositionId: originPosition.id,
         });
 
-      const selectedCandidate = recommendation.candidates[0];
+      const primaryCandidate = recommendation.candidates[0];
+      const deviationCandidate = recommendation.candidates[1];
 
-      if (!selectedCandidate) {
+      if (!primaryCandidate || !deviationCandidate) {
         throw new Error(
-          'El motor no produjo un destino inteligente para probar 23.7.'
+          'El motor no produjo dos destinos inteligentes para probar 23.10.'
         );
       }
 
       const expectedExplanation = [
-        `Reubicación evaluada por CJWMS para la posición ${selectedCandidate.position.code}.`,
-        `Recomendación: ${selectedCandidate.decision.explanation.recommendation}`,
-        `Interpretación: ${selectedCandidate.decision.explanation.interpretation}`,
-        `Confianza: ${selectedCandidate.decision.explanation.confidence}/100.`,
+        `Reubicación evaluada por CJWMS para la posición ${primaryCandidate.position.code}.`,
+        `Recomendación: ${primaryCandidate.decision.explanation.recommendation}`,
+        `Interpretación: ${primaryCandidate.decision.explanation.interpretation}`,
+        `Confianza: ${primaryCandidate.decision.explanation.confidence}/100.`,
       ].join(' ');
 
       const expectedRecommendationId =
@@ -1400,26 +1401,33 @@ function IntegrationLabPage() {
       inventoryItemId = testInventoryItem.id;
       originalPositionId = originPosition.id;
 
-      const createdMovement = await executeMovementWorkflow({
-        warehouse_id: testInventoryItem.warehouse_id,
-        movement_type: 'reubicacion',
-        pallet_id: pallet.id,
-        product_id: pallet.product_id,
-        origin_position_id: originPosition.id,
-        destination_position_id:
-          selectedCandidate.position.id,
-        quantity: pallet.quantity,
-        unit: pallet.unit,
-        status: 'completed',
-        reason:
-          'Integration Lab FASE 23.7 traceability',
-        notes:
-          'Prueba controlada de trazabilidad de decisión inteligente.',
-        decision_score: selectedCandidate.decision.score,
-        decision_explanation: expectedExplanation,
-        recommendation_id: expectedRecommendationId,
-        created_by: 'Integration Lab',
-      });
+      const createdMovement = await executeMovementWorkflow(
+        {
+          warehouse_id: testInventoryItem.warehouse_id,
+          movement_type: 'reubicacion',
+          pallet_id: pallet.id,
+          product_id: pallet.product_id,
+          origin_position_id: originPosition.id,
+          destination_position_id: primaryCandidate.position.id,
+          quantity: pallet.quantity,
+          unit: pallet.unit,
+          status: 'completed',
+          reason:
+            'Integration Lab FASE 23.10 compliance',
+          notes:
+            'Prueba controlada de cumplimiento de recomendación inteligente.',
+          decision_score: primaryCandidate.decision.score,
+          decision_explanation: expectedExplanation,
+          recommendation_id: expectedRecommendationId,
+          created_by: 'Integration Lab',
+        },
+        {
+          recommendedDestinationPositionId:
+            primaryCandidate.position.id,
+          recommendedDestinationPositionCode:
+            primaryCandidate.position.code,
+        }
+      );
 
       const movementsAfter = await getMovements();
 
@@ -1435,10 +1443,10 @@ function IntegrationLabPage() {
 
       if (
         persistedMovement.decision_score !==
-        selectedCandidate.decision.score
+        primaryCandidate.decision.score
       ) {
         throw new Error(
-          `El score persistido (${persistedMovement.decision_score}) no coincide con el score inteligente (${selectedCandidate.decision.score}).`
+          `El score persistido (${persistedMovement.decision_score}) no coincide con el score inteligente (${primaryCandidate.decision.score}).`
         );
       }
 
@@ -1484,10 +1492,10 @@ function IntegrationLabPage() {
 
       if (
         movementMemory.score !==
-        selectedCandidate.decision.score
+        primaryCandidate.decision.score
       ) {
         throw new Error(
-          `La Memoria Operativa conservó score ${movementMemory.score}, pero se esperaba ${selectedCandidate.decision.score}.`
+          `La Memoria Operativa conservó score ${movementMemory.score}, pero se esperaba ${primaryCandidate.decision.score}.`
         );
       }
 
@@ -1496,7 +1504,7 @@ function IntegrationLabPage() {
 
       if (
         movementMemoryMetadata.decisionScore !==
-        selectedCandidate.decision.score
+         primaryCandidate.decision.score
       ) {
         throw new Error(
           'La Memoria Operativa no conservó correctamente decisionScore en metadata.'
@@ -1527,9 +1535,186 @@ function IntegrationLabPage() {
         );
       }
 
+      if (
+        movementMemoryMetadata.recommendedDestinationPositionId !==
+        primaryCandidate.position.id
+      ) {
+        throw new Error(
+          'La Memoria Operativa no conservó el destino principal originalmente recomendado.'
+        );
+      }
+
+      if (
+        movementMemoryMetadata.recommendedDestinationPositionCode !==
+        primaryCandidate.position.code
+      ) {
+        throw new Error(
+          'La Memoria Operativa no conservó el código del destino principal originalmente recomendado.'
+        );
+      }
+
+      if (
+        movementMemoryMetadata.recommendationComplied !== true
+      ) {
+        throw new Error(
+          'La Memoria Operativa no registró correctamente el cumplimiento A→A.'
+        );
+      }
+
       addLog(
-        `FASE 23.9 OK: ${pallet.pallet_code} fue reubicado de ${originPosition.code} a ${selectedCandidate.position.code}. Movimiento ${createdMovement.id} conservó recommendationId ${expectedRecommendationId}, score ${selectedCandidate.decision.score} y la Memoria Operativa preservó exactamente la identidad de la recomendación ejecutada.`
+        `FASE 23.10 cumplimiento OK: CJWMS recomendó ${primaryCandidate.position.code} y se ejecutó ${primaryCandidate.position.code}.`
       );
+
+      // Restauramos temporalmente el pallet al origen para probar
+      // una desviación controlada A → B con el mismo ranking original.
+      await changeInventoryPosition(
+        inventoryItemId,
+        originalPositionId
+      );
+
+      const deviationExplanation = [
+        `Reubicación evaluada por CJWMS para la posición ${deviationCandidate.position.code}.`,
+        `Recomendación: ${deviationCandidate.decision.explanation.recommendation}`,
+        `Interpretación: ${deviationCandidate.decision.explanation.interpretation}`,
+        `Confianza: ${deviationCandidate.decision.explanation.confidence}/100.`,
+      ].join(' ');
+
+      const deviationRecommendationId =
+        crypto.randomUUID();
+
+      const deviationMovement = await executeMovementWorkflow(
+        {
+          warehouse_id: testInventoryItem.warehouse_id,
+          movement_type: 'reubicacion',
+          pallet_id: pallet.id,
+          product_id: pallet.product_id,
+          origin_position_id: originPosition.id,
+          destination_position_id:
+            deviationCandidate.position.id,
+          quantity: pallet.quantity,
+          unit: pallet.unit,
+          status: 'completed',
+          reason:
+            'Integration Lab FASE 23.10 deviation',
+          notes:
+            'Prueba controlada de desviación de recomendación inteligente.',
+          decision_score:
+            deviationCandidate.decision.score,
+          decision_explanation:
+            deviationExplanation,
+          recommendation_id:
+            deviationRecommendationId,
+          created_by: 'Integration Lab',
+        },
+        {
+          recommendedDestinationPositionId:
+            primaryCandidate.position.id,
+          recommendedDestinationPositionCode:
+            primaryCandidate.position.code,
+        }
+      );
+
+      const movementsAfterDeviation =
+        await getMovements();
+
+      const persistedDeviationMovement =
+        movementsAfterDeviation.find(
+          (movement) =>
+            movement.id === deviationMovement.id
+        );
+
+      if (!persistedDeviationMovement) {
+        throw new Error(
+          'El movimiento de desviación 23.10 no fue encontrado después de persistirse.'
+        );
+      }
+
+      if (
+        persistedDeviationMovement.destination_position_id !==
+        deviationCandidate.position.id
+      ) {
+        throw new Error(
+          'El movimiento de desviación no conservó correctamente el destino B ejecutado.'
+        );
+      }
+
+      if (
+        persistedDeviationMovement.recommendation_id !==
+        deviationRecommendationId
+      ) {
+        throw new Error(
+          'El movimiento de desviación no conservó la identidad de la recomendación ejecutada B.'
+        );
+      }
+
+      const memoriesAfterDeviation =
+        await getOperationalMemories();
+
+      const deviationMemory =
+        memoriesAfterDeviation.find(
+          (memory) =>
+            memory.entity_id === deviationMovement.id &&
+            memory.entity_type === 'movement' &&
+            memory.memory_type === 'movement'
+        );
+
+      if (!deviationMemory) {
+        throw new Error(
+          'No se encontró la Memoria Operativa del movimiento de desviación 23.10.'
+        );
+      }
+
+      const deviationMemoryMetadata =
+        deviationMemory.metadata ?? {};
+
+      if (
+        deviationMemoryMetadata.recommendedDestinationPositionId !==
+        primaryCandidate.position.id
+      ) {
+        throw new Error(
+          'La desviación no conservó A como destino principal originalmente recomendado.'
+        );
+      }
+
+      if (
+        deviationMemoryMetadata.recommendedDestinationPositionCode !==
+        primaryCandidate.position.code
+      ) {
+        throw new Error(
+          'La desviación no conservó el código de A como recomendación principal original.'
+        );
+      }
+
+      if (
+        deviationMemoryMetadata.destinationPositionId !==
+        deviationCandidate.position.id
+      ) {
+        throw new Error(
+          'La Memoria Operativa no conservó B como destino realmente ejecutado.'
+        );
+      }
+
+      if (
+        deviationMemoryMetadata.recommendationComplied !== false
+      ) {
+        throw new Error(
+          'La Memoria Operativa no registró correctamente la desviación A→B.'
+        );
+      }
+
+      if (
+        deviationMemoryMetadata.recommendationId !==
+        deviationRecommendationId
+      ) {
+        throw new Error(
+          'La Memoria Operativa de la desviación no conservó la identidad de la recomendación ejecutada B.'
+        );
+      }
+
+      addLog(
+        `FASE 23.10 OK: cumplimiento ${primaryCandidate.position.code}→${primaryCandidate.position.code} validado y desviación ${primaryCandidate.position.code}→${deviationCandidate.position.code} validada. CJWMS preservó separadamente la recomendación principal original y el destino realmente ejecutado.`
+      );
+
     } catch (error) {
       console.error(error);
 

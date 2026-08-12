@@ -77,6 +77,12 @@ import {
 } from '../utils/movementOperationalState';
 
 type ExecuteMovementInput = CreateMovementInput;
+
+export type MovementRecommendationContext = {
+  recommendedDestinationPositionId: string;
+  recommendedDestinationPositionCode: string;
+};
+
 type AssignPickingInput = UpdateMovementAssignmentInput;
 type StartPickingInput = StartMovementPickingInput;
 type PickingProgressInput = UpdateMovementPickingProgressInput;
@@ -201,7 +207,8 @@ async function finalizeOutboundExecutionByMovement(
 }
 
 export async function executeMovementWorkflow(
-  movement: ExecuteMovementInput
+  movement: ExecuteMovementInput,
+  recommendationContext?: MovementRecommendationContext
 ): Promise<MovementItem> {
   const inventory = await getInventory();
 
@@ -376,6 +383,17 @@ export async function executeMovementWorkflow(
       decisionScore: createdMovement.decision_score,
       decisionExplanation: createdMovement.decision_explanation,
       recommendationId: createdMovement.recommendation_id,
+      ...(recommendationContext
+        ? {
+            recommendedDestinationPositionId:
+              recommendationContext.recommendedDestinationPositionId,
+            recommendedDestinationPositionCode:
+              recommendationContext.recommendedDestinationPositionCode,
+            recommendationComplied:
+              recommendationContext.recommendedDestinationPositionId ===
+              createdMovement.destination_position_id,
+          }
+        : {}),
     },
   });
 

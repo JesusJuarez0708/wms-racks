@@ -590,6 +590,11 @@ function MovementFormModal({
             ) ?? null
           : null;
 
+      const primaryRecommendationCandidate =
+        movementType === 'reubicacion'
+          ? relocationRecommendation?.candidates[0] ?? null
+          : null;
+
       const movementDecisionScore =
         selectedRecommendationCandidate?.decision.score ?? 60;
 
@@ -608,27 +613,37 @@ function MovementFormModal({
           ? crypto.randomUUID()
           : null;
 
-      await executeMovementWorkflow({
-        warehouse_id: warehouseId,
-        movement_type: movementType,
-        product_id: productId || null,
-        pallet_id: palletId || null,
-        origin_position_id: originPositionId || null,
-        destination_position_id:
-          destinationPositionId || null,
-        quantity: Number(quantity),
-        unit: normalizeUnit(unit) || null,
-        status:
-          movementType === 'salida'
-            ? 'pending'
-            : 'completed',
-        reason: 'Movimiento manual',
-        notes: notes || null,
-        decision_score: movementDecisionScore,
-        decision_explanation: movementDecisionExplanation,
-        recommendation_id: movementRecommendationId,
-        created_by: 'Usuario CJWMS',
-      });
+      await executeMovementWorkflow(
+        {
+          warehouse_id: warehouseId,
+          movement_type: movementType,
+          product_id: productId || null,
+          pallet_id: palletId || null,
+          origin_position_id: originPositionId || null,
+          destination_position_id:
+            destinationPositionId || null,
+          quantity: Number(quantity),
+          unit: normalizeUnit(unit) || null,
+          status:
+            movementType === 'salida'
+              ? 'pending'
+              : 'completed',
+          reason: 'Movimiento manual',
+          notes: notes || null,
+          decision_score: movementDecisionScore,
+          decision_explanation: movementDecisionExplanation,
+          recommendation_id: movementRecommendationId,
+          created_by: 'Usuario CJWMS',
+        },
+        primaryRecommendationCandidate
+          ? {
+              recommendedDestinationPositionId:
+                primaryRecommendationCandidate.position.id,
+              recommendedDestinationPositionCode:
+                primaryRecommendationCandidate.position.code,
+            }
+          : undefined
+      );
 
       alert(
         'Movimiento creado e inventario actualizado correctamente.'
