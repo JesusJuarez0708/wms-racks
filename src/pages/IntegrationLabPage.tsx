@@ -32,6 +32,7 @@ import {
 } from '../services/memoryPatternService';
 
 import {
+  evaluateOperationalKnowledgeEligibility,
   generateOperationalKnowledge,
 } from '../services/operationalKnowledgeService';
 
@@ -2359,6 +2360,162 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeEligibility() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const generatedKnowledge =
+        generateOperationalKnowledge(detectedPatterns);
+
+      if (generatedKnowledge.length === 0) {
+        throw new Error(
+          'FASE 23.15 requiere al menos un conocimiento operativo generado.'
+        );
+      }
+
+      const knowledge = generatedKnowledge[0];
+
+      const recommendationsBeforeEligibility =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeEligibility =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeEligibility
+        );
+
+      const compatibleMovementType =
+        knowledge.context.movementType.trim();
+
+      if (
+        compatibleMovementType !== 'entrada' &&
+        compatibleMovementType !== 'salida' &&
+        compatibleMovementType !== 'reubicacion' &&
+        compatibleMovementType !== 'ajuste' &&
+        compatibleMovementType !== 'bloqueo' &&
+        compatibleMovementType !== 'desbloqueo'
+      ) {
+        throw new Error(
+          `FASE 23.15 encontró un tipo de movimiento no reconocido en el conocimiento ${knowledge.id}: "${compatibleMovementType}".`
+        );
+      }
+
+      const compatibleEvaluation =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          {
+            movementType: compatibleMovementType,
+          }
+        );
+
+      if (!compatibleEvaluation.eligible) {
+        throw new Error(
+          `FASE 23.15 esperaba que el conocimiento ${knowledge.id} fuera elegible para su mismo tipo de movimiento.`
+        );
+      }
+
+      if (
+        compatibleEvaluation.reason !==
+        'context-compatible'
+      ) {
+        throw new Error(
+          `FASE 23.15 produjo una razón inesperada para el conocimiento elegible ${knowledge.id}.`
+        );
+      }
+
+      if (
+        compatibleEvaluation.knowledgeId !== knowledge.id ||
+        compatibleEvaluation.sourcePatternId !==
+          knowledge.sourcePatternId
+      ) {
+        throw new Error(
+          `FASE 23.15 perdió la trazabilidad del conocimiento elegible ${knowledge.id}.`
+        );
+      }
+
+      const incompatibleMovementType =
+        compatibleMovementType === 'entrada'
+          ? 'salida'
+          : 'entrada';
+
+      const incompatibleEvaluation =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          {
+            movementType: incompatibleMovementType,
+          }
+        );
+
+      if (incompatibleEvaluation.eligible) {
+        throw new Error(
+          `FASE 23.15 consideró elegible el conocimiento ${knowledge.id} para un tipo de movimiento incompatible.`
+        );
+      }
+
+      if (
+        incompatibleEvaluation.reason !==
+        'context-incompatible'
+      ) {
+        throw new Error(
+          `FASE 23.15 produjo una razón inesperada para el conocimiento no elegible ${knowledge.id}.`
+        );
+      }
+
+      if (
+        incompatibleEvaluation.knowledgeId !== knowledge.id ||
+        incompatibleEvaluation.sourcePatternId !==
+          knowledge.sourcePatternId
+      ) {
+        throw new Error(
+          `FASE 23.15 perdió la trazabilidad del conocimiento no elegible ${knowledge.id}.`
+        );
+      }
+
+      const recommendationsAfterEligibility =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterEligibility =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterEligibility
+        );
+
+      if (
+        JSON.stringify(recommendationsBeforeEligibility) !==
+        JSON.stringify(recommendationsAfterEligibility)
+      ) {
+        throw new Error(
+          'FASE 23.15 detectó que la evaluación de elegibilidad modificó recomendaciones.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsBeforeEligibility) !==
+        JSON.stringify(decisionsAfterEligibility)
+      ) {
+        throw new Error(
+          'FASE 23.15 detectó que la evaluación de elegibilidad modificó decisiones operativas.'
+        );
+      }
+
+      addLog(
+        `FASE 23.15 OK: el conocimiento ${knowledge.id} fue elegible para "${compatibleMovementType}" y no elegible para "${incompatibleMovementType}", conservando trazabilidad hacia el patrón ${knowledge.sourcePatternId} y sin modificar ${recommendationsAfterEligibility.length} recomendaciones ni ${decisionsAfterEligibility.length} decisiones.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en elegibilidad de conocimiento 23.15: ${error.message}`
+          : 'Error inesperado en elegibilidad de conocimiento 23.15.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -2932,6 +3089,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Conocimiento Operativo 23.14
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeEligibility}
+          disabled={loading}
+          className="rounded-xl bg-teal-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Elegibilidad Conocimiento 23.15
         </button>
 
         <button

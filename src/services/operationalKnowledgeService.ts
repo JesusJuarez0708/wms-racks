@@ -1,3 +1,4 @@
+import type { MovementRecord } from '../repositories/movementRepository';
 import type { MemoryPattern } from './memoryPatternService';
 
 export type OperationalKnowledgeType =
@@ -18,6 +19,21 @@ export type OperationalKnowledge = {
     memoryIds: string[];
     score: number;
   };
+};
+
+export type OperationalKnowledgeConsiderationContext = {
+  movementType: MovementRecord['movement_type'];
+};
+
+export type OperationalKnowledgeEligibilityReason =
+  | 'context-compatible'
+  | 'context-incompatible';
+
+export type OperationalKnowledgeEligibility = {
+  knowledgeId: string;
+  sourcePatternId: string;
+  eligible: boolean;
+  reason: OperationalKnowledgeEligibilityReason;
 };
 
 const createRecommendationDeviationKnowledge = (
@@ -93,3 +109,23 @@ export const generateOperationalKnowledge = (
         knowledge !== null,
     );
 };
+
+export function evaluateOperationalKnowledgeEligibility(
+  knowledge: OperationalKnowledge,
+  context: OperationalKnowledgeConsiderationContext,
+): OperationalKnowledgeEligibility {
+  const knowledgeMovementType =
+    knowledge.context.movementType.trim();
+
+  const eligible =
+    knowledgeMovementType === context.movementType;
+
+  return {
+    knowledgeId: knowledge.id,
+    sourcePatternId: knowledge.sourcePatternId,
+    eligible,
+    reason: eligible
+      ? 'context-compatible'
+      : 'context-incompatible',
+  };
+}
