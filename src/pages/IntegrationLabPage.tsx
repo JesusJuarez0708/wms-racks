@@ -1738,7 +1738,163 @@ function IntegrationLabPage() {
         `FASE 23.11 OK: cumplimiento ${primaryCandidate.position.code}→${primaryCandidate.position.code} sin motivo de desviación y desviación ${primaryCandidate.position.code}→${deviationCandidate.position.code} con motivo operativo "${expectedDeviationReason}". CJWMS preservó recomendación original, destino ejecutado, cumplimiento/desviación y explicación de la desviación.`
       );
 
+      const recommendationMemories =
+        memoriesAfterDeviation.filter(
+          (memory) =>
+            memory.memory_type === 'movement' &&
+            (memory.metadata?.recommendationComplied === true ||
+              memory.metadata?.recommendationComplied === false)
+        );
+
+      const compliedRecommendationMemories =
+        recommendationMemories.filter(
+          (memory) =>
+            memory.metadata?.recommendationComplied === true
+        );
+
+      const deviatedRecommendationMemories =
+        recommendationMemories.filter(
+          (memory) =>
+            memory.metadata?.recommendationComplied === false
+        );
+
+      if (recommendationMemories.length === 0) {
+        throw new Error(
+          'FASE 23.12 no encontró decisiones evaluables con recomendación.'
+        );
+      }
+
+      const expectedComplianceRate = Math.round(
+        (compliedRecommendationMemories.length /
+          recommendationMemories.length) *
+          100
+      );
+
+      const recommendationInsights =
+        analyzeOperationalMemories(memoriesAfterDeviation);
+
+      const complianceInsight = recommendationInsights.find(
+        (insight) =>
+          insight.id === 'recommendation-compliance'
+      );
+
+      if (!complianceInsight) {
+        throw new Error(
+          'FASE 23.12 no generó el insight de cumplimiento de recomendación.'
+        );
+      }
+
+      if (complianceInsight.score !== expectedComplianceRate) {
+        throw new Error(
+          `FASE 23.12 calculó cumplimiento ${complianceInsight.score}, pero se esperaba ${expectedComplianceRate}.`
+        );
+      }
+
+      if (
+        !complianceInsight.description.includes(
+          `${recommendationMemories.length} decisiones con recomendación`
+        ) ||
+        !complianceInsight.description.includes(
+          `${compliedRecommendationMemories.length} cumplidas`
+        ) ||
+        !complianceInsight.description.includes(
+          `${deviatedRecommendationMemories.length} desviadas`
+        ) ||
+        !complianceInsight.description.includes(
+          `Cumplimiento observado: ${expectedComplianceRate}%.`
+        )
+      ) {
+        throw new Error(
+          'FASE 23.12 no describió correctamente el cumplimiento y las desviaciones observadas.'
+        );
+      }
+
+      const deviationReasonOccurrences =
+        new Map<string, number>();
+
+      deviatedRecommendationMemories.forEach((memory) => {
+        const deviationReason =
+          memory.metadata?.recommendationDeviationReason;
+
+        if (
+          typeof deviationReason !== 'string' ||
+          deviationReason.trim().length === 0
+        ) {
+          return;
+        }
+
+        const normalizedReason = deviationReason.trim();
+
+        deviationReasonOccurrences.set(
+          normalizedReason,
+          (deviationReasonOccurrences.get(normalizedReason) ?? 0) + 1
+        );
+      });
+
+      const mostFrequentDeviationReason = [
+        ...deviationReasonOccurrences.entries(),
+      ].sort((a, b) => b[1] - a[1])[0];
+
+      if (!mostFrequentDeviationReason) {
+        throw new Error(
+          'FASE 23.12 no encontró motivos operativos de desviación para analizar.'
+        );
+      }
+
+      const [
+        expectedMostFrequentReason,
+        expectedReasonOccurrences,
+      ] = mostFrequentDeviationReason;
+
+      const deviationReasonInsight =
+        recommendationInsights.find(
+          (insight) =>
+            insight.id === 'recommendation-deviation-reason'
+        );
+
+      if (!deviationReasonInsight) {
+        throw new Error(
+          'FASE 23.12 no generó el insight de motivo recurrente de desviación.'
+        );
+      }
+
+      const expectedDeviationReasonScore = Math.min(
+        100,
+        expectedReasonOccurrences * 25
+      );
+
+      if (
+        deviationReasonInsight.score !==
+        expectedDeviationReasonScore
+      ) {
+        throw new Error(
+          `FASE 23.12 calculó score ${deviationReasonInsight.score} para el motivo recurrente, pero se esperaba ${expectedDeviationReasonScore}.`
+        );
+      }
+
+      if (
+        !deviationReasonInsight.description.includes(
+          `"${expectedMostFrequentReason}"`
+        ) ||
+        !deviationReasonInsight.description.includes(
+          `registrado ${expectedReasonOccurrences} ${
+            expectedReasonOccurrences === 1 ? 'vez' : 'veces'
+          }`
+        )
+      ) {
+        throw new Error(
+          'FASE 23.12 no identificó correctamente el motivo operativo más frecuente de desviación.'
+        );
+      }
+
+      addLog(
+        `FASE 23.12 OK: CJWMS analizó ${recommendationMemories.length} decisiones con recomendación, detectó ${compliedRecommendationMemories.length} cumplidas y ${deviatedRecommendationMemories.length} desviadas (${expectedComplianceRate}% de cumplimiento), e identificó "${expectedMostFrequentReason}" como motivo de desviación más frecuente con ${expectedReasonOccurrences} ${
+          expectedReasonOccurrences === 1 ? 'ocurrencia' : 'ocurrencias'
+        }.`
+      );
+
     } catch (error) {
+
       console.error(error);
 
       addLog(
