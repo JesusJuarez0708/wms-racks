@@ -1394,6 +1394,9 @@ function IntegrationLabPage() {
         `Confianza: ${selectedCandidate.decision.explanation.confidence}/100.`,
       ].join(' ');
 
+      const expectedRecommendationId =
+        crypto.randomUUID();
+
       inventoryItemId = testInventoryItem.id;
       originalPositionId = originPosition.id;
 
@@ -1414,6 +1417,7 @@ function IntegrationLabPage() {
           'Prueba controlada de trazabilidad de decisión inteligente.',
         decision_score: selectedCandidate.decision.score,
         decision_explanation: expectedExplanation,
+        recommendation_id: expectedRecommendationId,
         created_by: 'Integration Lab',
       });
 
@@ -1444,6 +1448,21 @@ function IntegrationLabPage() {
       ) {
         throw new Error(
           'La explicación inteligente persistida no coincide con la decisión ejecutada.'
+        );
+      }
+
+      if (!persistedMovement.recommendation_id) {
+        throw new Error(
+          'El movimiento de prueba 23.9 no conservó un recommendation_id real.'
+        );
+      }
+
+      if (
+        persistedMovement.recommendation_id !==
+        expectedRecommendationId
+      ) {
+        throw new Error(
+          'El recommendation_id persistido no coincide con la identidad generada para la recomendación ejecutada.'
         );
       }
 
@@ -1493,17 +1512,23 @@ function IntegrationLabPage() {
         );
       }
 
+      if (!movementMemoryMetadata.recommendationId) {
+        throw new Error(
+          'La Memoria Operativa no conservó un recommendationId real.'
+        );
+      }
+
       if (
         movementMemoryMetadata.recommendationId !==
-        persistedMovement.recommendation_id
+        expectedRecommendationId
       ) {
         throw new Error(
-          'La Memoria Operativa no conservó correctamente recommendationId.'
+          'La Memoria Operativa no conservó exactamente la identidad de la recomendación ejecutada.'
         );
       }
 
       addLog(
-        `FASE 23.8 OK: ${pallet.pallet_code} fue reubicado de ${originPosition.code} a ${selectedCandidate.position.code}. Movimiento ${createdMovement.id} conservó score ${selectedCandidate.decision.score} y la Memoria Operativa preservó score, explicación y recommendationId de la decisión ejecutada.`
+        `FASE 23.9 OK: ${pallet.pallet_code} fue reubicado de ${originPosition.code} a ${selectedCandidate.position.code}. Movimiento ${createdMovement.id} conservó recommendationId ${expectedRecommendationId}, score ${selectedCandidate.decision.score} y la Memoria Operativa preservó exactamente la identidad de la recomendación ejecutada.`
       );
     } catch (error) {
       console.error(error);

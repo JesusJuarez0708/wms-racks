@@ -603,6 +603,11 @@ function MovementFormModal({
             ].join(' ')
           : 'Movimiento capturado manualmente desde pantalla de Movimientos.';
 
+      const movementRecommendationId =
+        selectedRecommendationCandidate
+          ? crypto.randomUUID()
+          : null;
+
       await executeMovementWorkflow({
         warehouse_id: warehouseId,
         movement_type: movementType,
@@ -621,6 +626,7 @@ function MovementFormModal({
         notes: notes || null,
         decision_score: movementDecisionScore,
         decision_explanation: movementDecisionExplanation,
+        recommendation_id: movementRecommendationId,
         created_by: 'Usuario CJWMS',
       });
 
