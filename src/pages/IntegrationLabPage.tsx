@@ -5094,6 +5094,487 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeControlledDecisionComparison() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeComparison =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeComparison =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeComparison
+        );
+
+      /*
+       * FASE 23.24 — Comparación contextual controlada entre
+       * alternativas decisionales por conocimiento operativo
+       *
+       * FASE 23.23 demostró que un conocimiento puede participar
+       * causalmente en la determinación del contenido de UNA decisión.
+       *
+       * FASE 23.24 estudia por primera vez una relación entre DOS
+       * alternativas decisionales reales.
+       *
+       * Debe cumplirse:
+       *
+       * mismas decisiones A y B
+       * mismo consumidor
+       *
+       * sin conocimiento:
+       *   relación = undifferentiated
+       *
+       * con conocimiento:
+       *   relación = contextually_distinguished
+       *
+       * El conocimiento modifica la relación comparativa producida,
+       * pero NO:
+       *
+       * - modifica A;
+       * - modifica B;
+       * - cambia confidence;
+       * - cambia priority;
+       * - cambia el orden de A/B;
+       * - asigna rank;
+       * - declara winner/loser;
+       * - declara preferred;
+       * - selecciona;
+       * - ejecuta.
+       */
+
+      /*
+       * Las alternativas se resuelven explícitamente por identidad.
+       *
+       * Nunca utilizamos [0], posición de array, confidence,
+       * priority ni ningún criterio de ranking.
+       */
+      const firstDecision =
+        decisionsBeforeComparison.find(
+          (decision) =>
+            decision.id === 'decision-review-movements'
+        );
+
+      const secondDecision =
+        decisionsBeforeComparison.find(
+          (decision) =>
+            decision.id === 'decision-maintain-monitoring'
+        );
+
+      if (!firstDecision) {
+        throw new Error(
+          'FASE 23.24 no encontró decision-review-movements para utilizarla como alternativa A.'
+        );
+      }
+
+      if (!secondDecision) {
+        throw new Error(
+          'FASE 23.24 no encontró decision-maintain-monitoring para utilizarla como alternativa B.'
+        );
+      }
+
+      const firstDecisionSnapshot =
+        JSON.stringify(firstDecision);
+
+      const secondDecisionSnapshot =
+        JSON.stringify(secondDecision);
+
+      const controlledPatterns = [
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-comparison',
+          title:
+            'Patrón controlado de comparación contextual decisional',
+          description:
+            'Patrón controlado para demostrar que el conocimiento puede modificar una relación contextual entre dos alternativas sin ordenarlas ni seleccionar una.',
+          score: 95,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-comparacion-contextual',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-comparison-1',
+              'memory-controlled-comparison-2',
+              'memory-controlled-comparison-3',
+              'memory-controlled-comparison-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 23.24 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 23.24 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(knowledge, {
+          movementType: 'reubicacion',
+        });
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 23.24 esperaba que el conocimiento fuera elegible y considerado.'
+        );
+      }
+
+      if (consideration.knowledgeId !== knowledge.id) {
+        throw new Error(
+          'FASE 23.24 perdió trazabilidad entre consideración y conocimiento.'
+        );
+      }
+
+      type ControlledDecisionComparisonRelation =
+        | 'undifferentiated'
+        | 'contextually_distinguished';
+
+      type ControlledDecisionComparison = {
+        decisionIds: [string, string];
+        relation: ControlledDecisionComparisonRelation;
+        knowledgeId: string | null;
+        context: string | null;
+      };
+
+      /*
+       * Consumidor comparativo local.
+       *
+       * Recibe SIEMPRE las mismas alternativas A y B.
+       *
+       * No decide cuál es mejor.
+       * No modifica sus atributos.
+       *
+       * El conocimiento sólo permite producir una relación
+       * contextual nueva entre ambas.
+       */
+      const compareControlledDecisions = (
+        first: OperationalDecision,
+        second: OperationalDecision,
+        consideredKnowledge:
+          | typeof knowledge
+          | null
+      ): ControlledDecisionComparison => {
+        if (!consideredKnowledge) {
+          return {
+            decisionIds: [first.id, second.id],
+            relation: 'undifferentiated',
+            knowledgeId: null,
+            context: null,
+          };
+        }
+
+        const knowledgeAppliesToMovementContext =
+          consideredKnowledge.context.movementType ===
+            'reubicacion' &&
+          consideredKnowledge.context.deviationReason ===
+            'motivo-controlado-comparacion-contextual';
+
+        const firstRepresentsMovementReview =
+          first.action === 'review_movements';
+
+        const secondRepresentsSystemMonitoring =
+          second.action === 'monitor_system';
+
+        if (
+          !knowledgeAppliesToMovementContext ||
+          !firstRepresentsMovementReview ||
+          !secondRepresentsSystemMonitoring
+        ) {
+          return {
+            decisionIds: [first.id, second.id],
+            relation: 'undifferentiated',
+            knowledgeId: null,
+            context: null,
+          };
+        }
+
+        return {
+          decisionIds: [first.id, second.id],
+          relation: 'contextually_distinguished',
+          knowledgeId: consideredKnowledge.id,
+          context:
+            `El conocimiento sobre el motivo recurrente ` +
+            `"${consideredKnowledge.context.deviationReason}" ` +
+            `en movimientos de tipo ` +
+            `"${consideredKnowledge.context.movementType}" ` +
+            `permite distinguir contextualmente una alternativa ` +
+            `orientada a revisión de movimientos de otra orientada ` +
+            `a monitoreo general del sistema, sin establecer ` +
+            `precedencia entre ambas.`,
+        };
+      };
+
+      /*
+       * Contrafactual controlado:
+       *
+       * mismas decisiones;
+       * mismo orden;
+       * mismo consumidor;
+       * única diferencia = presencia del conocimiento.
+       */
+      const comparisonWithoutKnowledge =
+        compareControlledDecisions(
+          firstDecision,
+          secondDecision,
+          null
+        );
+
+      const comparisonWithKnowledge =
+        compareControlledDecisions(
+          firstDecision,
+          secondDecision,
+          knowledge
+        );
+
+      /*
+       * Sin conocimiento no debe producirse diferenciación
+       * contextual.
+       */
+      if (
+        comparisonWithoutKnowledge.relation !==
+        'undifferentiated'
+      ) {
+        throw new Error(
+          'FASE 23.24 produjo diferenciación contextual aun sin conocimiento.'
+        );
+      }
+
+      if (
+        comparisonWithoutKnowledge.knowledgeId !== null ||
+        comparisonWithoutKnowledge.context !== null
+      ) {
+        throw new Error(
+          'FASE 23.24 atribuyó conocimiento o contexto a la comparación base.'
+        );
+      }
+
+      /*
+       * Con conocimiento debe cambiar la relación producida.
+       */
+      if (
+        comparisonWithKnowledge.relation !==
+        'contextually_distinguished'
+      ) {
+        throw new Error(
+          'FASE 23.24 no logró producir una relación contextualmente distinguida mediante conocimiento.'
+        );
+      }
+
+      /*
+       * Atribución mediante knowledgeId.
+       */
+      if (
+        comparisonWithKnowledge.knowledgeId !==
+        knowledge.id
+      ) {
+        throw new Error(
+          'FASE 23.24 perdió la atribución comparativa mediante knowledgeId.'
+        );
+      }
+
+      if (!comparisonWithKnowledge.context) {
+        throw new Error(
+          'FASE 23.24 esperaba contexto semántico en la comparación influida.'
+        );
+      }
+
+      if (
+        !comparisonWithKnowledge.context.includes(
+          knowledge.context.deviationReason
+        )
+      ) {
+        throw new Error(
+          'FASE 23.24 no utilizó deviationReason dentro de la comparación contextual.'
+        );
+      }
+
+      if (
+        !comparisonWithKnowledge.context.includes(
+          knowledge.context.movementType
+        )
+      ) {
+        throw new Error(
+          'FASE 23.24 no utilizó movementType dentro de la comparación contextual.'
+        );
+      }
+
+      /*
+       * Las alternativas deben conservar exactamente su identidad
+       * y orden lógico A/B.
+       */
+      const expectedDecisionIds: [string, string] = [
+        firstDecision.id,
+        secondDecision.id,
+      ];
+
+      if (
+        JSON.stringify(
+          comparisonWithoutKnowledge.decisionIds
+        ) !== JSON.stringify(expectedDecisionIds) ||
+        JSON.stringify(
+          comparisonWithKnowledge.decisionIds
+        ) !== JSON.stringify(expectedDecisionIds)
+      ) {
+        throw new Error(
+          'FASE 23.24 alteró identidad u orden de las alternativas durante la comparación.'
+        );
+      }
+
+      /*
+       * Ninguna decisión productiva puede modificarse.
+       */
+      if (
+        JSON.stringify(firstDecision) !==
+        firstDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.24 modificó la alternativa decisional A.'
+        );
+      }
+
+      if (
+        JSON.stringify(secondDecision) !==
+        secondDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.24 modificó la alternativa decisional B.'
+        );
+      }
+
+      /*
+       * Guardas explícitas:
+       *
+       * la comparación no puede contener conceptos que impliquen
+       * ranking, selección, preferencia o ponderación.
+       */
+      if (
+        'winner' in comparisonWithKnowledge ||
+        'loser' in comparisonWithKnowledge ||
+        'preferred' in comparisonWithKnowledge ||
+        'selected' in comparisonWithKnowledge ||
+        'rank' in comparisonWithKnowledge ||
+        'position' in comparisonWithKnowledge ||
+        'weight' in comparisonWithKnowledge ||
+        'score' in comparisonWithKnowledge ||
+        'confidence' in comparisonWithKnowledge ||
+        'priority' in comparisonWithKnowledge ||
+        'sourcePatternId' in comparisonWithKnowledge ||
+        'memoryIds' in comparisonWithKnowledge ||
+        'occurrences' in comparisonWithKnowledge
+      ) {
+        throw new Error(
+          'FASE 23.24 detectó atributos de ranking, selección, preferencia, ponderación o evidencia duplicada dentro de la comparación.'
+        );
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * El motor real debe seguir generando exactamente los mismos
+       * resultados.
+       */
+      const recommendationsAfterComparison =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterComparison =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterComparison
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsBeforeComparison
+        ) !==
+        JSON.stringify(
+          recommendationsAfterComparison
+        )
+      ) {
+        throw new Error(
+          'FASE 23.24 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsBeforeComparison) !==
+        JSON.stringify(decisionsAfterComparison)
+      ) {
+        throw new Error(
+          'FASE 23.24 detectó modificación u ordenamiento distinto de decisiones productivas.'
+        );
+      }
+
+      /*
+       * Confirmamos que A y B siguen existiendo después del
+       * experimento con exactamente el mismo contenido.
+       */
+      const firstDecisionAfter =
+        decisionsAfterComparison.find(
+          (decision) =>
+            decision.id === firstDecision.id
+        );
+
+      const secondDecisionAfter =
+        decisionsAfterComparison.find(
+          (decision) =>
+            decision.id === secondDecision.id
+        );
+
+      if (
+        !firstDecisionAfter ||
+        !secondDecisionAfter
+      ) {
+        throw new Error(
+          'FASE 23.24 perdió alguna de las alternativas productivas utilizadas en la comparación.'
+        );
+      }
+
+      if (
+        JSON.stringify(firstDecisionAfter) !==
+          firstDecisionSnapshot ||
+        JSON.stringify(secondDecisionAfter) !==
+          secondDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.24 alteró indirectamente alguna alternativa decisional productiva.'
+        );
+      }
+
+      addLog(
+        `FASE 23.24 OK: las mismas alternativas ${firstDecision.id} y ${secondDecision.id}, resueltas explícitamente por id y conservadas en el mismo orden, produjeron relación "${comparisonWithoutKnowledge.relation}" sin conocimiento y "${comparisonWithKnowledge.relation}" con 1 conocimiento considerado; la diferencia contextual quedó atribuida mediante knowledgeId sin modificar confidence, priority, orden, ranking, preferencia, selección ni ejecución, manteniendo intactas ${recommendationsAfterComparison.length} recomendaciones y ${decisionsAfterComparison.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en comparación contextual controlada 23.24: ${error.message}`
+          : 'Error inesperado en comparación contextual controlada 23.24.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -5739,6 +6220,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Determinación Decisional 23.23
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeControlledDecisionComparison}
+          disabled={loading}
+          className="rounded-xl bg-indigo-950 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Comparación Decisional 23.24
         </button>
 
         <button
