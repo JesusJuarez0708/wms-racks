@@ -3844,6 +3844,440 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeDecisionBoundary() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeBoundary =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeBoundary =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeBoundary
+        );
+
+      if (decisionsBeforeBoundary.length === 0) {
+        throw new Error(
+          'FASE 23.21 necesita al menos una decisión operativa real para establecer la frontera explicativa-decisional.'
+        );
+      }
+
+      /*
+       * FASE 23.21 — Frontera entre influencia explicativa
+       * y decisional del conocimiento operativo
+       *
+       * A diferencia de FASE 23.20, el resultado compuesto contiene
+       * ahora como núcleo una decisión real ya producida por CJWMS.
+       *
+       * El conocimiento NO entra en esa decisión.
+       *
+       * Sólo puede modificar un contexto explicativo externo y
+       * estructuralmente separado.
+       *
+       * Debe cumplirse:
+       *
+       * resultado base != resultado influido
+       *
+       * pero:
+       *
+       * decisionCore base == decisionCore influido
+       *
+       * Por tanto, la influencia explicativa puede aproximarse a un
+       * resultado decisional real sin convertirse todavía en
+       * influencia sobre la decisión.
+       */
+
+      const controlledPatterns = [
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-decision-boundary-a',
+          title:
+            'Patrón controlado de frontera explicativa-decisional A',
+          description:
+            'Patrón controlado para probar influencia explicativa junto a una decisión real sin modificar su núcleo decisional.',
+          score: 95,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-frontera-decisional-a',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-decision-boundary-a-1',
+              'memory-decision-boundary-a-2',
+              'memory-decision-boundary-a-3',
+              'memory-decision-boundary-a-4',
+            ],
+          },
+        },
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-decision-boundary-b',
+          title:
+            'Patrón controlado de frontera explicativa-decisional B',
+          description:
+            'Segundo patrón controlado para demostrar influencia explicativa plural manteniendo intacta una decisión real.',
+          score: 50,
+          occurrences: 2,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-frontera-decisional-b',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-decision-boundary-b-1',
+              'memory-decision-boundary-b-2',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 2) {
+        throw new Error(
+          `FASE 23.21 esperaba 2 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const considerationContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const considerations = controlledKnowledge
+        .map((knowledge) => {
+          const eligibility =
+            evaluateOperationalKnowledgeEligibility(
+              knowledge,
+              considerationContext
+            );
+
+          return {
+            knowledge,
+            eligibility,
+            consideration:
+              considerOperationalKnowledge(eligibility),
+          };
+        })
+        .filter(
+          (
+            item
+          ): item is typeof item & {
+            consideration: NonNullable<
+              typeof item.consideration
+            >;
+          } => item.consideration !== null
+        );
+
+      if (considerations.length !== 2) {
+        throw new Error(
+          `FASE 23.21 esperaba 2 conocimientos considerados y obtuvo ${considerations.length}.`
+        );
+      }
+
+      type ControlledBoundaryObservation = {
+        knowledgeId: string;
+        message: string;
+      };
+
+      type ControlledExplanatoryContext = {
+        observations: ControlledBoundaryObservation[];
+      };
+
+      /*
+       * Inferimos directamente el tipo del núcleo decisional real
+       * producido por generateOperationalDecisions().
+       *
+       * No creamos una nueva abstracción productiva.
+       */
+      type ControlledDecisionCore =
+        (typeof decisionsBeforeBoundary)[number];
+
+      type ControlledDecisionBoundaryResult = {
+        decisionCore: ControlledDecisionCore;
+        explanatoryContext: ControlledExplanatoryContext;
+      };
+
+      const realDecisionCore = decisionsBeforeBoundary[0];
+
+      if (!realDecisionCore) {
+        throw new Error(
+          'FASE 23.21 no pudo resolver la decisión operativa utilizada como núcleo controlado.'
+        );
+      }
+
+      /*
+       * El resultado base ya contiene una decisión real.
+       *
+       * Su contexto explicativo adicional existe vacío y puede
+       * permanecer así sin conocimiento.
+       */
+      const baseResult: ControlledDecisionBoundaryResult = {
+        decisionCore: realDecisionCore,
+        explanatoryContext: {
+          observations: [],
+        },
+      };
+
+      const baseResultSnapshot = JSON.stringify(baseResult);
+      const decisionCoreSnapshot = JSON.stringify(
+        baseResult.decisionCore
+      );
+
+      /*
+       * Utilización del conocimiento.
+       *
+       * Igual que en las fases anteriores, el consumidor resuelve
+       * knowledgeId y utiliza contenido semántico real.
+       *
+       * score y occurrences siguen completamente fuera.
+       */
+      const knowledgeObservations: ControlledBoundaryObservation[] =
+        considerations.map(({ consideration }) => {
+          const knowledge = controlledKnowledge.find(
+            (candidate) =>
+              candidate.id === consideration.knowledgeId
+          );
+
+          if (!knowledge) {
+            throw new Error(
+              `FASE 23.21 no pudo resolver el conocimiento considerado ${consideration.knowledgeId}.`
+            );
+          }
+
+          return {
+            knowledgeId: knowledge.id,
+            message:
+              `Antecedente operativo contextual: el motivo recurrente ` +
+              `"${knowledge.context.deviationReason}" fue observado ` +
+              `en movimientos de tipo ` +
+              `"${knowledge.context.movementType}".`,
+          };
+        });
+
+      if (knowledgeObservations.length !== 2) {
+        throw new Error(
+          `FASE 23.21 esperaba 2 contribuciones explicativas y produjo ${knowledgeObservations.length}.`
+        );
+      }
+
+      /*
+       * Punto controlado de influencia.
+       *
+       * El resultado compuesto cambia porque cambia únicamente
+       * explanatoryContext.
+       *
+       * decisionCore se conserva por referencia y por contenido.
+       */
+      const influencedResult: ControlledDecisionBoundaryResult = {
+        ...baseResult,
+        explanatoryContext: {
+          ...baseResult.explanatoryContext,
+          observations: [
+            ...baseResult.explanatoryContext.observations,
+            ...knowledgeObservations,
+          ],
+        },
+      };
+
+      /*
+       * El resultado base no puede haber sido mutado.
+       */
+      if (JSON.stringify(baseResult) !== baseResultSnapshot) {
+        throw new Error(
+          'FASE 23.21 modificó directamente el resultado compuesto base.'
+        );
+      }
+
+      /*
+       * Debe existir influencia real sobre el resultado compuesto.
+       */
+      if (
+        JSON.stringify(baseResult) ===
+        JSON.stringify(influencedResult)
+      ) {
+        throw new Error(
+          'FASE 23.21 no logró demostrar influencia sobre el resultado compuesto.'
+        );
+      }
+
+      /*
+       * La decisión debe permanecer exactamente intacta.
+       */
+      if (
+        JSON.stringify(baseResult.decisionCore) !==
+        JSON.stringify(influencedResult.decisionCore)
+      ) {
+        throw new Error(
+          'FASE 23.21 cruzó la frontera: el conocimiento modificó el núcleo decisional.'
+        );
+      }
+
+      if (
+        JSON.stringify(influencedResult.decisionCore) !==
+        decisionCoreSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.21 detectó una alteración del contenido original de la decisión.'
+        );
+      }
+
+      /*
+       * Conservamos incluso la misma identidad del objeto decisional.
+       *
+       * El experimento no reconstruye, reemplaza ni recalcula
+       * la decisión.
+       */
+      if (
+        influencedResult.decisionCore !==
+        baseResult.decisionCore
+      ) {
+        throw new Error(
+          'FASE 23.21 reemplazó artificialmente el núcleo decisional durante la influencia explicativa.'
+        );
+      }
+
+      if (
+        baseResult.explanatoryContext.observations.length !== 0
+      ) {
+        throw new Error(
+          'FASE 23.21 esperaba un contexto explicativo base independiente del conocimiento.'
+        );
+      }
+
+      if (
+        influencedResult.explanatoryContext.observations
+          .length !== 2
+      ) {
+        throw new Error(
+          'FASE 23.21 esperaba exactamente 2 modificaciones explicativas atribuibles.'
+        );
+      }
+
+      const influencedKnowledgeIds = new Set(
+        influencedResult.explanatoryContext.observations.map(
+          (observation) => observation.knowledgeId
+        )
+      );
+
+      if (influencedKnowledgeIds.size !== 2) {
+        throw new Error(
+          'FASE 23.21 perdió la pluralidad o identidad independiente de los conocimientos influyentes.'
+        );
+      }
+
+      controlledKnowledge.forEach((knowledge) => {
+        const observation =
+          influencedResult.explanatoryContext.observations.find(
+            (candidate) =>
+              candidate.knowledgeId === knowledge.id
+          );
+
+        if (!observation) {
+          throw new Error(
+            `FASE 23.21 no pudo atribuir influencia explicativa al conocimiento ${knowledge.id}.`
+          );
+        }
+
+        if (
+          !observation.message.includes(
+            knowledge.context.deviationReason
+          )
+        ) {
+          throw new Error(
+            `FASE 23.21 no utilizó el motivo contextual del conocimiento ${knowledge.id}.`
+          );
+        }
+
+        if (
+          !observation.message.includes(
+            knowledge.context.movementType
+          )
+        ) {
+          throw new Error(
+            `FASE 23.21 no utilizó el tipo de movimiento del conocimiento ${knowledge.id}.`
+          );
+        }
+      });
+
+      /*
+       * La superficie explicativa no puede recibir atributos
+       * que introduzcan selección, ponderación o evidencia
+       * duplicada.
+       */
+      if (
+        influencedResult.explanatoryContext.observations.some(
+          (observation) =>
+            'sourcePatternId' in observation ||
+            'memoryIds' in observation ||
+            'score' in observation ||
+            'occurrences' in observation ||
+            'priority' in observation ||
+            'rank' in observation ||
+            'selected' in observation ||
+            'weight' in observation ||
+            'confidence' in observation
+        )
+      ) {
+        throw new Error(
+          'FASE 23.21 detectó atributos ajenos a la frontera explicativa dentro de las contribuciones del conocimiento.'
+        );
+      }
+
+      /*
+       * Verificación externa adicional:
+       * los motores reales siguen produciendo exactamente
+       * recomendaciones y decisiones equivalentes.
+       */
+      const recommendationsAfterBoundary =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterBoundary =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterBoundary
+        );
+
+      if (
+        JSON.stringify(recommendationsBeforeBoundary) !==
+        JSON.stringify(recommendationsAfterBoundary)
+      ) {
+        throw new Error(
+          'FASE 23.21 detectó modificación de recomendaciones operativas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsBeforeBoundary) !==
+        JSON.stringify(decisionsAfterBoundary)
+      ) {
+        throw new Error(
+          'FASE 23.21 detectó modificación de decisiones operativas.'
+        );
+      }
+
+      addLog(
+        `FASE 23.21 OK: ${knowledgeObservations.length} conocimientos influyeron pluralmente sobre un contexto explicativo asociado a una decisión real, mientras el núcleo decisional permaneció exactamente intacto por identidad y contenido; la frontera influencia explicativa ≠ influencia decisional quedó preservada sin selección, ranking, prioridad, ponderación ni modificación de ${recommendationsAfterBoundary.length} recomendaciones o ${decisionsAfterBoundary.length} decisiones.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en frontera explicativa-decisional 23.21: ${error.message}`
+          : 'Error inesperado en frontera explicativa-decisional 23.21.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -4465,6 +4899,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-stone-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Influencia Explicativa 23.20
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeDecisionBoundary}
+          disabled={loading}
+          className="rounded-xl bg-neutral-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Frontera Explicativa-Decisional 23.21
         </button>
 
         <button
