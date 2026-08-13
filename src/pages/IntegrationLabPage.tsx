@@ -3211,6 +3211,281 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeObservationalUsage() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeObservationalUsage =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeObservationalUsage =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeObservationalUsage
+        );
+
+      const controlledPatterns = [
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-observational-usage-a',
+          title:
+            'Patrón controlado de utilización observacional A',
+          description:
+            'Patrón controlado para validar utilización observacional trazable de conocimiento operativo.',
+          score: 95,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-utilizacion-observacional-a',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-observational-usage-a-1',
+              'memory-observational-usage-a-2',
+              'memory-observational-usage-a-3',
+              'memory-observational-usage-a-4',
+            ],
+          },
+        },
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-observational-usage-b',
+          title:
+            'Patrón controlado de utilización observacional B',
+          description:
+            'Segundo patrón controlado para validar utilización plural sin selección, ranking ni influencia.',
+          score: 50,
+          occurrences: 2,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-utilizacion-observacional-b',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-observational-usage-b-1',
+              'memory-observational-usage-b-2',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 2) {
+        throw new Error(
+          `FASE 23.19 esperaba 2 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const considerationContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const considerations = controlledKnowledge
+        .map((knowledge) => {
+          const eligibility =
+            evaluateOperationalKnowledgeEligibility(
+              knowledge,
+              considerationContext
+            );
+
+          return {
+            knowledge,
+            eligibility,
+            consideration:
+              considerOperationalKnowledge(eligibility),
+          };
+        })
+        .filter(
+          (
+            item
+          ): item is typeof item & {
+            consideration: NonNullable<
+              typeof item.consideration
+            >;
+          } => item.consideration !== null
+        );
+
+      if (considerations.length !== 2) {
+        throw new Error(
+          `FASE 23.19 esperaba 2 conocimientos considerados y obtuvo ${considerations.length}.`
+        );
+      }
+
+      type ControlledKnowledgeObservation = {
+        knowledgeId: string;
+        message: string;
+      };
+
+      /*
+      * FASE 23.19:
+      *
+      * Este consumidor existe únicamente dentro del laboratorio.
+      *
+      * A diferencia de FASE 23.18, aquí el contenido semántico
+      * del conocimiento participa en la producción de una salida
+      * nueva y trazable.
+      *
+      * Eso constituye utilización.
+      *
+      * Las observaciones NO participan en:
+      * - recomendaciones;
+      * - decisiones;
+      * - scores;
+      * - prioridades;
+      * - ranking;
+      * - selección;
+      * - workflows;
+      * - ejecución operativa.
+      *
+      * Por tanto, utilización NO implica influencia.
+      */
+      const observations: ControlledKnowledgeObservation[] =
+        considerations.map(({ consideration }) => {
+          const knowledge = controlledKnowledge.find(
+            (candidate) =>
+              candidate.id === consideration.knowledgeId
+          );
+
+          if (!knowledge) {
+            throw new Error(
+              `FASE 23.19 no pudo resolver el conocimiento considerado ${consideration.knowledgeId}.`
+            );
+          }
+
+          return {
+            knowledgeId: knowledge.id,
+            message:
+              `CJWMS observa un antecedente operativo recurrente ` +
+              `de desviación por el motivo ` +
+              `"${knowledge.context.deviationReason}" ` +
+              `en movimientos de tipo ` +
+              `"${knowledge.context.movementType}".`,
+          };
+        });
+
+      if (observations.length !== 2) {
+        throw new Error(
+          `FASE 23.19 esperaba producir 2 observaciones y produjo ${observations.length}.`
+        );
+      }
+
+      const observationKnowledgeIds = new Set(
+        observations.map(
+          (observation) => observation.knowledgeId
+        )
+      );
+
+      if (observationKnowledgeIds.size !== 2) {
+        throw new Error(
+          'FASE 23.19 perdió la identidad plural de los conocimientos utilizados.'
+        );
+      }
+
+      controlledKnowledge.forEach((knowledge) => {
+        const observation = observations.find(
+          (candidate) =>
+            candidate.knowledgeId === knowledge.id
+        );
+
+        if (!observation) {
+          throw new Error(
+            `FASE 23.19 no produjo observación para el conocimiento ${knowledge.id}.`
+          );
+        }
+
+        if (
+          !observation.message.includes(
+            knowledge.context.deviationReason
+          )
+        ) {
+          throw new Error(
+            `FASE 23.19 produjo una observación que no utilizó el motivo contextual del conocimiento ${knowledge.id}.`
+          );
+        }
+
+        if (
+          !observation.message.includes(
+            knowledge.context.movementType
+          )
+        ) {
+          throw new Error(
+            `FASE 23.19 produjo una observación que no utilizó el tipo de movimiento del conocimiento ${knowledge.id}.`
+          );
+        }
+      });
+
+      if (
+        observations.some(
+          (observation) =>
+            'sourcePatternId' in observation ||
+            'memoryIds' in observation ||
+            'score' in observation ||
+            'occurrences' in observation ||
+            'priority' in observation ||
+            'rank' in observation ||
+            'selected' in observation ||
+            'influence' in observation ||
+            'influential' in observation
+        )
+      ) {
+        throw new Error(
+          'FASE 23.19 detectó atributos artificiales de evidencia duplicada, score, recurrencia, prioridad, ranking, selección o influencia dentro del resultado observacional.'
+        );
+      }
+
+      const recommendationsAfterObservationalUsage =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterObservationalUsage =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterObservationalUsage
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsBeforeObservationalUsage
+        ) !==
+        JSON.stringify(
+          recommendationsAfterObservationalUsage
+        )
+      ) {
+        throw new Error(
+          'FASE 23.19 detectó que la utilización observacional modificó recomendaciones.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsBeforeObservationalUsage) !==
+        JSON.stringify(decisionsAfterObservationalUsage)
+      ) {
+        throw new Error(
+          'FASE 23.19 detectó que la utilización observacional modificó decisiones operativas.'
+        );
+      }
+
+      addLog(
+      `FASE 23.19 OK: ${considerations.length} conocimientos considerados fueron utilizados por un consumidor observacional controlado para producir ${observations.length} observaciones trazables mediante knowledgeId, conservando pluralidad sin selección, ranking, prioridad, ponderación ni influencia, y sin modificar ${recommendationsAfterObservationalUsage.length} recomendaciones o ${decisionsAfterObservationalUsage.length} decisiones.`
+    );
+  } catch (error) {
+    console.error(error);
+
+    addLog(
+      error instanceof Error
+        ? `Error en utilización observacional de conocimiento 23.19: ${error.message}`
+        : 'Error inesperado en utilización observacional de conocimiento 23.19.'
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -3816,6 +4091,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-slate-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Frontera Utilización 23.18
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeObservationalUsage}
+          disabled={loading}
+          className="rounded-xl bg-zinc-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Utilización Observacional 23.19
         </button>
 
         <button
