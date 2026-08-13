@@ -2944,6 +2944,273 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeUsageBoundary() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeUsageBoundary =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeUsageBoundary =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeUsageBoundary
+        );
+
+      const controlledPatterns = [
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-usage-boundary-a',
+          title:
+            'Patrón controlado de frontera de utilización A',
+          description:
+            'Patrón controlado para demostrar que considerar y consultar conocimiento no implica utilización ni influencia.',
+          score: 95,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-frontera-utilizacion-a',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-usage-boundary-a-1',
+              'memory-usage-boundary-a-2',
+              'memory-usage-boundary-a-3',
+              'memory-usage-boundary-a-4',
+            ],
+          },
+        },
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-usage-boundary-b',
+          title:
+            'Patrón controlado de frontera de utilización B',
+          description:
+            'Segundo patrón controlado para demostrar consulta plural sin consumidor operativo ni influencia.',
+          score: 50,
+          occurrences: 2,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-frontera-utilizacion-b',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-usage-boundary-b-1',
+              'memory-usage-boundary-b-2',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 2) {
+        throw new Error(
+          `FASE 23.18 esperaba 2 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const considerationContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const considerations = controlledKnowledge
+        .map((knowledge) => {
+          const eligibility =
+            evaluateOperationalKnowledgeEligibility(
+              knowledge,
+              considerationContext
+            );
+
+          return {
+            knowledge,
+            eligibility,
+            consideration:
+              considerOperationalKnowledge(eligibility),
+          };
+        })
+        .filter(
+          (
+            item
+          ): item is typeof item & {
+            consideration: NonNullable<
+              typeof item.consideration
+            >;
+          } => item.consideration !== null
+        );
+
+      if (considerations.length !== 2) {
+        throw new Error(
+          `FASE 23.18 esperaba 2 conocimientos considerados y obtuvo ${considerations.length}.`
+        );
+      }
+
+      considerations.forEach(
+        ({ knowledge, eligibility, consideration }) => {
+          if (!eligibility.eligible) {
+            throw new Error(
+              `FASE 23.18 encontró no elegible el conocimiento controlado ${knowledge.id}.`
+            );
+          }
+
+          if (!consideration.considered) {
+            throw new Error(
+              `FASE 23.18 encontró una consideración inválida para ${knowledge.id}.`
+            );
+          }
+
+          if (
+            consideration.knowledgeId !== knowledge.id ||
+            consideration.sourcePatternId !==
+              knowledge.sourcePatternId
+          ) {
+            throw new Error(
+              `FASE 23.18 perdió la trazabilidad del conocimiento considerado ${knowledge.id}.`
+            );
+          }
+        }
+      );
+
+      /*
+       * FASE 23.18:
+       *
+       * Consultar o leer información de conocimientos considerados
+       * continúa siendo examen contextual.
+       *
+       * Esta lectura deliberadamente NO crea:
+       * - utilización;
+       * - consumidor;
+       * - resultado derivado;
+       * - influencia;
+       * - selección;
+       * - ranking;
+       * - prioridad.
+       */
+      const knowledgeBeforeInspection =
+        JSON.stringify(controlledKnowledge);
+
+      const inspectedKnowledgeIds = considerations.map(
+        ({ knowledge, consideration }) => {
+          const inspectedMovementType =
+            knowledge.context.movementType;
+
+          const inspectedDeviationReason =
+            knowledge.context.deviationReason;
+
+          if (
+            inspectedMovementType !==
+            considerationContext.movementType
+          ) {
+            throw new Error(
+              `FASE 23.18 encontró contexto incompatible al consultar ${knowledge.id}.`
+            );
+          }
+
+          if (!inspectedDeviationReason.trim()) {
+            throw new Error(
+              `FASE 23.18 encontró un conocimiento sin motivo histórico consultable: ${knowledge.id}.`
+            );
+          }
+
+          return consideration.knowledgeId;
+        }
+      );
+
+      if (inspectedKnowledgeIds.length !== 2) {
+        throw new Error(
+          `FASE 23.18 esperaba consultar 2 conocimientos considerados y consultó ${inspectedKnowledgeIds.length}.`
+        );
+      }
+
+      if (
+        new Set(inspectedKnowledgeIds).size !==
+        inspectedKnowledgeIds.length
+      ) {
+        throw new Error(
+          'FASE 23.18 perdió la identidad independiente de los conocimientos durante su consulta.'
+        );
+      }
+
+      if (
+        JSON.stringify(controlledKnowledge) !==
+        knowledgeBeforeInspection
+      ) {
+        throw new Error(
+          'FASE 23.18 detectó que consultar el conocimiento modificó el conocimiento operativo.'
+        );
+      }
+
+      if (
+        considerations.some(
+          ({ consideration }) =>
+            'used' in consideration ||
+            'usage' in consideration ||
+            'consumer' in consideration ||
+            'consumerId' in consideration ||
+            'result' in consideration ||
+            'resultId' in consideration ||
+            'influential' in consideration ||
+            'influence' in consideration ||
+            'selected' in consideration ||
+            'relevant' in consideration ||
+            'rank' in consideration ||
+            'priority' in consideration ||
+            'score' in consideration
+        )
+      ) {
+        throw new Error(
+          'FASE 23.18 detectó atributos artificiales de utilización, consumidor, resultado, influencia, selección, relevancia, ranking, prioridad o score dentro de la consideración.'
+        );
+      }
+
+      const recommendationsAfterUsageBoundary =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterUsageBoundary =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterUsageBoundary
+        );
+
+      if (
+        JSON.stringify(recommendationsBeforeUsageBoundary) !==
+        JSON.stringify(recommendationsAfterUsageBoundary)
+      ) {
+        throw new Error(
+          'FASE 23.18 detectó que considerar y consultar conocimiento modificó recomendaciones.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsBeforeUsageBoundary) !==
+        JSON.stringify(decisionsAfterUsageBoundary)
+      ) {
+        throw new Error(
+          'FASE 23.18 detectó que considerar y consultar conocimiento modificó decisiones operativas.'
+        );
+      }
+
+      addLog(
+        `FASE 23.18 OK: ${considerations.length} conocimientos elegibles fueron considerados y consultados como información contextual conservando identidad y trazabilidad, sin convertir la consulta en utilización, sin consumidor ni resultado derivado, sin influencia, selección, ranking o prioridad, y sin modificar ${recommendationsAfterUsageBoundary.length} recomendaciones ni ${decisionsAfterUsageBoundary.length} decisiones.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en frontera de utilización de conocimiento 23.18: ${error.message}`
+          : 'Error inesperado en frontera de utilización de conocimiento 23.18.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -3541,6 +3808,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-blue-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Coexistencia Conocimiento 23.17
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeUsageBoundary}
+          disabled={loading}
+          className="rounded-xl bg-slate-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Frontera Utilización 23.18
         </button>
 
         <button
