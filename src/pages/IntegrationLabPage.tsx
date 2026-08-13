@@ -4278,6 +4278,378 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeControlledDecisionInfluence() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeDecisionInfluence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeDecisionInfluence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeDecisionInfluence
+        );
+
+      if (decisionsBeforeDecisionInfluence.length === 0) {
+        throw new Error(
+          'FASE 23.22 necesita al menos una decisión operativa real para demostrar influencia sobre contenido decisional.'
+        );
+      }
+
+      /*
+       * FASE 23.22 — Influencia controlada sobre contenido
+       * decisional del conocimiento operativo
+       *
+       * FASE 23.21 demostró que el conocimiento podía influir
+       * junto a una decisión real sin modificarla.
+       *
+       * FASE 23.22 cruza deliberadamente esa frontera:
+       *
+       * una propiedad perteneciente al núcleo decisional
+       * cambiará como consecuencia atribuible de la utilización
+       * de conocimiento.
+       *
+       * La propiedad elegida es action.
+       *
+       * action representa aquí contenido declarativo acerca de
+       * qué hacer y actualmente no ejecuta workflows.
+       *
+       * Debe cumplirse:
+       *
+       * decisión base != decisión influida
+       *
+       * y específicamente:
+       *
+       * action base != action influida
+       *
+       * mientras permanecen intactos:
+       * - id;
+       * - title;
+       * - description;
+       * - priority;
+       * - confidence;
+       * - sourcePatternId.
+       *
+       * NO se permite:
+       * - modificar score/confidence;
+       * - modificar prioridad;
+       * - alterar ranking;
+       * - seleccionar otra decisión;
+       * - ejecutar la acción;
+       * - modificar recomendaciones productivas;
+       * - modificar decisiones productivas originales.
+       */
+
+      const controlledPatterns = [
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-decision-influence',
+          title:
+            'Patrón controlado de influencia sobre contenido decisional',
+          description:
+            'Patrón controlado para demostrar una modificación atribuible de contenido decisional sin ranking, selección ni ejecución.',
+          score: 95,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-influencia-contenido-decisional',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-decision-influence-1',
+              'memory-controlled-decision-influence-2',
+              'memory-controlled-decision-influence-3',
+              'memory-controlled-decision-influence-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 23.22 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 23.22 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(knowledge, {
+          movementType: 'reubicacion',
+        });
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 23.22 esperaba que el conocimiento controlado fuera elegible y considerado.'
+        );
+      }
+
+      if (consideration.knowledgeId !== knowledge.id) {
+        throw new Error(
+          'FASE 23.22 perdió trazabilidad entre consideración y conocimiento.'
+        );
+      }
+
+      /*
+       * Utilizamos una decisión real ya producida por CJWMS.
+       *
+       * No recalculamos ni seleccionamos otra decisión como
+       * consecuencia del conocimiento.
+       */
+      const baseDecision =
+        decisionsBeforeDecisionInfluence[0];
+
+      if (!baseDecision) {
+        throw new Error(
+          'FASE 23.22 no pudo resolver la decisión base.'
+        );
+      }
+
+      const baseDecisionSnapshot =
+        JSON.stringify(baseDecision);
+
+      /*
+       * El consumidor utiliza contenido semántico real del
+       * conocimiento para construir una nueva expresión de action.
+       *
+       * knowledgeId queda incluido exclusivamente como
+       * trazabilidad de la modificación controlada.
+       *
+       * score y occurrences NO participan.
+       */
+      const influencedAction =
+        `${baseDecision.action} | ` +
+        `considerar antecedente "${knowledge.context.deviationReason}" ` +
+        `para movimiento "${knowledge.context.movementType}" ` +
+        `[knowledgeId=${knowledge.id}]`;
+
+      if (
+        !influencedAction.includes(
+          knowledge.context.deviationReason
+        )
+      ) {
+        throw new Error(
+          'FASE 23.22 no utilizó el motivo contextual del conocimiento para producir la modificación decisional.'
+        );
+      }
+
+      if (
+        !influencedAction.includes(
+          knowledge.context.movementType
+        )
+      ) {
+        throw new Error(
+          'FASE 23.22 no utilizó el tipo de movimiento del conocimiento para producir la modificación decisional.'
+        );
+      }
+
+      if (!influencedAction.includes(knowledge.id)) {
+        throw new Error(
+          'FASE 23.22 perdió la atribución mediante knowledgeId.'
+        );
+      }
+
+      /*
+       * Punto exacto de influencia decisional.
+       *
+       * Por primera vez una propiedad del núcleo decisional
+       * cambia de forma atribuible al conocimiento utilizado.
+       *
+       * Se crea una copia controlada.
+       * La decisión productiva original no se muta.
+       */
+      const influencedDecision: OperationalDecision = {
+        ...baseDecision,
+        action: influencedAction,
+      };
+
+      /*
+       * La decisión original debe permanecer intacta.
+       */
+      if (
+        JSON.stringify(baseDecision) !==
+        baseDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.22 mutó directamente la decisión operativa original.'
+        );
+      }
+
+      /*
+       * Debe existir una diferencia real en el resultado
+       * decisional controlado.
+       */
+      if (
+        JSON.stringify(baseDecision) ===
+        JSON.stringify(influencedDecision)
+      ) {
+        throw new Error(
+          'FASE 23.22 no logró demostrar influencia sobre contenido decisional.'
+        );
+      }
+
+      /*
+       * La propiedad decisional elegida debe cambiar.
+       */
+      if (
+        baseDecision.action === influencedDecision.action
+      ) {
+        throw new Error(
+          'FASE 23.22 no modificó la propiedad action.'
+        );
+      }
+
+      /*
+       * Ninguna otra propiedad del núcleo puede cambiar.
+       */
+      if (
+        influencedDecision.id !== baseDecision.id ||
+        influencedDecision.title !== baseDecision.title ||
+        influencedDecision.description !==
+          baseDecision.description ||
+        influencedDecision.priority !==
+          baseDecision.priority ||
+        influencedDecision.confidence !==
+          baseDecision.confidence ||
+        influencedDecision.sourcePatternId !==
+          baseDecision.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.22 modificó propiedades decisionales fuera de la frontera controlada de action.'
+        );
+      }
+
+      /*
+       * En particular, confidence y priority deben mantenerse
+       * intactos porque actualmente participan respectivamente
+       * en ordenamiento y jerarquización.
+       */
+      if (
+        influencedDecision.confidence !==
+        baseDecision.confidence
+      ) {
+        throw new Error(
+          'FASE 23.22 modificó confidence y cruzó hacia ponderación o ranking.'
+        );
+      }
+
+      if (
+        influencedDecision.priority !==
+        baseDecision.priority
+      ) {
+        throw new Error(
+          'FASE 23.22 modificó priority y cruzó hacia jerarquización.'
+        );
+      }
+
+      /*
+       * La decisión elegida como objeto experimental sigue siendo
+       * la misma identidad lógica: no cambiamos id ni seleccionamos
+       * otra decisión.
+       */
+      if (influencedDecision.id !== baseDecision.id) {
+        throw new Error(
+          'FASE 23.22 seleccionó o sustituyó una decisión diferente.'
+        );
+      }
+
+      /*
+       * Verificación externa:
+       *
+       * los motores productivos deben seguir generando exactamente
+       * las mismas recomendaciones y decisiones que antes.
+       */
+      const recommendationsAfterDecisionInfluence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterDecisionInfluence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterDecisionInfluence
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsBeforeDecisionInfluence
+        ) !==
+        JSON.stringify(
+          recommendationsAfterDecisionInfluence
+        )
+      ) {
+        throw new Error(
+          'FASE 23.22 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsBeforeDecisionInfluence) !==
+        JSON.stringify(decisionsAfterDecisionInfluence)
+      ) {
+        throw new Error(
+          'FASE 23.22 detectó modificación de decisiones productivas originales.'
+        );
+      }
+
+      /*
+       * Confirmamos explícitamente que el conocimiento utilizado
+       * no ha introducido atributos de ranking, selección,
+       * ponderación o evidencia duplicada dentro del resultado.
+       */
+      const controlledInfluenceTrace = {
+        knowledgeId: knowledge.id,
+        property: 'action' as const,
+        before: baseDecision.action,
+        after: influencedDecision.action,
+      };
+
+      if (
+        'sourcePatternId' in controlledInfluenceTrace ||
+        'memoryIds' in controlledInfluenceTrace ||
+        'score' in controlledInfluenceTrace ||
+        'occurrences' in controlledInfluenceTrace ||
+        'priority' in controlledInfluenceTrace ||
+        'rank' in controlledInfluenceTrace ||
+        'selected' in controlledInfluenceTrace ||
+        'weight' in controlledInfluenceTrace ||
+        'confidence' in controlledInfluenceTrace
+      ) {
+        throw new Error(
+          'FASE 23.22 detectó atributos ajenos a la influencia decisional controlada.'
+        );
+      }
+
+      addLog(
+        `FASE 23.22 OK: 1 conocimiento considerado modificó de forma atribuible mediante knowledgeId la propiedad decisional action de una copia controlada de una decisión real, mientras id, title, description, priority, confidence y sourcePatternId permanecieron intactos; se demostró influencia decisional sin ponderación, ranking, selección ni ejecución y sin modificar ${recommendationsAfterDecisionInfluence.length} recomendaciones o ${decisionsAfterDecisionInfluence.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en influencia controlada sobre contenido decisional 23.22: ${error.message}`
+          : 'Error inesperado en influencia controlada sobre contenido decisional 23.22.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -4907,6 +5279,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-neutral-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Frontera Explicativa-Decisional 23.21
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeControlledDecisionInfluence}
+          disabled={loading}
+          className="rounded-xl bg-gray-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Influencia Decisional Controlada 23.22
         </button>
 
         <button
