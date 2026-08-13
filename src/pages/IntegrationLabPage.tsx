@@ -4650,6 +4650,450 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeControlledDecisionDetermination() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeDetermination =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeDetermination =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeDetermination
+        );
+
+      /*
+       * FASE 23.23 — Determinación controlada de contenido
+       * decisional por conocimiento operativo
+       *
+       * FASE 23.22 demostró:
+       *
+       * decisión ya determinada
+       *       +
+       * conocimiento
+       *       ↓
+       * action enriquecida
+       *
+       * FASE 23.23 debe demostrar algo distinto:
+       *
+       * mismo estado decisional base
+       *       |
+       *       |-- sin conocimiento --> action A
+       *       |
+       *       `-- con conocimiento --> action B
+       *
+       * El conocimiento participa por primera vez en una condición
+       * causal que determina cuál contenido decisional se produce.
+       *
+       * NO participan:
+       * - confidence;
+       * - priority;
+       * - score;
+       * - occurrences;
+       * - ranking;
+       * - posición en el array;
+       * - selección entre decisiones;
+       * - ejecución.
+       */
+
+      /*
+       * Elegimos explícitamente la decisión por identidad.
+       *
+       * No utilizamos decisions[0], porque el array productivo ya
+       * viene ordenado por confidence y eso introduciría ranking
+       * dentro del experimento.
+       */
+      const baseDecision =
+        decisionsBeforeDetermination.find(
+          (decision) =>
+            decision.id === 'decision-review-movements'
+        );
+
+      if (!baseDecision) {
+        throw new Error(
+          'FASE 23.23 no encontró la decisión estable decision-review-movements necesaria para la prueba controlada.'
+        );
+      }
+
+      const baseDecisionSnapshot =
+        JSON.stringify(baseDecision);
+
+      const controlledPatterns = [
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-determination',
+          title:
+            'Patrón controlado de determinación de contenido decisional',
+          description:
+            'Patrón controlado para demostrar que el conocimiento puede participar causalmente en la determinación de una action sin introducir ranking, prioridad ni ejecución.',
+          score: 95,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-determinacion-decisional',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-determination-1',
+              'memory-controlled-determination-2',
+              'memory-controlled-determination-3',
+              'memory-controlled-determination-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 23.23 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 23.23 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(knowledge, {
+          movementType: 'reubicacion',
+        });
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 23.23 esperaba que el conocimiento fuera elegible y considerado.'
+        );
+      }
+
+      if (consideration.knowledgeId !== knowledge.id) {
+        throw new Error(
+          'FASE 23.23 perdió trazabilidad entre consideración y conocimiento.'
+        );
+      }
+
+      type ControlledDecisionDetermination = {
+        decisionId: string;
+        action: string;
+        knowledgeId: string | null;
+      };
+
+      /*
+       * Consumidor local de determinación.
+       *
+       * Recibe siempre la misma decisión base.
+       *
+       * La única diferencia entre ambos experimentos es si recibe
+       * o no conocimiento considerado.
+       *
+       * El contenido semántico del conocimiento participa en una
+       * condición real:
+       *
+       * - movementType debe ser reubicacion;
+       * - deviationReason debe ser el antecedente controlado.
+       *
+       * score y occurrences no se consultan.
+       */
+      const determineControlledAction = (
+        decision: OperationalDecision,
+        consideredKnowledge:
+          | typeof knowledge
+          | null
+      ): ControlledDecisionDetermination => {
+        const hasApplicableKnowledge =
+          consideredKnowledge !== null &&
+          consideredKnowledge.context.movementType ===
+            'reubicacion' &&
+          consideredKnowledge.context.deviationReason ===
+            'motivo-controlado-determinacion-decisional';
+
+        if (!hasApplicableKnowledge) {
+          return {
+            decisionId: decision.id,
+            action: decision.action,
+            knowledgeId: null,
+          };
+        }
+
+        return {
+          decisionId: decision.id,
+          action:
+            'review_contextual_relocation_deviation',
+          knowledgeId: consideredKnowledge.id,
+        };
+      };
+
+      /*
+       * Contrafactual controlado:
+       *
+       * misma decisión base
+       * mismo consumidor
+       * ninguna otra variable cambia
+       */
+      const resultWithoutKnowledge =
+        determineControlledAction(baseDecision, null);
+
+      const resultWithKnowledge =
+        determineControlledAction(
+          baseDecision,
+          knowledge
+        );
+
+      /*
+       * Sin conocimiento debe conservarse la action original.
+       */
+      if (
+        resultWithoutKnowledge.action !==
+        baseDecision.action
+      ) {
+        throw new Error(
+          'FASE 23.23 alteró la action aun sin conocimiento.'
+        );
+      }
+
+      if (resultWithoutKnowledge.knowledgeId !== null) {
+        throw new Error(
+          'FASE 23.23 atribuyó conocimiento a un resultado producido sin conocimiento.'
+        );
+      }
+
+      /*
+       * Con conocimiento debe determinarse un contenido distinto.
+       */
+      if (
+        resultWithKnowledge.action ===
+        resultWithoutKnowledge.action
+      ) {
+        throw new Error(
+          'FASE 23.23 no logró demostrar una diferencia de determinación causada por conocimiento.'
+        );
+      }
+
+      if (
+        resultWithKnowledge.action !==
+        'review_contextual_relocation_deviation'
+      ) {
+        throw new Error(
+          'FASE 23.23 produjo una action diferente de la determinación controlada esperada.'
+        );
+      }
+
+      /*
+       * Atribución explícita.
+       */
+      if (
+        resultWithKnowledge.knowledgeId !== knowledge.id
+      ) {
+        throw new Error(
+          'FASE 23.23 perdió la atribución causal mediante knowledgeId.'
+        );
+      }
+
+      /*
+       * La identidad lógica de la decisión permanece igual.
+       *
+       * No seleccionamos otra decisión.
+       */
+      if (
+        resultWithoutKnowledge.decisionId !==
+          baseDecision.id ||
+        resultWithKnowledge.decisionId !==
+          baseDecision.id
+      ) {
+        throw new Error(
+          'FASE 23.23 sustituyó o seleccionó una decisión distinta durante la determinación.'
+        );
+      }
+
+      /*
+       * La decisión productiva original jamás se muta.
+       */
+      if (
+        JSON.stringify(baseDecision) !==
+        baseDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.23 mutó la decisión productiva original.'
+        );
+      }
+
+      /*
+       * Creamos una copia decisional controlada únicamente para
+       * comprobar cuál sería el resultado determinado.
+       *
+       * priority, confidence y el resto permanecen intactos.
+       */
+      const determinedDecision: OperationalDecision = {
+        ...baseDecision,
+        action: resultWithKnowledge.action,
+      };
+
+      if (
+        determinedDecision.action ===
+        baseDecision.action
+      ) {
+        throw new Error(
+          'FASE 23.23 no transfirió la determinación controlada a la copia decisional.'
+        );
+      }
+
+      if (
+        determinedDecision.id !== baseDecision.id ||
+        determinedDecision.title !== baseDecision.title ||
+        determinedDecision.description !==
+          baseDecision.description ||
+        determinedDecision.priority !==
+          baseDecision.priority ||
+        determinedDecision.confidence !==
+          baseDecision.confidence ||
+        determinedDecision.sourcePatternId !==
+          baseDecision.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.23 modificó propiedades distintas de action durante la determinación controlada.'
+        );
+      }
+
+      /*
+       * Guardas explícitas contra jerarquización y ponderación.
+       */
+      if (
+        determinedDecision.priority !==
+        baseDecision.priority
+      ) {
+        throw new Error(
+          'FASE 23.23 modificó priority y cruzó hacia jerarquización.'
+        );
+      }
+
+      if (
+        determinedDecision.confidence !==
+        baseDecision.confidence
+      ) {
+        throw new Error(
+          'FASE 23.23 modificó confidence y cruzó hacia ponderación o ranking.'
+        );
+      }
+
+      /*
+       * El conocimiento no debe llegar al consumidor mediante
+       * evidencia cuantitativa ni procedencia expandida.
+       */
+      const determinationTrace = {
+        decisionId: baseDecision.id,
+        knowledgeId: knowledge.id,
+        before: resultWithoutKnowledge.action,
+        after: resultWithKnowledge.action,
+      };
+
+      if (
+        'sourcePatternId' in determinationTrace ||
+        'memoryIds' in determinationTrace ||
+        'score' in determinationTrace ||
+        'occurrences' in determinationTrace ||
+        'priority' in determinationTrace ||
+        'confidence' in determinationTrace ||
+        'rank' in determinationTrace ||
+        'selected' in determinationTrace ||
+        'weight' in determinationTrace
+      ) {
+        throw new Error(
+          'FASE 23.23 detectó atributos ajenos a la determinación controlada.'
+        );
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * El motor real continúa completamente intacto.
+       */
+      const recommendationsAfterDetermination =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterDetermination =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterDetermination
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsBeforeDetermination
+        ) !==
+        JSON.stringify(
+          recommendationsAfterDetermination
+        )
+      ) {
+        throw new Error(
+          'FASE 23.23 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsBeforeDetermination) !==
+        JSON.stringify(decisionsAfterDetermination)
+      ) {
+        throw new Error(
+          'FASE 23.23 detectó modificación de decisiones productivas.'
+        );
+      }
+
+      /*
+       * La posición de la decisión en el array no participa jamás
+       * en la determinación.
+       *
+       * La resolvemos nuevamente por id para comprobar identidad
+       * lógica después del experimento.
+       */
+      const sameProductiveDecisionAfter =
+        decisionsAfterDetermination.find(
+          (decision) =>
+            decision.id === baseDecision.id
+        );
+
+      if (!sameProductiveDecisionAfter) {
+        throw new Error(
+          'FASE 23.23 perdió la decisión productiva utilizada como referencia.'
+        );
+      }
+
+      if (
+        JSON.stringify(sameProductiveDecisionAfter) !==
+        baseDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.23 alteró indirectamente la decisión productiva de referencia.'
+        );
+      }
+
+      addLog(
+        `FASE 23.23 OK: utilizando la misma decisión base resuelta explícitamente por id, el consumidor produjo action "${resultWithoutKnowledge.action}" sin conocimiento y action "${resultWithKnowledge.action}" con 1 conocimiento considerado; la diferencia quedó atribuida mediante knowledgeId y demuestra determinación causal de contenido decisional sin modificar priority, confidence, ranking, selección ni ejecución, manteniendo intactas ${recommendationsAfterDetermination.length} recomendaciones y ${decisionsAfterDetermination.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en determinación controlada de contenido decisional 23.23: ${error.message}`
+          : 'Error inesperado en determinación controlada de contenido decisional 23.23.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -5287,6 +5731,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-gray-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Influencia Decisional Controlada 23.22
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeControlledDecisionDetermination}
+          disabled={loading}
+          className="rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Determinación Decisional 23.23
         </button>
 
         <button
