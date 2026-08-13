@@ -2669,6 +2669,281 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgePluralCoexistence() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeCoexistence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeCoexistence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeCoexistence
+        );
+
+      const controlledPatterns = [
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-coexistence-a',
+          title:
+            'Patrón controlado de coexistencia de conocimiento A',
+          description:
+            'Patrón controlado para validar coexistencia plural de conocimiento operativo.',
+          score: 95,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason: 'motivo-controlado-a',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-coexistence-a-1',
+              'memory-coexistence-a-2',
+              'memory-coexistence-a-3',
+              'memory-coexistence-a-4',
+            ],
+          },
+        },
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-coexistence-b',
+          title:
+            'Patrón controlado de coexistencia de conocimiento B',
+          description:
+            'Segundo patrón controlado para validar coexistencia plural de conocimiento operativo.',
+          score: 50,
+          occurrences: 2,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason: 'motivo-controlado-b',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-coexistence-b-1',
+              'memory-coexistence-b-2',
+            ],
+          },
+        },
+        {
+          id: 'recommendation-deviation-pattern-entrada-coexistence-c',
+          title:
+            'Patrón controlado no compatible C',
+          description:
+            'Patrón controlado para validar exclusión contextual durante coexistencia plural.',
+          score: 100,
+          occurrences: 6,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'entrada',
+            deviationReason: 'motivo-controlado-c',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-coexistence-c-1',
+              'memory-coexistence-c-2',
+              'memory-coexistence-c-3',
+              'memory-coexistence-c-4',
+              'memory-coexistence-c-5',
+              'memory-coexistence-c-6',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 3) {
+        throw new Error(
+          `FASE 23.17 esperaba 3 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const coexistenceContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const evaluations = controlledKnowledge.map(
+        (knowledge) => ({
+          knowledge,
+          eligibility:
+            evaluateOperationalKnowledgeEligibility(
+              knowledge,
+              coexistenceContext
+            ),
+        })
+      );
+
+      const considerations = evaluations
+        .map(({ knowledge, eligibility }) => ({
+          knowledge,
+          eligibility,
+          consideration:
+            considerOperationalKnowledge(eligibility),
+        }))
+        .filter(
+          (
+            item
+          ): item is typeof item & {
+            consideration: NonNullable<
+              typeof item.consideration
+            >;
+          } => item.consideration !== null
+        );
+
+      if (considerations.length !== 2) {
+        throw new Error(
+          `FASE 23.17 esperaba 2 conocimientos considerados simultáneamente y obtuvo ${considerations.length}.`
+        );
+      }
+
+      const consideredKnowledgeIds = new Set(
+        considerations.map(
+          (item) => item.consideration.knowledgeId
+        )
+      );
+
+      const compatibleKnowledge =
+        controlledKnowledge.filter(
+          (knowledge) =>
+            knowledge.context.movementType ===
+            coexistenceContext.movementType
+        );
+
+      if (compatibleKnowledge.length !== 2) {
+        throw new Error(
+          `FASE 23.17 esperaba exactamente 2 conocimientos compatibles y encontró ${compatibleKnowledge.length}.`
+        );
+      }
+
+      compatibleKnowledge.forEach((knowledge) => {
+        if (!consideredKnowledgeIds.has(knowledge.id)) {
+          throw new Error(
+            `FASE 23.17 perdió el conocimiento compatible ${knowledge.id} durante la coexistencia plural.`
+          );
+        }
+
+        const consideration = considerations.find(
+          (item) =>
+            item.consideration.knowledgeId === knowledge.id
+        )?.consideration;
+
+        if (!consideration) {
+          throw new Error(
+            `FASE 23.17 no encontró la consideración del conocimiento ${knowledge.id}.`
+          );
+        }
+
+        if (
+          consideration.sourcePatternId !==
+          knowledge.sourcePatternId
+        ) {
+          throw new Error(
+            `FASE 23.17 perdió la trazabilidad del conocimiento ${knowledge.id} hacia su patrón ${knowledge.sourcePatternId}.`
+          );
+        }
+      });
+
+      const incompatibleKnowledge =
+        controlledKnowledge.find(
+          (knowledge) =>
+            knowledge.context.movementType === 'entrada'
+        );
+
+      if (!incompatibleKnowledge) {
+        throw new Error(
+          'FASE 23.17 no encontró el conocimiento controlado incompatible.'
+        );
+      }
+
+      const incompatibleEvaluation = evaluations.find(
+        (item) =>
+          item.knowledge.id === incompatibleKnowledge.id
+      );
+
+      if (!incompatibleEvaluation) {
+        throw new Error(
+          `FASE 23.17 no encontró la evaluación del conocimiento incompatible ${incompatibleKnowledge.id}.`
+        );
+      }
+
+      if (incompatibleEvaluation.eligibility.eligible) {
+        throw new Error(
+          `FASE 23.17 permitió que el conocimiento incompatible ${incompatibleKnowledge.id} fuera elegible para reubicación.`
+        );
+      }
+
+      if (
+        consideredKnowledgeIds.has(
+          incompatibleKnowledge.id
+        )
+      ) {
+        throw new Error(
+          `FASE 23.17 permitió considerar el conocimiento incompatible ${incompatibleKnowledge.id}.`
+        );
+      }
+
+      if (
+        considerations.some(
+          (item) =>
+            'score' in item.consideration ||
+            'priority' in item.consideration ||
+            'rank' in item.consideration ||
+            'selected' in item.consideration ||
+            'relevant' in item.consideration
+        )
+      ) {
+        throw new Error(
+          'FASE 23.17 detectó atributos de ranking, prioridad, selección o relevancia artificial dentro de la consideración.'
+        );
+      }
+
+      const recommendationsAfterCoexistence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterCoexistence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterCoexistence
+        );
+
+      if (
+        JSON.stringify(recommendationsBeforeCoexistence) !==
+        JSON.stringify(recommendationsAfterCoexistence)
+      ) {
+        throw new Error(
+          'FASE 23.17 detectó que la coexistencia plural de conocimiento modificó recomendaciones.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsBeforeCoexistence) !==
+        JSON.stringify(decisionsAfterCoexistence)
+      ) {
+        throw new Error(
+          'FASE 23.17 detectó que la coexistencia plural de conocimiento modificó decisiones operativas.'
+        );
+      }
+
+      addLog(
+        `FASE 23.17 OK: ${considerations.length} conocimientos compatibles coexistieron simultáneamente dentro del contexto "reubicacion", conservando identidad y trazabilidad independientes, mientras que el conocimiento incompatible quedó fuera de consideración, sin ranking, prioridad, selección, relevancia artificial ni modificación de ${recommendationsAfterCoexistence.length} recomendaciones o ${decisionsAfterCoexistence.length} decisiones.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en coexistencia plural de conocimiento 23.17: ${error.message}`
+          : 'Error inesperado en coexistencia plural de conocimiento 23.17.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -3258,6 +3533,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-cyan-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Consideración Conocimiento 23.16
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgePluralCoexistence}
+          disabled={loading}
+          className="rounded-xl bg-blue-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Coexistencia Conocimiento 23.17
         </button>
 
         <button
