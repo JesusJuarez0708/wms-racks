@@ -3486,6 +3486,364 @@ function IntegrationLabPage() {
   }
 }
 
+  async function testOperationalKnowledgeExplanatoryInfluence() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeExplanatoryInfluence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeExplanatoryInfluence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeExplanatoryInfluence
+        );
+
+      const controlledPatterns = [
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-explanatory-influence-a',
+          title:
+            'Patrón controlado de influencia explicativa A',
+          description:
+            'Patrón controlado para demostrar influencia explicativa trazable sin influencia decisional.',
+          score: 95,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-influencia-explicativa-a',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-explanatory-influence-a-1',
+              'memory-explanatory-influence-a-2',
+              'memory-explanatory-influence-a-3',
+              'memory-explanatory-influence-a-4',
+            ],
+          },
+        },
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-explanatory-influence-b',
+          title:
+            'Patrón controlado de influencia explicativa B',
+          description:
+            'Segundo patrón controlado para demostrar influencia explicativa plural sin selección, ranking ni prioridad.',
+          score: 50,
+          occurrences: 2,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-influencia-explicativa-b',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-explanatory-influence-b-1',
+              'memory-explanatory-influence-b-2',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 2) {
+        throw new Error(
+          `FASE 23.20 esperaba 2 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const considerationContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const considerations = controlledKnowledge
+        .map((knowledge) => {
+          const eligibility =
+            evaluateOperationalKnowledgeEligibility(
+              knowledge,
+              considerationContext
+            );
+
+          return {
+            knowledge,
+            eligibility,
+            consideration:
+              considerOperationalKnowledge(eligibility),
+          };
+        })
+        .filter(
+          (
+            item
+          ): item is typeof item & {
+            consideration: NonNullable<
+              typeof item.consideration
+            >;
+          } => item.consideration !== null
+        );
+
+      if (considerations.length !== 2) {
+        throw new Error(
+          `FASE 23.20 esperaba 2 conocimientos considerados y obtuvo ${considerations.length}.`
+        );
+      }
+
+      type ControlledKnowledgeObservation = {
+        knowledgeId: string;
+        message: string;
+      };
+
+      type ControlledExplanatoryResult = {
+        movementType: 'reubicacion';
+        summary: string;
+        observations: ControlledKnowledgeObservation[];
+      };
+
+      /*
+       * FASE 23.20 — Influencia explicativa controlada
+       *
+       * El resultado base existe independientemente del conocimiento.
+       *
+       * Los conocimientos considerados se utilizan para producir
+       * observaciones semánticas trazables.
+       *
+       * Posteriormente esas observaciones modifican una copia del
+       * resultado base.
+       *
+       * Por tanto:
+       *
+       * resultado base ≠ resultado influido
+       *
+       * La diferencia es atribuible mediante knowledgeId.
+       *
+       * La influencia queda limitada al contenido explicativo.
+       *
+       * NO participan:
+       * - score;
+       * - occurrences;
+       * - prioridad;
+       * - ranking;
+       * - selección;
+       * - recomendación;
+       * - decisión;
+       * - workflow;
+       * - inventario;
+       * - ejecución operativa.
+       */
+
+      const baseResult: ControlledExplanatoryResult = {
+        movementType: 'reubicacion',
+        summary:
+          'CJWMS analiza el contexto operativo de la reubicación.',
+        observations: [],
+      };
+
+      const baseResultSnapshot = JSON.stringify(baseResult);
+
+      const knowledgeObservations: ControlledKnowledgeObservation[] =
+        considerations.map(({ consideration }) => {
+          const knowledge = controlledKnowledge.find(
+            (candidate) =>
+              candidate.id === consideration.knowledgeId
+          );
+
+          if (!knowledge) {
+            throw new Error(
+              `FASE 23.20 no pudo resolver el conocimiento considerado ${consideration.knowledgeId}.`
+            );
+          }
+
+          return {
+            knowledgeId: knowledge.id,
+            message:
+              `CJWMS incorpora como antecedente contextual el motivo recurrente ` +
+              `"${knowledge.context.deviationReason}" ` +
+              `observado en movimientos de tipo ` +
+              `"${knowledge.context.movementType}".`,
+          };
+        });
+
+      if (knowledgeObservations.length !== 2) {
+        throw new Error(
+          `FASE 23.20 esperaba 2 observaciones derivadas del conocimiento y produjo ${knowledgeObservations.length}.`
+        );
+      }
+
+      /*
+       * Éste es el punto exacto de influencia.
+       *
+       * El conocimiento no crea el resultado base.
+       * Las observaciones producidas mediante utilización del
+       * conocimiento modifican un resultado que ya existía
+       * independientemente.
+       */
+      const influencedResult: ControlledExplanatoryResult = {
+        ...baseResult,
+        observations: [
+          ...baseResult.observations,
+          ...knowledgeObservations,
+        ],
+      };
+
+      if (JSON.stringify(baseResult) !== baseResultSnapshot) {
+        throw new Error(
+          'FASE 23.20 modificó directamente el resultado base durante la influencia explicativa.'
+        );
+      }
+
+      if (
+        JSON.stringify(baseResult) ===
+        JSON.stringify(influencedResult)
+      ) {
+        throw new Error(
+          'FASE 23.20 no logró demostrar diferencia entre el resultado base y el resultado influido.'
+        );
+      }
+
+      if (
+        influencedResult.summary !== baseResult.summary ||
+        influencedResult.movementType !==
+          baseResult.movementType
+      ) {
+        throw new Error(
+          'FASE 23.20 modificó propiedades base que debían permanecer intactas.'
+        );
+      }
+
+      if (baseResult.observations.length !== 0) {
+        throw new Error(
+          'FASE 23.20 esperaba que el resultado base existiera sin observaciones derivadas del conocimiento.'
+        );
+      }
+
+      if (
+        influencedResult.observations.length !==
+        baseResult.observations.length +
+          knowledgeObservations.length
+      ) {
+        throw new Error(
+          'FASE 23.20 no pudo atribuir exactamente la diferencia explicativa a las observaciones derivadas del conocimiento.'
+        );
+      }
+
+      const influencedKnowledgeIds = new Set(
+        influencedResult.observations.map(
+          (observation) => observation.knowledgeId
+        )
+      );
+
+      if (influencedKnowledgeIds.size !== 2) {
+        throw new Error(
+          'FASE 23.20 perdió la identidad plural de los conocimientos durante la influencia explicativa.'
+        );
+      }
+
+      controlledKnowledge.forEach((knowledge) => {
+        const observation =
+          influencedResult.observations.find(
+            (candidate) =>
+              candidate.knowledgeId === knowledge.id
+          );
+
+        if (!observation) {
+          throw new Error(
+            `FASE 23.20 no pudo atribuir una modificación explicativa al conocimiento ${knowledge.id}.`
+          );
+        }
+
+        if (
+          !observation.message.includes(
+            knowledge.context.deviationReason
+          )
+        ) {
+          throw new Error(
+            `FASE 23.20 produjo una modificación que no utilizó el motivo contextual del conocimiento ${knowledge.id}.`
+          );
+        }
+
+        if (
+          !observation.message.includes(
+            knowledge.context.movementType
+          )
+        ) {
+          throw new Error(
+            `FASE 23.20 produjo una modificación que no utilizó el tipo de movimiento del conocimiento ${knowledge.id}.`
+          );
+        }
+      });
+
+      if (
+        influencedResult.observations.some(
+          (observation) =>
+            'sourcePatternId' in observation ||
+            'memoryIds' in observation ||
+            'score' in observation ||
+            'occurrences' in observation ||
+            'priority' in observation ||
+            'rank' in observation ||
+            'selected' in observation ||
+            'weight' in observation ||
+            'confidence' in observation
+        )
+      ) {
+        throw new Error(
+          'FASE 23.20 detectó atributos artificiales de evidencia duplicada, score, recurrencia, prioridad, ranking, selección, ponderación o confianza dentro de la modificación explicativa.'
+        );
+      }
+
+      const recommendationsAfterExplanatoryInfluence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterExplanatoryInfluence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterExplanatoryInfluence
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsBeforeExplanatoryInfluence
+        ) !==
+        JSON.stringify(
+          recommendationsAfterExplanatoryInfluence
+        )
+      ) {
+        throw new Error(
+          'FASE 23.20 detectó que la influencia explicativa modificó recomendaciones.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsBeforeExplanatoryInfluence
+        ) !==
+        JSON.stringify(decisionsAfterExplanatoryInfluence)
+      ) {
+        throw new Error(
+          'FASE 23.20 detectó que la influencia explicativa modificó decisiones operativas.'
+        );
+      }
+
+      addLog(
+        `FASE 23.20 OK: un resultado explicativo base independiente del conocimiento fue modificado de forma trazable por ${knowledgeObservations.length} conocimientos utilizados, produciendo ${influencedResult.observations.length} observaciones atribuibles mediante knowledgeId, con influencia explicativa plural pero sin selección, ranking, prioridad, ponderación ni influencia decisional, y sin modificar ${recommendationsAfterExplanatoryInfluence.length} recomendaciones o ${decisionsAfterExplanatoryInfluence.length} decisiones.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en influencia explicativa de conocimiento 23.20: ${error.message}`
+          : 'Error inesperado en influencia explicativa de conocimiento 23.20.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -4099,6 +4457,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-zinc-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Utilización Observacional 23.19
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeExplanatoryInfluence}
+          disabled={loading}
+          className="rounded-xl bg-stone-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Influencia Explicativa 23.20
         </button>
 
         <button
