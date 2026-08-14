@@ -6059,6 +6059,696 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeControlledDecisionPrecedence() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforePrecedence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforePrecedence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforePrecedence
+        );
+
+      /*
+       * FASE 23.26 — Precedencia contextual controlada entre
+       * alternativas decisionales por conocimiento operativo
+       *
+       * FASE 23.25 demostró que una relación inicialmente
+       * no preferencial puede convertirse en una preferencia
+       * contextual atribuible mediante conocimiento operativo.
+       *
+       * FASE 23.26 estudia la consecuencia inmediata de esa
+       * preferencia:
+       *
+       * A es contextualmente preferible a B
+       *                  ↓
+       * A precede contextualmente a B.
+       *
+       * La precedencia estudiada aquí es RELACIONAL.
+       *
+       * NO significa:
+       *
+       * - reordenar el array de alternativas;
+       * - producir rank;
+       * - producir position;
+       * - modificar score;
+       * - modificar confidence;
+       * - modificar priority;
+       * - seleccionar;
+       * - ejecutar.
+       *
+       * Especialmente:
+       *
+       * precedingDecisionId NO equivale a posición 1.
+       * precededDecisionId NO equivale a posición 2.
+       */
+
+      const firstDecision =
+        decisionsBeforePrecedence.find(
+          (decision) =>
+            decision.id === 'decision-review-movements'
+        );
+
+      const secondDecision =
+        decisionsBeforePrecedence.find(
+          (decision) =>
+            decision.id === 'decision-maintain-monitoring'
+        );
+
+      if (!firstDecision) {
+        throw new Error(
+          'FASE 23.26 no encontró decision-review-movements como alternativa A.'
+        );
+      }
+
+      if (!secondDecision) {
+        throw new Error(
+          'FASE 23.26 no encontró decision-maintain-monitoring como alternativa B.'
+        );
+      }
+
+      const firstDecisionSnapshot =
+        JSON.stringify(firstDecision);
+
+      const secondDecisionSnapshot =
+        JSON.stringify(secondDecision);
+
+      const originalAlternativeOrder: [string, string] = [
+        firstDecision.id,
+        secondDecision.id,
+      ];
+
+      /*
+       * Conocimiento controlado independiente del experimento
+       * anterior, manteniendo la misma semántica operacional.
+       */
+      const controlledPatterns = [
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-precedence',
+          title:
+            'Patrón controlado de precedencia contextual decisional',
+          description:
+            'Patrón controlado para demostrar que una preferencia contextual puede producir precedencia relacional sin convertirse en ranking, selección o ejecución.',
+          score: 95,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-precedencia-contextual',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-precedence-1',
+              'memory-controlled-precedence-2',
+              'memory-controlled-precedence-3',
+              'memory-controlled-precedence-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 23.26 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 23.26 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(knowledge, {
+          movementType: 'reubicacion',
+        });
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 23.26 esperaba que el conocimiento fuera elegible y considerado.'
+        );
+      }
+
+      if (consideration.knowledgeId !== knowledge.id) {
+        throw new Error(
+          'FASE 23.26 perdió trazabilidad entre consideración y conocimiento.'
+        );
+      }
+
+      type ControlledDecisionPreference = {
+        decisionIds: [string, string];
+        relation:
+          | 'no_contextual_preference'
+          | 'contextual_preference';
+        preferredDecisionId: string | null;
+        knowledgeId: string | null;
+        rationale: string | null;
+      };
+
+      type ControlledDecisionPrecedence = {
+        decisionIds: [string, string];
+        relation:
+          | 'no_contextual_precedence'
+          | 'contextual_precedence';
+        precedingDecisionId: string | null;
+        precededDecisionId: string | null;
+        knowledgeId: string | null;
+        rationale: string | null;
+      };
+
+      /*
+       * Primer consumidor local:
+       *
+       * reproduce la frontera validada en FASE 23.25.
+       *
+       * Su única responsabilidad es determinar si existe
+       * preferencia contextual.
+       */
+      const determineControlledPreference = (
+        first: OperationalDecision,
+        second: OperationalDecision,
+        consideredKnowledge:
+          | typeof knowledge
+          | null
+      ): ControlledDecisionPreference => {
+        if (!consideredKnowledge) {
+          return {
+            decisionIds: [first.id, second.id],
+            relation: 'no_contextual_preference',
+            preferredDecisionId: null,
+            knowledgeId: null,
+            rationale: null,
+          };
+        }
+
+        const knowledgeAppliesToMovementContext =
+          consideredKnowledge.context.movementType ===
+            'reubicacion' &&
+          consideredKnowledge.context.deviationReason ===
+            'motivo-controlado-precedencia-contextual';
+
+        const firstRepresentsMovementReview =
+          first.action === 'review_movements';
+
+        const secondRepresentsSystemMonitoring =
+          second.action === 'monitor_system';
+
+        if (
+          !knowledgeAppliesToMovementContext ||
+          !firstRepresentsMovementReview ||
+          !secondRepresentsSystemMonitoring
+        ) {
+          return {
+            decisionIds: [first.id, second.id],
+            relation: 'no_contextual_preference',
+            preferredDecisionId: null,
+            knowledgeId: null,
+            rationale: null,
+          };
+        }
+
+        return {
+          decisionIds: [first.id, second.id],
+          relation: 'contextual_preference',
+          preferredDecisionId: first.id,
+          knowledgeId: consideredKnowledge.id,
+          rationale:
+            `El conocimiento sobre el motivo recurrente ` +
+            `"${consideredKnowledge.context.deviationReason}" ` +
+            `en movimientos de tipo ` +
+            `"${consideredKnowledge.context.movementType}" ` +
+            `hace contextualmente preferible revisar movimientos ` +
+            `frente a limitarse al monitoreo general.`,
+        };
+      };
+
+      /*
+       * Segundo consumidor local:
+       *
+       * IMPORTANTE:
+       *
+       * No recibe conocimiento directamente.
+       *
+       * Recibe exclusivamente el resultado de preferencia.
+       *
+       * Esto demuestra la cadena conceptual:
+       *
+       * conocimiento
+       *   -> preferencia contextual
+       *   -> precedencia contextual.
+       *
+       * Tampoco reordena alternativas.
+       */
+      const determineControlledPrecedence = (
+        preference: ControlledDecisionPreference
+      ): ControlledDecisionPrecedence => {
+        if (
+          preference.relation !== 'contextual_preference' ||
+          !preference.preferredDecisionId ||
+          !preference.knowledgeId ||
+          !preference.rationale
+        ) {
+          return {
+            decisionIds: [...preference.decisionIds],
+            relation: 'no_contextual_precedence',
+            precedingDecisionId: null,
+            precededDecisionId: null,
+            knowledgeId: null,
+            rationale: null,
+          };
+        }
+
+        const [
+          firstDecisionId,
+          secondDecisionId,
+        ] = preference.decisionIds;
+
+        /*
+         * Sólo una preferencia sobre una de las identidades
+         * conocidas puede convertirse en precedencia.
+         */
+        if (
+          preference.preferredDecisionId !==
+            firstDecisionId &&
+          preference.preferredDecisionId !==
+            secondDecisionId
+        ) {
+          return {
+            decisionIds: [...preference.decisionIds],
+            relation: 'no_contextual_precedence',
+            precedingDecisionId: null,
+            precededDecisionId: null,
+            knowledgeId: null,
+            rationale: null,
+          };
+        }
+
+        const precededDecisionId =
+          preference.preferredDecisionId ===
+          firstDecisionId
+            ? secondDecisionId
+            : firstDecisionId;
+
+        return {
+          decisionIds: [...preference.decisionIds],
+          relation: 'contextual_precedence',
+          precedingDecisionId:
+            preference.preferredDecisionId,
+          precededDecisionId,
+          knowledgeId: preference.knowledgeId,
+          rationale:
+            `${preference.rationale} ` +
+            `Esa preferencia establece una precedencia contextual ` +
+            `entre las mismas alternativas, sin modificar su orden ` +
+            `estructural ni producir ranking, selección o ejecución.`,
+        };
+      };
+
+      /*
+       * Contrafactual controlado.
+       *
+       * Mismas decisiones.
+       * Mismo orden.
+       * Mismos consumidores.
+       *
+       * Única diferencia inicial:
+       * presencia o ausencia de conocimiento considerado.
+       */
+      const preferenceWithoutKnowledge =
+        determineControlledPreference(
+          firstDecision,
+          secondDecision,
+          null
+        );
+
+      const preferenceWithKnowledge =
+        determineControlledPreference(
+          firstDecision,
+          secondDecision,
+          knowledge
+        );
+
+      const precedenceWithoutKnowledge =
+        determineControlledPrecedence(
+          preferenceWithoutKnowledge
+        );
+
+      const precedenceWithKnowledge =
+        determineControlledPrecedence(
+          preferenceWithKnowledge
+        );
+
+      /*
+       * Verificación de la etapa intermedia:
+       * sin conocimiento no existe preferencia.
+       */
+      if (
+        preferenceWithoutKnowledge.relation !==
+        'no_contextual_preference'
+      ) {
+        throw new Error(
+          'FASE 23.26 produjo preferencia contextual aun sin conocimiento.'
+        );
+      }
+
+      /*
+       * Con conocimiento debe existir primero la preferencia.
+       */
+      if (
+        preferenceWithKnowledge.relation !==
+        'contextual_preference'
+      ) {
+        throw new Error(
+          'FASE 23.26 no produjo la preferencia contextual necesaria antes de evaluar precedencia.'
+        );
+      }
+
+      if (
+        preferenceWithKnowledge.preferredDecisionId !==
+        firstDecision.id
+      ) {
+        throw new Error(
+          'FASE 23.26 no produjo la dirección de preferencia esperada antes de la precedencia.'
+        );
+      }
+
+      if (
+        preferenceWithKnowledge.knowledgeId !==
+        knowledge.id
+      ) {
+        throw new Error(
+          'FASE 23.26 perdió atribución mediante knowledgeId durante la preferencia intermedia.'
+        );
+      }
+
+      /*
+       * Sin preferencia contextual no puede aparecer precedencia.
+       */
+      if (
+        precedenceWithoutKnowledge.relation !==
+        'no_contextual_precedence'
+      ) {
+        throw new Error(
+          'FASE 23.26 produjo precedencia aun sin preferencia contextual.'
+        );
+      }
+
+      if (
+        precedenceWithoutKnowledge.precedingDecisionId !==
+          null ||
+        precedenceWithoutKnowledge.precededDecisionId !==
+          null ||
+        precedenceWithoutKnowledge.knowledgeId !== null ||
+        precedenceWithoutKnowledge.rationale !== null
+      ) {
+        throw new Error(
+          'FASE 23.26 atribuyó precedencia o conocimiento al resultado base.'
+        );
+      }
+
+      /*
+       * La preferencia contextual válida debe producir ahora
+       * una relación explícita de precedencia.
+       */
+      if (
+        precedenceWithKnowledge.relation !==
+        'contextual_precedence'
+      ) {
+        throw new Error(
+          'FASE 23.26 no produjo la precedencia contextual esperada.'
+        );
+      }
+
+      if (
+        precedenceWithKnowledge.precedingDecisionId !==
+        firstDecision.id
+      ) {
+        throw new Error(
+          'FASE 23.26 no asignó como precedente la alternativa contextualmente preferida.'
+        );
+      }
+
+      if (
+        precedenceWithKnowledge.precededDecisionId !==
+        secondDecision.id
+      ) {
+        throw new Error(
+          'FASE 23.26 no asignó correctamente la alternativa contextualmente precedida.'
+        );
+      }
+
+      if (
+        precedenceWithKnowledge.precedingDecisionId ===
+        precedenceWithKnowledge.precededDecisionId
+      ) {
+        throw new Error(
+          'FASE 23.26 produjo una precedencia autorreferencial inválida.'
+        );
+      }
+
+      /*
+       * La dirección debe provenir exactamente de la preferencia.
+       */
+      if (
+        precedenceWithKnowledge.precedingDecisionId !==
+        preferenceWithKnowledge.preferredDecisionId
+      ) {
+        throw new Error(
+          'FASE 23.26 perdió continuidad causal entre preferencia y precedencia.'
+        );
+      }
+
+      if (
+        precedenceWithKnowledge.knowledgeId !==
+        preferenceWithKnowledge.knowledgeId ||
+        precedenceWithKnowledge.knowledgeId !==
+        knowledge.id
+      ) {
+        throw new Error(
+          'FASE 23.26 perdió trazabilidad mediante knowledgeId al transformar preferencia en precedencia.'
+        );
+      }
+
+      if (!precedenceWithKnowledge.rationale) {
+        throw new Error(
+          'FASE 23.26 esperaba una justificación semántica de la precedencia.'
+        );
+      }
+
+      if (
+        !precedenceWithKnowledge.rationale.includes(
+          knowledge.context.deviationReason
+        )
+      ) {
+        throw new Error(
+          'FASE 23.26 no conservó deviationReason dentro de la justificación de precedencia.'
+        );
+      }
+
+      if (
+        !precedenceWithKnowledge.rationale.includes(
+          knowledge.context.movementType
+        )
+      ) {
+        throw new Error(
+          'FASE 23.26 no conservó movementType dentro de la justificación de precedencia.'
+        );
+      }
+
+      /*
+       * PRECEDENCIA RELACIONAL ≠ REORDENAMIENTO.
+       *
+       * El array debe continuar exactamente como [A, B]
+       * tanto antes como después de producir la precedencia.
+       */
+      if (
+        JSON.stringify(
+          precedenceWithoutKnowledge.decisionIds
+        ) !== JSON.stringify(originalAlternativeOrder) ||
+        JSON.stringify(
+          precedenceWithKnowledge.decisionIds
+        ) !== JSON.stringify(originalAlternativeOrder)
+      ) {
+        throw new Error(
+          'FASE 23.26 convirtió precedencia relacional en reordenamiento estructural de alternativas.'
+        );
+      }
+
+      /*
+       * También la etapa intermedia debe haber conservado
+       * exactamente el mismo orden.
+       */
+      if (
+        JSON.stringify(
+          preferenceWithoutKnowledge.decisionIds
+        ) !== JSON.stringify(originalAlternativeOrder) ||
+        JSON.stringify(
+          preferenceWithKnowledge.decisionIds
+        ) !== JSON.stringify(originalAlternativeOrder)
+      ) {
+        throw new Error(
+          'FASE 23.26 alteró el orden de alternativas durante la preferencia intermedia.'
+        );
+      }
+
+      /*
+       * Las decisiones reales utilizadas como alternativas
+       * deben continuar completamente intactas.
+       */
+      if (
+        JSON.stringify(firstDecision) !==
+        firstDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.26 modificó la alternativa decisional precedente.'
+        );
+      }
+
+      if (
+        JSON.stringify(secondDecision) !==
+        secondDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.26 modificó la alternativa decisional precedida.'
+        );
+      }
+
+      /*
+       * Guardas explícitas de frontera.
+       *
+       * precedingDecisionId y precededDecisionId son las únicas
+       * propiedades direccionales nuevas permitidas.
+       *
+       * No deben aparecer atributos propios de ranking,
+       * ordenamiento, ponderación, selección o ejecución.
+       */
+      if (
+        'preferredDecisionId' in precedenceWithKnowledge ||
+        'winner' in precedenceWithKnowledge ||
+        'loser' in precedenceWithKnowledge ||
+        'selected' in precedenceWithKnowledge ||
+        'selection' in precedenceWithKnowledge ||
+        'rank' in precedenceWithKnowledge ||
+        'ranking' in precedenceWithKnowledge ||
+        'position' in precedenceWithKnowledge ||
+        'first' in precedenceWithKnowledge ||
+        'second' in precedenceWithKnowledge ||
+        'order' in precedenceWithKnowledge ||
+        'weight' in precedenceWithKnowledge ||
+        'score' in precedenceWithKnowledge ||
+        'confidence' in precedenceWithKnowledge ||
+        'priority' in precedenceWithKnowledge ||
+        'strategy' in precedenceWithKnowledge ||
+        'executed' in precedenceWithKnowledge ||
+        'execution' in precedenceWithKnowledge ||
+        'sourcePatternId' in precedenceWithKnowledge ||
+        'memoryIds' in precedenceWithKnowledge ||
+        'occurrences' in precedenceWithKnowledge
+      ) {
+        throw new Error(
+          'FASE 23.26 detectó atributos de preferencia duplicada, ranking, ordenamiento, ponderación, selección, ejecución o evidencia duplicada dentro de la precedencia contextual.'
+        );
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * El experimento no debe modificar ningún motor real.
+       */
+      const recommendationsAfterPrecedence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterPrecedence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterPrecedence
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsBeforePrecedence
+        ) !==
+        JSON.stringify(
+          recommendationsAfterPrecedence
+        )
+      ) {
+        throw new Error(
+          'FASE 23.26 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsBeforePrecedence) !==
+        JSON.stringify(decisionsAfterPrecedence)
+      ) {
+        throw new Error(
+          'FASE 23.26 detectó modificación, ranking o reordenamiento de decisiones productivas.'
+        );
+      }
+
+      const firstDecisionAfter =
+        decisionsAfterPrecedence.find(
+          (decision) =>
+            decision.id === firstDecision.id
+        );
+
+      const secondDecisionAfter =
+        decisionsAfterPrecedence.find(
+          (decision) =>
+            decision.id === secondDecision.id
+        );
+
+      if (
+        !firstDecisionAfter ||
+        !secondDecisionAfter
+      ) {
+        throw new Error(
+          'FASE 23.26 perdió alguna alternativa productiva después del experimento.'
+        );
+      }
+
+      if (
+        JSON.stringify(firstDecisionAfter) !==
+          firstDecisionSnapshot ||
+        JSON.stringify(secondDecisionAfter) !==
+          secondDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.26 alteró indirectamente alguna alternativa decisional productiva.'
+        );
+      }
+
+      addLog(
+        `FASE 23.26 OK: las mismas alternativas ${firstDecision.id} y ${secondDecision.id}, conservadas en el mismo orden, produjeron primero la relación "${preferenceWithKnowledge.relation}" atribuible mediante knowledgeId y posteriormente la relación "${precedenceWithKnowledge.relation}", donde ${precedenceWithKnowledge.precedingDecisionId} precede contextualmente a ${precedenceWithKnowledge.precededDecisionId}; la precedencia fue relacional y no produjo reordenamiento, rank, score, modificación de confidence o priority, selección ni ejecución, permaneciendo intactas ${recommendationsAfterPrecedence.length} recomendaciones y ${decisionsAfterPrecedence.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en precedencia contextual controlada 23.26: ${error.message}`
+          : 'Error inesperado en precedencia contextual controlada 23.26.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -6720,6 +7410,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-violet-950 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Preferencia Decisional 23.25
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeControlledDecisionPrecedence}
+          disabled={loading}
+          className="rounded-xl bg-purple-950 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Precedencia Decisional 23.26
         </button>
 
         <button
