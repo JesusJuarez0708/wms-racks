@@ -9217,6 +9217,970 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeControlledStructuralPrecedenceConsistency() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeStructuralConsistency =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeStructuralConsistency =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeStructuralConsistency
+        );
+
+      /*
+       * FASE 23.29 — Consistencia estructural controlada de
+       * precedencias plurales entre alternativas decisionales
+       * por conocimiento operativo
+       *
+       * FASE 23.28 demostró consistencia relacional local:
+       *
+       * A -> B
+       * B -> A
+       *
+       * puede reconocerse como contradicción direccional
+       * directa.
+       *
+       * FASE 23.29 introduce la siguiente propiedad mínima:
+       *
+       * evaluar si tres precedencias contextuales explícitas,
+       * ninguna de las cuales contradice directamente a otra,
+       * forman conjuntamente un ciclo estructural:
+       *
+       * A -> B
+       * B -> C
+       * C -> A
+       *
+       * Escenario estructuralmente consistente:
+       *
+       * A -> B
+       * B -> C
+       *
+       * Escenario estructuralmente inconsistente:
+       *
+       * A -> B
+       * B -> C
+       * C -> A
+       *
+       * Esta fase NO introduce:
+       *
+       * - transitividad;
+       * - inferencia A -> C;
+       * - cierre transitivo;
+       * - orden parcial formal;
+       * - reordenamiento;
+       * - ranking;
+       * - score derivado;
+       * - modificación de confidence;
+       * - modificación de priority;
+       * - selección;
+       * - ejecución.
+       */
+
+      const firstDecision =
+        decisionsBeforeStructuralConsistency.find(
+          (decision) =>
+            decision.id === 'decision-review-movements'
+        );
+
+      const secondDecision =
+        decisionsBeforeStructuralConsistency.find(
+          (decision) =>
+            decision.id === 'decision-maintain-monitoring'
+        );
+
+      const thirdDecision =
+        decisionsBeforeStructuralConsistency.find(
+          (decision) =>
+            decision.id === 'decision-prioritize-high-value'
+        );
+
+      if (!firstDecision) {
+        throw new Error(
+          'FASE 23.29 no encontró decision-review-movements como alternativa A.'
+        );
+      }
+
+      if (!secondDecision) {
+        throw new Error(
+          'FASE 23.29 no encontró decision-maintain-monitoring como alternativa B.'
+        );
+      }
+
+      if (!thirdDecision) {
+        throw new Error(
+          'FASE 23.29 no encontró decision-prioritize-high-value como alternativa C.'
+        );
+      }
+
+      if (
+        firstDecision.id === secondDecision.id ||
+        firstDecision.id === thirdDecision.id ||
+        secondDecision.id === thirdDecision.id
+      ) {
+        throw new Error(
+          'FASE 23.29 esperaba tres alternativas decisionales distintas.'
+        );
+      }
+
+      const firstDecisionSnapshot =
+        JSON.stringify(firstDecision);
+
+      const secondDecisionSnapshot =
+        JSON.stringify(secondDecision);
+
+      const thirdDecisionSnapshot =
+        JSON.stringify(thirdDecision);
+
+      const controlledAlternativeIds: [
+        string,
+        string,
+        string,
+      ] = [
+        firstDecision.id,
+        secondDecision.id,
+        thirdDecision.id,
+      ];
+
+      /*
+       * Tres conocimientos independientes:
+       *
+       * K1 -> A -> B
+       * K2 -> B -> C
+       * K3 -> C -> A
+       *
+       * K1 + K2 forman el escenario acíclico.
+       * K1 + K2 + K3 forman el ciclo controlado.
+       */
+      const controlledPatterns = [
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-structural-consistency-ab',
+          title:
+            'Patrón controlado de consistencia estructural A-B',
+          description:
+            'Patrón controlado para producir la precedencia contextual A-B dentro de la evaluación estructural.',
+          score: 95,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-consistencia-estructural-ab',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-structural-consistency-ab-1',
+              'memory-controlled-structural-consistency-ab-2',
+              'memory-controlled-structural-consistency-ab-3',
+              'memory-controlled-structural-consistency-ab-4',
+            ],
+          },
+        },
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-structural-consistency-bc',
+          title:
+            'Patrón controlado de consistencia estructural B-C',
+          description:
+            'Patrón controlado para producir la precedencia contextual B-C dentro de la evaluación estructural.',
+          score: 94,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-consistencia-estructural-bc',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-structural-consistency-bc-1',
+              'memory-controlled-structural-consistency-bc-2',
+              'memory-controlled-structural-consistency-bc-3',
+              'memory-controlled-structural-consistency-bc-4',
+            ],
+          },
+        },
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-structural-consistency-ca',
+          title:
+            'Patrón controlado de ciclo estructural C-A',
+          description:
+            'Patrón controlado para producir la precedencia contextual C-A y cerrar el ciclo A-B-C-A.',
+          score: 93,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-consistencia-estructural-ca',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-structural-consistency-ca-1',
+              'memory-controlled-structural-consistency-ca-2',
+              'memory-controlled-structural-consistency-ca-3',
+              'memory-controlled-structural-consistency-ca-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 3) {
+        throw new Error(
+          `FASE 23.29 esperaba exactamente 3 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledgeAB =
+        controlledKnowledge.find(
+          (knowledge) =>
+            knowledge.sourcePatternId ===
+            controlledPatterns[0].id
+        );
+
+      const knowledgeBC =
+        controlledKnowledge.find(
+          (knowledge) =>
+            knowledge.sourcePatternId ===
+            controlledPatterns[1].id
+        );
+
+      const knowledgeCA =
+        controlledKnowledge.find(
+          (knowledge) =>
+            knowledge.sourcePatternId ===
+            controlledPatterns[2].id
+        );
+
+      if (!knowledgeAB || !knowledgeBC || !knowledgeCA) {
+        throw new Error(
+          'FASE 23.29 no pudo resolver los tres conocimientos estructurales controlados.'
+        );
+      }
+
+      const uniqueKnowledgeIds = new Set([
+        knowledgeAB.id,
+        knowledgeBC.id,
+        knowledgeCA.id,
+      ]);
+
+      if (uniqueKnowledgeIds.size !== 3) {
+        throw new Error(
+          'FASE 23.29 esperaba tres knowledgeId independientes.'
+        );
+      }
+
+      const eligibilityAB =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeAB,
+          { movementType: 'reubicacion' }
+        );
+
+      const eligibilityBC =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeBC,
+          { movementType: 'reubicacion' }
+        );
+
+      const eligibilityCA =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeCA,
+          { movementType: 'reubicacion' }
+        );
+
+      const considerationAB =
+        considerOperationalKnowledge(eligibilityAB);
+
+      const considerationBC =
+        considerOperationalKnowledge(eligibilityBC);
+
+      const considerationCA =
+        considerOperationalKnowledge(eligibilityCA);
+
+      if (
+        !considerationAB ||
+        !considerationBC ||
+        !considerationCA
+      ) {
+        throw new Error(
+          'FASE 23.29 esperaba consideración válida para los tres conocimientos.'
+        );
+      }
+
+      if (
+        considerationAB.knowledgeId !== knowledgeAB.id ||
+        considerationBC.knowledgeId !== knowledgeBC.id ||
+        considerationCA.knowledgeId !== knowledgeCA.id
+      ) {
+        throw new Error(
+          'FASE 23.29 perdió trazabilidad entre consideración y conocimiento.'
+        );
+      }
+
+      type ControlledKnowledge =
+        (typeof controlledKnowledge)[number];
+
+      type ControlledDecisionPreference = {
+        decisionIds: [string, string];
+        relation:
+          | 'no_contextual_preference'
+          | 'contextual_preference';
+        preferredDecisionId: string | null;
+        knowledgeId: string | null;
+        rationale: string | null;
+      };
+
+      type ControlledDecisionPrecedence = {
+        decisionIds: [string, string];
+        relation:
+          | 'no_contextual_precedence'
+          | 'contextual_precedence';
+        precedingDecisionId: string | null;
+        precededDecisionId: string | null;
+        knowledgeId: string | null;
+        rationale: string | null;
+      };
+
+      type ControlledStructuralPrecedenceCoexistence = {
+        decisionIds: [string, string, string];
+        relation:
+          | 'no_structural_precedence_coexistence'
+          | 'structural_precedence_coexistence';
+        precedences: ControlledDecisionPrecedence[];
+        rationale: string | null;
+      };
+
+      type ControlledStructuralPrecedenceConsistency = {
+        decisionIds: [string, string, string];
+        relation:
+          | 'structural_precedence_consistent'
+          | 'structural_precedence_inconsistent';
+        consistent: boolean;
+        cycle: {
+          decisionIds: string[];
+          knowledgeIds: string[];
+        } | null;
+        rationale: string;
+      };
+
+      const determineControlledPreference = (
+        first: OperationalDecision,
+        second: OperationalDecision,
+        consideredKnowledge: ControlledKnowledge | null,
+        expectedDeviationReason: string,
+        expectedFirstAction: string,
+        expectedSecondAction: string
+      ): ControlledDecisionPreference => {
+        if (!consideredKnowledge) {
+          return {
+            decisionIds: [first.id, second.id],
+            relation: 'no_contextual_preference',
+            preferredDecisionId: null,
+            knowledgeId: null,
+            rationale: null,
+          };
+        }
+
+        const knowledgeApplies =
+          consideredKnowledge.context.movementType ===
+            'reubicacion' &&
+          consideredKnowledge.context.deviationReason ===
+            expectedDeviationReason;
+
+        const firstMatches =
+          first.action === expectedFirstAction;
+
+        const secondMatches =
+          second.action === expectedSecondAction;
+
+        if (
+          !knowledgeApplies ||
+          !firstMatches ||
+          !secondMatches
+        ) {
+          return {
+            decisionIds: [first.id, second.id],
+            relation: 'no_contextual_preference',
+            preferredDecisionId: null,
+            knowledgeId: null,
+            rationale: null,
+          };
+        }
+
+        return {
+          decisionIds: [first.id, second.id],
+          relation: 'contextual_preference',
+          preferredDecisionId: first.id,
+          knowledgeId: consideredKnowledge.id,
+          rationale:
+            `El conocimiento "${consideredKnowledge.id}" ` +
+            `hace contextualmente preferible "${first.id}" ` +
+            `frente a "${second.id}".`,
+        };
+      };
+
+      const determineControlledPrecedence = (
+        preference: ControlledDecisionPreference
+      ): ControlledDecisionPrecedence => {
+        if (
+          preference.relation !==
+            'contextual_preference' ||
+          !preference.preferredDecisionId ||
+          !preference.knowledgeId ||
+          !preference.rationale
+        ) {
+          return {
+            decisionIds: [
+              preference.decisionIds[0],
+              preference.decisionIds[1],
+            ],
+            relation: 'no_contextual_precedence',
+            precedingDecisionId: null,
+            precededDecisionId: null,
+            knowledgeId: null,
+            rationale: null,
+          };
+        }
+
+        const [
+          firstDecisionId,
+          secondDecisionId,
+        ] = preference.decisionIds;
+
+        const precededDecisionId =
+          preference.preferredDecisionId ===
+          firstDecisionId
+            ? secondDecisionId
+            : firstDecisionId;
+
+        return {
+          decisionIds: [
+            firstDecisionId,
+            secondDecisionId,
+          ],
+          relation: 'contextual_precedence',
+          precedingDecisionId:
+            preference.preferredDecisionId,
+          precededDecisionId,
+          knowledgeId: preference.knowledgeId,
+          rationale:
+            `${preference.rationale} ` +
+            `La preferencia establece una precedencia contextual.`,
+        };
+      };
+
+      const determineControlledStructuralCoexistence = (
+        decisionIds: [string, string, string],
+        precedences: ControlledDecisionPrecedence[]
+      ): ControlledStructuralPrecedenceCoexistence => {
+        const contextualPrecedences =
+          precedences.filter(
+            (precedence) =>
+              precedence.relation ===
+                'contextual_precedence' &&
+              precedence.precedingDecisionId !== null &&
+              precedence.precededDecisionId !== null &&
+              precedence.knowledgeId !== null
+          );
+
+        if (
+          contextualPrecedences.length < 2 ||
+          contextualPrecedences.length > 3
+        ) {
+          return {
+            decisionIds: [
+              decisionIds[0],
+              decisionIds[1],
+              decisionIds[2],
+            ],
+            relation:
+              'no_structural_precedence_coexistence',
+            precedences: [],
+            rationale: null,
+          };
+        }
+
+        return {
+          decisionIds: [
+            decisionIds[0],
+            decisionIds[1],
+            decisionIds[2],
+          ],
+          relation: 'structural_precedence_coexistence',
+          precedences: [...contextualPrecedences],
+          rationale:
+            `${contextualPrecedences.length} precedencias ` +
+            `contextuales explícitas coexisten sin generar relaciones nuevas.`,
+        };
+      };
+
+      /*
+       * NUEVO CONSUMIDOR DE FASE 23.29.
+       *
+       * Inspecciona exclusivamente las precedencias explícitas.
+       * No deriva ni materializa precedencias transitivas.
+       *
+       * La exploración se limita a determinar si, partiendo
+       * de una alternativa, las relaciones existentes permiten
+       * regresar a ella mediante más de dos aristas.
+       */
+      const evaluateControlledStructuralConsistency = (
+        coexistence: ControlledStructuralPrecedenceCoexistence
+      ): ControlledStructuralPrecedenceConsistency => {
+        const precedences =
+          coexistence.precedences.filter(
+            (precedence) =>
+              precedence.relation ===
+                'contextual_precedence' &&
+              precedence.precedingDecisionId !== null &&
+              precedence.precededDecisionId !== null &&
+              precedence.knowledgeId !== null
+          );
+
+        for (const firstPrecedence of precedences) {
+          if (
+            !firstPrecedence.precedingDecisionId ||
+            !firstPrecedence.precededDecisionId ||
+            !firstPrecedence.knowledgeId
+          ) {
+            continue;
+          }
+
+          for (const secondPrecedence of precedences) {
+            if (
+              secondPrecedence === firstPrecedence ||
+              !secondPrecedence.precedingDecisionId ||
+              !secondPrecedence.precededDecisionId ||
+              !secondPrecedence.knowledgeId
+            ) {
+              continue;
+            }
+
+            if (
+              firstPrecedence.precededDecisionId !==
+              secondPrecedence.precedingDecisionId
+            ) {
+              continue;
+            }
+
+            for (const thirdPrecedence of precedences) {
+              if (
+                thirdPrecedence === firstPrecedence ||
+                thirdPrecedence === secondPrecedence ||
+                !thirdPrecedence.precedingDecisionId ||
+                !thirdPrecedence.precededDecisionId ||
+                !thirdPrecedence.knowledgeId
+              ) {
+                continue;
+              }
+
+              const closesControlledCycle =
+                secondPrecedence.precededDecisionId ===
+                  thirdPrecedence.precedingDecisionId &&
+                thirdPrecedence.precededDecisionId ===
+                  firstPrecedence.precedingDecisionId;
+
+              if (closesControlledCycle) {
+                return {
+                  decisionIds: [
+                    coexistence.decisionIds[0],
+                    coexistence.decisionIds[1],
+                    coexistence.decisionIds[2],
+                  ],
+                  relation:
+                    'structural_precedence_inconsistent',
+                  consistent: false,
+                  cycle: {
+                    decisionIds: [
+                      firstPrecedence.precedingDecisionId,
+                      firstPrecedence.precededDecisionId,
+                      secondPrecedence.precededDecisionId,
+                      firstPrecedence.precedingDecisionId,
+                    ],
+                    knowledgeIds: [
+                      firstPrecedence.knowledgeId,
+                      secondPrecedence.knowledgeId,
+                      thirdPrecedence.knowledgeId,
+                    ],
+                  },
+                  rationale:
+                    `Se detectó un ciclo estructural controlado ` +
+                    `de tres precedencias explícitas, sin derivar ` +
+                    `relaciones transitivas.`,
+                };
+              }
+            }
+          }
+        }
+
+        return {
+          decisionIds: [
+            coexistence.decisionIds[0],
+            coexistence.decisionIds[1],
+            coexistence.decisionIds[2],
+          ],
+          relation: 'structural_precedence_consistent',
+          consistent: true,
+          cycle: null,
+          rationale:
+            `Las precedencias explícitas no forman un ciclo ` +
+            `estructural controlado de longitud tres.`,
+        };
+      };
+
+      const preferenceAB = determineControlledPreference(
+        firstDecision,
+        secondDecision,
+        knowledgeAB,
+        'motivo-controlado-consistencia-estructural-ab',
+        firstDecision.action,
+        secondDecision.action
+      );
+
+      const preferenceBC = determineControlledPreference(
+        secondDecision,
+        thirdDecision,
+        knowledgeBC,
+        'motivo-controlado-consistencia-estructural-bc',
+        secondDecision.action,
+        thirdDecision.action
+      );
+
+      const preferenceCA = determineControlledPreference(
+        thirdDecision,
+        firstDecision,
+        knowledgeCA,
+        'motivo-controlado-consistencia-estructural-ca',
+        thirdDecision.action,
+        firstDecision.action
+      );
+
+      const precedenceAB =
+        determineControlledPrecedence(preferenceAB);
+
+      const precedenceBC =
+        determineControlledPrecedence(preferenceBC);
+
+      const precedenceCA =
+        determineControlledPrecedence(preferenceCA);
+
+      const acyclicCoexistence =
+        determineControlledStructuralCoexistence(
+          controlledAlternativeIds,
+          [precedenceAB, precedenceBC]
+        );
+
+      const cyclicCoexistence =
+        determineControlledStructuralCoexistence(
+          controlledAlternativeIds,
+          [precedenceAB, precedenceBC, precedenceCA]
+        );
+
+      const acyclicEvaluation =
+        evaluateControlledStructuralConsistency(
+          acyclicCoexistence
+        );
+
+      const cyclicEvaluation =
+        evaluateControlledStructuralConsistency(
+          cyclicCoexistence
+        );
+
+      if (
+        preferenceAB.relation !==
+          'contextual_preference' ||
+        preferenceBC.relation !==
+          'contextual_preference' ||
+        preferenceCA.relation !==
+          'contextual_preference'
+      ) {
+        throw new Error(
+          'FASE 23.29 no produjo las tres preferencias contextuales controladas.'
+        );
+      }
+
+      if (
+        precedenceAB.relation !==
+          'contextual_precedence' ||
+        precedenceBC.relation !==
+          'contextual_precedence' ||
+        precedenceCA.relation !==
+          'contextual_precedence'
+      ) {
+        throw new Error(
+          'FASE 23.29 no produjo las tres precedencias contextuales esperadas.'
+        );
+      }
+
+      if (
+        precedenceAB.precedingDecisionId !==
+          firstDecision.id ||
+        precedenceAB.precededDecisionId !==
+          secondDecision.id ||
+        precedenceBC.precedingDecisionId !==
+          secondDecision.id ||
+        precedenceBC.precededDecisionId !==
+          thirdDecision.id ||
+        precedenceCA.precedingDecisionId !==
+          thirdDecision.id ||
+        precedenceCA.precededDecisionId !==
+          firstDecision.id
+      ) {
+        throw new Error(
+          'FASE 23.29 produjo una dirección de precedencia estructural incorrecta.'
+        );
+      }
+
+      if (
+        precedenceAB.knowledgeId !== knowledgeAB.id ||
+        precedenceBC.knowledgeId !== knowledgeBC.id ||
+        precedenceCA.knowledgeId !== knowledgeCA.id
+      ) {
+        throw new Error(
+          'FASE 23.29 perdió atribución individual mediante knowledgeId.'
+        );
+      }
+
+      if (
+        acyclicCoexistence.precedences.length !== 2 ||
+        cyclicCoexistence.precedences.length !== 3
+      ) {
+        throw new Error(
+          'FASE 23.29 no conservó exactamente las precedencias explícitas de cada escenario.'
+        );
+      }
+
+      if (
+        acyclicEvaluation.relation !==
+          'structural_precedence_consistent' ||
+        !acyclicEvaluation.consistent ||
+        acyclicEvaluation.cycle !== null
+      ) {
+        throw new Error(
+          'FASE 23.29 clasificó incorrectamente el escenario acíclico A-B / B-C.'
+        );
+      }
+
+      if (
+        cyclicEvaluation.relation !==
+          'structural_precedence_inconsistent' ||
+        cyclicEvaluation.consistent ||
+        !cyclicEvaluation.cycle
+      ) {
+        throw new Error(
+          'FASE 23.29 no detectó el ciclo estructural A-B-C-A.'
+        );
+      }
+
+      const detectedCycle =
+        cyclicEvaluation.cycle;
+
+      if (
+        detectedCycle.decisionIds.length !== 4 ||
+        detectedCycle.decisionIds[0] !==
+          detectedCycle.decisionIds[3] ||
+        !detectedCycle.decisionIds.includes(
+          firstDecision.id
+        ) ||
+        !detectedCycle.decisionIds.includes(
+          secondDecision.id
+        ) ||
+        !detectedCycle.decisionIds.includes(
+          thirdDecision.id
+        )
+      ) {
+        throw new Error(
+          'FASE 23.29 identificó una trayectoria cíclica distinta de A-B-C-A.'
+        );
+      }
+
+      if (
+        detectedCycle.knowledgeIds.length !== 3 ||
+        !detectedCycle.knowledgeIds.includes(
+          knowledgeAB.id
+        ) ||
+        !detectedCycle.knowledgeIds.includes(
+          knowledgeBC.id
+        ) ||
+        !detectedCycle.knowledgeIds.includes(
+          knowledgeCA.id
+        )
+      ) {
+        throw new Error(
+          'FASE 23.29 perdió trazabilidad de los conocimientos que forman el ciclo.'
+        );
+      }
+
+      /*
+       * La evaluación estructural NO debe materializar
+       * transitividad A -> C.
+       */
+      const allExplicitPrecedences = [
+        ...acyclicCoexistence.precedences,
+        ...cyclicCoexistence.precedences,
+      ];
+
+      const inferredAC =
+        allExplicitPrecedences.some(
+          (precedence) =>
+            precedence.precedingDecisionId ===
+              firstDecision.id &&
+            precedence.precededDecisionId ===
+              thirdDecision.id
+        );
+
+      if (inferredAC) {
+        throw new Error(
+          'FASE 23.29 infirió A-C y cruzó indebidamente la frontera de transitividad.'
+        );
+      }
+
+      /*
+       * Guardas de frontera.
+       *
+       * El resultado puede expresar el ciclo detectado,
+       * pero no conceptos posteriores.
+       */
+      if (
+        'transitive' in cyclicEvaluation ||
+        'transitivity' in cyclicEvaluation ||
+        'closure' in cyclicEvaluation ||
+        'partialOrder' in cyclicEvaluation ||
+        'orderedDecisionIds' in cyclicEvaluation ||
+        'sortedDecisionIds' in cyclicEvaluation ||
+        'order' in cyclicEvaluation ||
+        'rank' in cyclicEvaluation ||
+        'ranking' in cyclicEvaluation ||
+        'position' in cyclicEvaluation ||
+        'score' in cyclicEvaluation ||
+        'weight' in cyclicEvaluation ||
+        'confidence' in cyclicEvaluation ||
+        'priority' in cyclicEvaluation ||
+        'winner' in cyclicEvaluation ||
+        'loser' in cyclicEvaluation ||
+        'selected' in cyclicEvaluation ||
+        'selection' in cyclicEvaluation ||
+        'executed' in cyclicEvaluation ||
+        'execution' in cyclicEvaluation
+      ) {
+        throw new Error(
+          'FASE 23.29 detectó atributos de transitividad, orden parcial, ranking, ponderación, selección o ejecución.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          cyclicCoexistence.precedences
+        ) !==
+        JSON.stringify([
+          precedenceAB,
+          precedenceBC,
+          precedenceCA,
+        ])
+      ) {
+        throw new Error(
+          'FASE 23.29 modificó las precedencias explícitas durante la evaluación estructural.'
+        );
+      }
+
+      const recommendationsAfterStructuralConsistency =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterStructuralConsistency =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterStructuralConsistency
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsBeforeStructuralConsistency
+        ) !==
+        JSON.stringify(
+          recommendationsAfterStructuralConsistency
+        )
+      ) {
+        throw new Error(
+          'FASE 23.29 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsBeforeStructuralConsistency
+        ) !==
+        JSON.stringify(
+          decisionsAfterStructuralConsistency
+        )
+      ) {
+        throw new Error(
+          'FASE 23.29 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      const firstDecisionAfter =
+        decisionsAfterStructuralConsistency.find(
+          (decision) =>
+            decision.id === firstDecision.id
+        );
+
+      const secondDecisionAfter =
+        decisionsAfterStructuralConsistency.find(
+          (decision) =>
+            decision.id === secondDecision.id
+        );
+
+      const thirdDecisionAfter =
+        decisionsAfterStructuralConsistency.find(
+          (decision) =>
+            decision.id === thirdDecision.id
+        );
+
+      if (
+        !firstDecisionAfter ||
+        !secondDecisionAfter ||
+        !thirdDecisionAfter
+      ) {
+        throw new Error(
+          'FASE 23.29 perdió alguna alternativa productiva después del experimento.'
+        );
+      }
+
+      if (
+        JSON.stringify(firstDecisionAfter) !==
+          firstDecisionSnapshot ||
+        JSON.stringify(secondDecisionAfter) !==
+          secondDecisionSnapshot ||
+        JSON.stringify(thirdDecisionAfter) !==
+          thirdDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.29 alteró indirectamente alguna alternativa decisional productiva.'
+        );
+      }
+
+      addLog(
+        `FASE 23.29 OK: sobre las mismas tres alternativas ${firstDecision.id}, ${secondDecision.id} y ${thirdDecision.id}, las precedencias explícitas ${firstDecision.id} -> ${secondDecision.id} y ${secondDecision.id} -> ${thirdDecision.id} permanecieron estructuralmente consistentes, mientras la incorporación explícita de ${thirdDecision.id} -> ${firstDecision.id} cerró y permitió detectar el ciclo estructural ${firstDecision.id} -> ${secondDecision.id} -> ${thirdDecision.id} -> ${firstDecision.id}, atribuible a tres conocimientos independientes; la evaluación no introdujo transitividad, cierre transitivo, orden parcial, reordenamiento, rank, score, modificación de confidence o priority, selección ni ejecución, permaneciendo intactas ${recommendationsAfterStructuralConsistency.length} recomendaciones y ${decisionsAfterStructuralConsistency.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en consistencia estructural controlada de precedencias 23.29: ${error.message}`
+          : 'Error inesperado en consistencia estructural controlada de precedencias 23.29.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -9902,6 +10866,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-pink-950 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Consistencia Precedencias 23.28
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeControlledStructuralPrecedenceConsistency}
+          disabled={loading}
+          className="rounded-xl bg-rose-950 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Consistencia Estructural 23.29
         </button>
 
         <button
