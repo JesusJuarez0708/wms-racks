@@ -12626,6 +12626,1259 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeControlledDerivedPrecedenceCoexistence() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeCoexistence =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsBeforeCoexistence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeCoexistence
+        );
+
+      /*
+       * FASE 23.32 — Coexistencia contextual controlada de
+       * relaciones transitivas derivadas por conocimiento
+       * operativo.
+       *
+       * FASE 23.30 permitió derivar una relación transitiva
+       * controlada a partir de dos precedencias explícitas:
+       *
+       * A -> B
+       * B -> C
+       * => A -> C derivada
+       *
+       * FASE 23.31 permitió evaluar una relación derivada
+       * frente a una precedencia explícita sin realimentar
+       * el mecanismo de transitividad.
+       *
+       * FASE 23.32 introduce exclusivamente la capacidad de
+       * hacer coexistir dos relaciones transitivas derivadas
+       * independientes:
+       *
+       * A -> B [K1]
+       * B -> C [K2]
+       * => R1 = A -> C
+       *
+       * B -> C [K2]
+       * C -> D [K3]
+       * => R2 = B -> D
+       *
+       * R1 y R2 pueden coexistir conservando identidad,
+       * dirección, intermediateDecisionId y genealogía causal.
+       *
+       * La coexistencia NO:
+       *
+       * - fusiona R1 y R2;
+       * - fabrica un knowledgeId agregado;
+       * - convierte derivadas en explícitas;
+       * - modifica las precedencias fuente;
+       * - compone una derivada con una explícita;
+       * - compone derivadas entre sí;
+       * - produce A -> D;
+       * - realimenta la transitividad;
+       * - ejecuta propagación transitiva;
+       * - ejecuta cierre transitivo;
+       * - construye orden parcial;
+       * - reordena decisiones;
+       * - introduce ranking;
+       * - introduce score derivado;
+       * - introduce ponderación;
+       * - modifica confidence;
+       * - modifica priority;
+       * - selecciona;
+       * - ejecuta.
+       */
+
+      const firstDecision =
+        decisionsBeforeCoexistence.find(
+          (decision) =>
+            decision.id === 'decision-review-movements'
+        );
+
+      const secondDecision =
+        decisionsBeforeCoexistence.find(
+          (decision) =>
+            decision.id === 'decision-maintain-monitoring'
+        );
+
+      const thirdDecision =
+        decisionsBeforeCoexistence.find(
+          (decision) =>
+            decision.id === 'decision-prioritize-high-value'
+        );
+
+      const fourthDecision =
+        decisionsBeforeCoexistence.find(
+          (decision) =>
+            decision.id ===
+            'recommendation-prioritize-high-score-actions'
+        );
+
+      if (!firstDecision) {
+        throw new Error(
+          'FASE 23.32 no encontró decision-review-movements como alternativa A.'
+        );
+      }
+
+      if (!secondDecision) {
+        throw new Error(
+          'FASE 23.32 no encontró decision-maintain-monitoring como alternativa B.'
+        );
+      }
+
+      if (!thirdDecision) {
+        throw new Error(
+          'FASE 23.32 no encontró decision-prioritize-high-value como alternativa C.'
+        );
+      }
+
+      if (!fourthDecision) {
+        throw new Error(
+          'FASE 23.32 no encontró recommendation-prioritize-high-score-actions como alternativa D.'
+        );
+      }
+
+      const controlledDecisionIds = [
+        firstDecision.id,
+        secondDecision.id,
+        thirdDecision.id,
+        fourthDecision.id,
+      ];
+
+      if (new Set(controlledDecisionIds).size !== 4) {
+        throw new Error(
+          'FASE 23.32 esperaba cuatro alternativas decisionales distintas.'
+        );
+      }
+
+      const firstDecisionSnapshot =
+        JSON.stringify(firstDecision);
+
+      const secondDecisionSnapshot =
+        JSON.stringify(secondDecision);
+
+      const thirdDecisionSnapshot =
+        JSON.stringify(thirdDecision);
+
+      const fourthDecisionSnapshot =
+        JSON.stringify(fourthDecision);
+
+      /*
+       * Tres conocimientos independientes:
+       *
+       * K1 -> A -> B
+       * K2 -> B -> C
+       * K3 -> C -> D
+       *
+       * K1 + K2 permiten derivar R1 = A -> C.
+       * K2 + K3 permiten derivar R2 = B -> D.
+       *
+       * K2 es compartido legítimamente por ambas genealogías.
+       */
+      const controlledPatterns = [
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-derived-coexistence-ab',
+          title:
+            'Patrón controlado coexistencia derivada A-B',
+          description:
+            'Patrón controlado para producir la precedencia contextual explícita A-B.',
+          score: 96,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-derived-coexistence-ab',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-derived-coexistence-ab-1',
+              'memory-controlled-derived-coexistence-ab-2',
+              'memory-controlled-derived-coexistence-ab-3',
+              'memory-controlled-derived-coexistence-ab-4',
+            ],
+          },
+        },
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-derived-coexistence-bc',
+          title:
+            'Patrón controlado coexistencia derivada B-C',
+          description:
+            'Patrón controlado para producir la precedencia contextual explícita B-C compartida por dos derivaciones.',
+          score: 95,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-derived-coexistence-bc',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-derived-coexistence-bc-1',
+              'memory-controlled-derived-coexistence-bc-2',
+              'memory-controlled-derived-coexistence-bc-3',
+              'memory-controlled-derived-coexistence-bc-4',
+            ],
+          },
+        },
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-derived-coexistence-cd',
+          title:
+            'Patrón controlado coexistencia derivada C-D',
+          description:
+            'Patrón controlado para producir la precedencia contextual explícita C-D.',
+          score: 94,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-derived-coexistence-cd',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-derived-coexistence-cd-1',
+              'memory-controlled-derived-coexistence-cd-2',
+              'memory-controlled-derived-coexistence-cd-3',
+              'memory-controlled-derived-coexistence-cd-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 3) {
+        throw new Error(
+          `FASE 23.32 esperaba exactamente 3 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledgeAB =
+        controlledKnowledge.find(
+          (knowledge) =>
+            knowledge.sourcePatternId ===
+            controlledPatterns[0].id
+        );
+
+      const knowledgeBC =
+        controlledKnowledge.find(
+          (knowledge) =>
+            knowledge.sourcePatternId ===
+            controlledPatterns[1].id
+        );
+
+      const knowledgeCD =
+        controlledKnowledge.find(
+          (knowledge) =>
+            knowledge.sourcePatternId ===
+            controlledPatterns[2].id
+        );
+
+      if (
+        !knowledgeAB ||
+        !knowledgeBC ||
+        !knowledgeCD
+      ) {
+        throw new Error(
+          'FASE 23.32 no pudo resolver los tres conocimientos controlados.'
+        );
+      }
+
+      const uniqueKnowledgeIds = new Set([
+        knowledgeAB.id,
+        knowledgeBC.id,
+        knowledgeCD.id,
+      ]);
+
+      if (uniqueKnowledgeIds.size !== 3) {
+        throw new Error(
+          'FASE 23.32 esperaba tres knowledgeId independientes.'
+        );
+      }
+
+      const eligibilityAB =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeAB,
+          { movementType: 'reubicacion' }
+        );
+
+      const eligibilityBC =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeBC,
+          { movementType: 'reubicacion' }
+        );
+
+      const eligibilityCD =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeCD,
+          { movementType: 'reubicacion' }
+        );
+
+      const considerationAB =
+        considerOperationalKnowledge(eligibilityAB);
+
+      const considerationBC =
+        considerOperationalKnowledge(eligibilityBC);
+
+      const considerationCD =
+        considerOperationalKnowledge(eligibilityCD);
+
+      if (
+        !considerationAB ||
+        !considerationBC ||
+        !considerationCD
+      ) {
+        throw new Error(
+          'FASE 23.32 esperaba consideración válida para los tres conocimientos.'
+        );
+      }
+
+      if (
+        considerationAB.knowledgeId !== knowledgeAB.id ||
+        considerationBC.knowledgeId !== knowledgeBC.id ||
+        considerationCD.knowledgeId !== knowledgeCD.id
+      ) {
+        throw new Error(
+          'FASE 23.32 perdió trazabilidad entre consideración y conocimiento.'
+        );
+      }
+
+      type ControlledKnowledge =
+        (typeof controlledKnowledge)[number];
+
+      type ControlledDecisionPreference = {
+        decisionIds: [string, string];
+        relation:
+          | 'no_contextual_preference'
+          | 'contextual_preference';
+        preferredDecisionId: string | null;
+        knowledgeId: string | null;
+        rationale: string | null;
+      };
+
+      type ControlledDecisionPrecedence = {
+        decisionIds: [string, string];
+        relation:
+          | 'no_contextual_precedence'
+          | 'contextual_precedence';
+        precedingDecisionId: string | null;
+        precededDecisionId: string | null;
+        knowledgeId: string | null;
+        rationale: string | null;
+      };
+
+      type ControlledDecisionPrecedenceCoexistence = {
+        decisionIds: [string, string, string];
+        relation:
+          | 'no_contextual_precedence_coexistence'
+          | 'contextual_precedence_coexistence';
+        precedences: ControlledDecisionPrecedence[];
+        rationale: string | null;
+      };
+
+      type ControlledTransitiveSourcePrecedence = {
+        precedingDecisionId: string;
+        precededDecisionId: string;
+        knowledgeId: string;
+      };
+
+      type ControlledTransitivePrecedence = {
+        decisionIds: [string, string, string];
+        relation:
+          | 'no_contextual_transitive_precedence'
+          | 'contextual_transitive_precedence';
+        precedingDecisionId: string | null;
+        intermediateDecisionId: string | null;
+        precededDecisionId: string | null;
+        sourcePrecedences:
+          | [
+              ControlledTransitiveSourcePrecedence,
+              ControlledTransitiveSourcePrecedence,
+            ]
+          | null;
+        rationale: string | null;
+      };
+
+      type ControlledTransitivePrecedenceCoexistence = {
+        decisionIds: [string, string, string, string];
+        relation:
+          | 'no_contextual_transitive_precedence_coexistence'
+          | 'contextual_transitive_precedence_coexistence';
+        derivedPrecedences: ControlledTransitivePrecedence[];
+        rationale: string | null;
+      };
+
+      const determineControlledPreference = (
+        first: OperationalDecision,
+        second: OperationalDecision,
+        consideredKnowledge: ControlledKnowledge | null,
+        expectedDeviationReason: string,
+        expectedFirstAction: string,
+        expectedSecondAction: string
+      ): ControlledDecisionPreference => {
+        if (!consideredKnowledge) {
+          return {
+            decisionIds: [first.id, second.id],
+            relation: 'no_contextual_preference',
+            preferredDecisionId: null,
+            knowledgeId: null,
+            rationale: null,
+          };
+        }
+
+        const knowledgeApplies =
+          consideredKnowledge.context.movementType ===
+            'reubicacion' &&
+          consideredKnowledge.context.deviationReason ===
+            expectedDeviationReason;
+
+        const firstMatches =
+          first.action === expectedFirstAction;
+
+        const secondMatches =
+          second.action === expectedSecondAction;
+
+        if (
+          !knowledgeApplies ||
+          !firstMatches ||
+          !secondMatches
+        ) {
+          return {
+            decisionIds: [first.id, second.id],
+            relation: 'no_contextual_preference',
+            preferredDecisionId: null,
+            knowledgeId: null,
+            rationale: null,
+          };
+        }
+
+        return {
+          decisionIds: [first.id, second.id],
+          relation: 'contextual_preference',
+          preferredDecisionId: first.id,
+          knowledgeId: consideredKnowledge.id,
+          rationale:
+            `El conocimiento "${consideredKnowledge.id}" ` +
+            `hace contextualmente preferible "${first.id}" ` +
+            `frente a "${second.id}".`,
+        };
+      };
+
+      const determineControlledPrecedence = (
+        preference: ControlledDecisionPreference
+      ): ControlledDecisionPrecedence => {
+        if (
+          preference.relation !==
+            'contextual_preference' ||
+          !preference.preferredDecisionId ||
+          !preference.knowledgeId ||
+          !preference.rationale
+        ) {
+          return {
+            decisionIds: [
+              preference.decisionIds[0],
+              preference.decisionIds[1],
+            ],
+            relation: 'no_contextual_precedence',
+            precedingDecisionId: null,
+            precededDecisionId: null,
+            knowledgeId: null,
+            rationale: null,
+          };
+        }
+
+        const [
+          firstDecisionId,
+          secondDecisionId,
+        ] = preference.decisionIds;
+
+        if (
+          preference.preferredDecisionId !==
+            firstDecisionId &&
+          preference.preferredDecisionId !==
+            secondDecisionId
+        ) {
+          return {
+            decisionIds: [
+              firstDecisionId,
+              secondDecisionId,
+            ],
+            relation: 'no_contextual_precedence',
+            precedingDecisionId: null,
+            precededDecisionId: null,
+            knowledgeId: null,
+            rationale: null,
+          };
+        }
+
+        return {
+          decisionIds: [
+            firstDecisionId,
+            secondDecisionId,
+          ],
+          relation: 'contextual_precedence',
+          precedingDecisionId:
+            preference.preferredDecisionId,
+          precededDecisionId:
+            preference.preferredDecisionId ===
+            firstDecisionId
+              ? secondDecisionId
+              : firstDecisionId,
+          knowledgeId: preference.knowledgeId,
+          rationale:
+            `${preference.rationale} ` +
+            `La preferencia establece una precedencia contextual explícita.`,
+        };
+      };
+
+      const determineControlledPrecedenceCoexistence = (
+        decisionIds: [string, string, string],
+        precedences: ControlledDecisionPrecedence[]
+      ): ControlledDecisionPrecedenceCoexistence => {
+        const contextualPrecedences =
+          precedences.filter(
+            (precedence) =>
+              precedence.relation ===
+                'contextual_precedence' &&
+              precedence.precedingDecisionId !== null &&
+              precedence.precededDecisionId !== null &&
+              precedence.knowledgeId !== null
+          );
+
+        if (contextualPrecedences.length !== 2) {
+          return {
+            decisionIds: [
+              decisionIds[0],
+              decisionIds[1],
+              decisionIds[2],
+            ],
+            relation:
+              'no_contextual_precedence_coexistence',
+            precedences: [],
+            rationale: null,
+          };
+        }
+
+        return {
+          decisionIds: [
+            decisionIds[0],
+            decisionIds[1],
+            decisionIds[2],
+          ],
+          relation:
+            'contextual_precedence_coexistence',
+          precedences: [
+            contextualPrecedences[0],
+            contextualPrecedences[1],
+          ],
+          rationale:
+            `Dos precedencias contextuales explícitas ` +
+            `coexisten sin materializar relaciones derivadas.`,
+        };
+      };
+
+      const deriveControlledTransitivePrecedence = (
+        coexistence: ControlledDecisionPrecedenceCoexistence
+      ): ControlledTransitivePrecedence => {
+        const precedences =
+          coexistence.precedences.filter(
+            (precedence) =>
+              precedence.relation ===
+                'contextual_precedence' &&
+              precedence.precedingDecisionId !== null &&
+              precedence.precededDecisionId !== null &&
+              precedence.knowledgeId !== null
+          );
+
+        if (precedences.length !== 2) {
+          return {
+            decisionIds: [
+              coexistence.decisionIds[0],
+              coexistence.decisionIds[1],
+              coexistence.decisionIds[2],
+            ],
+            relation:
+              'no_contextual_transitive_precedence',
+            precedingDecisionId: null,
+            intermediateDecisionId: null,
+            precededDecisionId: null,
+            sourcePrecedences: null,
+            rationale: null,
+          };
+        }
+
+        const firstPrecedence = precedences[0];
+        const secondPrecedence = precedences[1];
+
+        if (
+          !firstPrecedence ||
+          !secondPrecedence ||
+          !firstPrecedence.precedingDecisionId ||
+          !firstPrecedence.precededDecisionId ||
+          !firstPrecedence.knowledgeId ||
+          !secondPrecedence.precedingDecisionId ||
+          !secondPrecedence.precededDecisionId ||
+          !secondPrecedence.knowledgeId
+        ) {
+          return {
+            decisionIds: [
+              coexistence.decisionIds[0],
+              coexistence.decisionIds[1],
+              coexistence.decisionIds[2],
+            ],
+            relation:
+              'no_contextual_transitive_precedence',
+            precedingDecisionId: null,
+            intermediateDecisionId: null,
+            precededDecisionId: null,
+            sourcePrecedences: null,
+            rationale: null,
+          };
+        }
+
+        const composesForward =
+          firstPrecedence.precededDecisionId ===
+            secondPrecedence.precedingDecisionId;
+
+        const composesReverse =
+          secondPrecedence.precededDecisionId ===
+            firstPrecedence.precedingDecisionId;
+
+        if (composesForward) {
+          return {
+            decisionIds: [
+              coexistence.decisionIds[0],
+              coexistence.decisionIds[1],
+              coexistence.decisionIds[2],
+            ],
+            relation:
+              'contextual_transitive_precedence',
+            precedingDecisionId:
+              firstPrecedence.precedingDecisionId,
+            intermediateDecisionId:
+              firstPrecedence.precededDecisionId,
+            precededDecisionId:
+              secondPrecedence.precededDecisionId,
+            sourcePrecedences: [
+              {
+                precedingDecisionId:
+                  firstPrecedence.precedingDecisionId,
+                precededDecisionId:
+                  firstPrecedence.precededDecisionId,
+                knowledgeId:
+                  firstPrecedence.knowledgeId,
+              },
+              {
+                precedingDecisionId:
+                  secondPrecedence.precedingDecisionId,
+                precededDecisionId:
+                  secondPrecedence.precededDecisionId,
+                knowledgeId:
+                  secondPrecedence.knowledgeId,
+              },
+            ],
+            rationale:
+              `Dos precedencias explícitas componibles ` +
+              `permiten una única derivación transitiva controlada.`,
+          };
+        }
+
+        if (composesReverse) {
+          return {
+            decisionIds: [
+              coexistence.decisionIds[0],
+              coexistence.decisionIds[1],
+              coexistence.decisionIds[2],
+            ],
+            relation:
+              'contextual_transitive_precedence',
+            precedingDecisionId:
+              secondPrecedence.precedingDecisionId,
+            intermediateDecisionId:
+              secondPrecedence.precededDecisionId,
+            precededDecisionId:
+              firstPrecedence.precededDecisionId,
+            sourcePrecedences: [
+              {
+                precedingDecisionId:
+                  secondPrecedence.precedingDecisionId,
+                precededDecisionId:
+                  secondPrecedence.precededDecisionId,
+                knowledgeId:
+                  secondPrecedence.knowledgeId,
+              },
+              {
+                precedingDecisionId:
+                  firstPrecedence.precedingDecisionId,
+                precededDecisionId:
+                  firstPrecedence.precededDecisionId,
+                knowledgeId:
+                  firstPrecedence.knowledgeId,
+              },
+            ],
+            rationale:
+              `Dos precedencias explícitas componibles ` +
+              `permiten una única derivación transitiva controlada.`,
+          };
+        }
+
+        return {
+          decisionIds: [
+            coexistence.decisionIds[0],
+            coexistence.decisionIds[1],
+            coexistence.decisionIds[2],
+          ],
+          relation:
+            'no_contextual_transitive_precedence',
+          precedingDecisionId: null,
+          intermediateDecisionId: null,
+          precededDecisionId: null,
+          sourcePrecedences: null,
+          rationale: null,
+        };
+      };
+
+      /*
+       * NUEVO CONSUMIDOR DE FASE 23.32.
+       *
+       * Recibe relaciones transitivas ya derivadas.
+       *
+       * Únicamente reconoce su coexistencia plural.
+       *
+       * No modifica las derivaciones recibidas.
+       * No las combina.
+       * No genera una nueva precedencia.
+       * No realimenta la transitividad.
+       */
+      const determineControlledTransitivePrecedenceCoexistence = (
+        decisionIds: [string, string, string, string],
+        derivedPrecedences: ControlledTransitivePrecedence[]
+      ): ControlledTransitivePrecedenceCoexistence => {
+        const validDerivedPrecedences =
+          derivedPrecedences.filter(
+            (precedence) =>
+              precedence.relation ===
+                'contextual_transitive_precedence' &&
+              precedence.precedingDecisionId !== null &&
+              precedence.intermediateDecisionId !== null &&
+              precedence.precededDecisionId !== null &&
+              precedence.sourcePrecedences !== null
+          );
+
+        if (validDerivedPrecedences.length !== 2) {
+          return {
+            decisionIds: [
+              decisionIds[0],
+              decisionIds[1],
+              decisionIds[2],
+              decisionIds[3],
+            ],
+            relation:
+              'no_contextual_transitive_precedence_coexistence',
+            derivedPrecedences: [],
+            rationale: null,
+          };
+        }
+
+        return {
+          decisionIds: [
+            decisionIds[0],
+            decisionIds[1],
+            decisionIds[2],
+            decisionIds[3],
+          ],
+          relation:
+            'contextual_transitive_precedence_coexistence',
+          derivedPrecedences: [
+            validDerivedPrecedences[0],
+            validDerivedPrecedences[1],
+          ],
+          rationale:
+            `Dos relaciones transitivas derivadas coexisten ` +
+            `sin fusionarse ni producir nuevas derivaciones.`,
+        };
+      };
+
+      const preferenceAB =
+        determineControlledPreference(
+          firstDecision,
+          secondDecision,
+          knowledgeAB,
+          'motivo-controlado-derived-coexistence-ab',
+          firstDecision.action,
+          secondDecision.action
+        );
+
+      const preferenceBC =
+        determineControlledPreference(
+          secondDecision,
+          thirdDecision,
+          knowledgeBC,
+          'motivo-controlado-derived-coexistence-bc',
+          secondDecision.action,
+          thirdDecision.action
+        );
+
+      const preferenceCD =
+        determineControlledPreference(
+          thirdDecision,
+          fourthDecision,
+          knowledgeCD,
+          'motivo-controlado-derived-coexistence-cd',
+          thirdDecision.action,
+          fourthDecision.action
+        );
+
+      const precedenceAB =
+        determineControlledPrecedence(preferenceAB);
+
+      const precedenceBC =
+        determineControlledPrecedence(preferenceBC);
+
+      const precedenceCD =
+        determineControlledPrecedence(preferenceCD);
+
+      const firstSourceCoexistence =
+        determineControlledPrecedenceCoexistence(
+          [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+          ],
+          [precedenceAB, precedenceBC]
+        );
+
+      const secondSourceCoexistence =
+        determineControlledPrecedenceCoexistence(
+          [
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          [precedenceBC, precedenceCD]
+        );
+
+      const derivedAC =
+        deriveControlledTransitivePrecedence(
+          firstSourceCoexistence
+        );
+
+      const derivedBD =
+        deriveControlledTransitivePrecedence(
+          secondSourceCoexistence
+        );
+
+      const derivedCoexistence =
+        determineControlledTransitivePrecedenceCoexistence(
+          [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          [derivedAC, derivedBD]
+        );
+
+      if (
+        preferenceAB.relation !==
+          'contextual_preference' ||
+        preferenceBC.relation !==
+          'contextual_preference' ||
+        preferenceCD.relation !==
+          'contextual_preference'
+      ) {
+        throw new Error(
+          'FASE 23.32 no produjo las tres preferencias contextuales controladas.'
+        );
+      }
+
+      if (
+        precedenceAB.relation !==
+          'contextual_precedence' ||
+        precedenceBC.relation !==
+          'contextual_precedence' ||
+        precedenceCD.relation !==
+          'contextual_precedence'
+      ) {
+        throw new Error(
+          'FASE 23.32 no produjo las tres precedencias explícitas esperadas.'
+        );
+      }
+
+      if (
+        precedenceAB.precedingDecisionId !==
+          firstDecision.id ||
+        precedenceAB.precededDecisionId !==
+          secondDecision.id ||
+        precedenceBC.precedingDecisionId !==
+          secondDecision.id ||
+        precedenceBC.precededDecisionId !==
+          thirdDecision.id ||
+        precedenceCD.precedingDecisionId !==
+          thirdDecision.id ||
+        precedenceCD.precededDecisionId !==
+          fourthDecision.id
+      ) {
+        throw new Error(
+          'FASE 23.32 produjo una dirección incorrecta en alguna precedencia explícita.'
+        );
+      }
+
+      if (
+        precedenceAB.knowledgeId !== knowledgeAB.id ||
+        precedenceBC.knowledgeId !== knowledgeBC.id ||
+        precedenceCD.knowledgeId !== knowledgeCD.id
+      ) {
+        throw new Error(
+          'FASE 23.32 perdió atribución individual mediante knowledgeId.'
+        );
+      }
+
+      if (
+        derivedAC.relation !==
+          'contextual_transitive_precedence' ||
+        derivedAC.precedingDecisionId !==
+          firstDecision.id ||
+        derivedAC.intermediateDecisionId !==
+          secondDecision.id ||
+        derivedAC.precededDecisionId !==
+          thirdDecision.id ||
+        !derivedAC.sourcePrecedences
+      ) {
+        throw new Error(
+          'FASE 23.32 no produjo correctamente R1 = A-C.'
+        );
+      }
+
+      if (
+        derivedBD.relation !==
+          'contextual_transitive_precedence' ||
+        derivedBD.precedingDecisionId !==
+          secondDecision.id ||
+        derivedBD.intermediateDecisionId !==
+          thirdDecision.id ||
+        derivedBD.precededDecisionId !==
+          fourthDecision.id ||
+        !derivedBD.sourcePrecedences
+      ) {
+        throw new Error(
+          'FASE 23.32 no produjo correctamente R2 = B-D.'
+        );
+      }
+
+      const [
+        derivedACFirstSource,
+        derivedACSecondSource,
+      ] = derivedAC.sourcePrecedences;
+
+      const [
+        derivedBDFirstSource,
+        derivedBDSecondSource,
+      ] = derivedBD.sourcePrecedences;
+
+      if (
+        derivedACFirstSource.precedingDecisionId !==
+          firstDecision.id ||
+        derivedACFirstSource.precededDecisionId !==
+          secondDecision.id ||
+        derivedACFirstSource.knowledgeId !==
+          knowledgeAB.id ||
+        derivedACSecondSource.precedingDecisionId !==
+          secondDecision.id ||
+        derivedACSecondSource.precededDecisionId !==
+          thirdDecision.id ||
+        derivedACSecondSource.knowledgeId !==
+          knowledgeBC.id
+      ) {
+        throw new Error(
+          'FASE 23.32 perdió la genealogía causal de R1 = A-C.'
+        );
+      }
+
+      if (
+        derivedBDFirstSource.precedingDecisionId !==
+          secondDecision.id ||
+        derivedBDFirstSource.precededDecisionId !==
+          thirdDecision.id ||
+        derivedBDFirstSource.knowledgeId !==
+          knowledgeBC.id ||
+        derivedBDSecondSource.precedingDecisionId !==
+          thirdDecision.id ||
+        derivedBDSecondSource.precededDecisionId !==
+          fourthDecision.id ||
+        derivedBDSecondSource.knowledgeId !==
+          knowledgeCD.id
+      ) {
+        throw new Error(
+          'FASE 23.32 perdió la genealogía causal de R2 = B-D.'
+        );
+      }
+
+      /*
+       * K2 / B-C debe ser exactamente la fuente causal
+       * compartida entre las dos relaciones derivadas.
+       */
+      const sharedSourceIsPreserved =
+        derivedACSecondSource.precedingDecisionId ===
+          derivedBDFirstSource.precedingDecisionId &&
+        derivedACSecondSource.precededDecisionId ===
+          derivedBDFirstSource.precededDecisionId &&
+        derivedACSecondSource.knowledgeId ===
+          derivedBDFirstSource.knowledgeId &&
+        derivedACSecondSource.knowledgeId ===
+          knowledgeBC.id;
+
+      if (!sharedSourceIsPreserved) {
+        throw new Error(
+          'FASE 23.32 perdió la fuente causal compartida B-C / K2 entre ambas derivaciones.'
+        );
+      }
+
+      if (
+        derivedCoexistence.relation !==
+          'contextual_transitive_precedence_coexistence' ||
+        derivedCoexistence.derivedPrecedences.length !== 2
+      ) {
+        throw new Error(
+          'FASE 23.32 no estableció coexistencia plural entre las dos relaciones derivadas.'
+        );
+      }
+
+      if (
+        derivedCoexistence.derivedPrecedences[0] !==
+          derivedAC ||
+        derivedCoexistence.derivedPrecedences[1] !==
+          derivedBD
+      ) {
+        throw new Error(
+          'FASE 23.32 sustituyó o fusionó las relaciones derivadas durante su coexistencia.'
+        );
+      }
+
+      /*
+       * Las derivadas no deben convertirse en explícitas.
+       */
+      if (
+        firstSourceCoexistence.precedences.length !== 2 ||
+        secondSourceCoexistence.precedences.length !== 2
+      ) {
+        throw new Error(
+          'FASE 23.32 modificó la cardinalidad de alguna coexistencia explícita fuente.'
+        );
+      }
+
+      const derivedInsertedAsExplicit =
+        firstSourceCoexistence.precedences.some(
+          (precedence) =>
+            precedence.precedingDecisionId ===
+              firstDecision.id &&
+            precedence.precededDecisionId ===
+              thirdDecision.id
+        ) ||
+        secondSourceCoexistence.precedences.some(
+          (precedence) =>
+            precedence.precedingDecisionId ===
+              secondDecision.id &&
+            precedence.precededDecisionId ===
+              fourthDecision.id
+        );
+
+      if (derivedInsertedAsExplicit) {
+        throw new Error(
+          'FASE 23.32 materializó indebidamente una relación derivada como precedencia explícita.'
+        );
+      }
+
+      /*
+       * No debe aparecer A -> D.
+       *
+       * Su presencia significaría que una derivación ya
+       * producida volvió a participar en otra inferencia.
+       */
+      const propagatedAD =
+        derivedCoexistence.derivedPrecedences.some(
+          (precedence) =>
+            precedence.precedingDecisionId ===
+              firstDecision.id &&
+            precedence.precededDecisionId ===
+              fourthDecision.id
+        );
+
+      if (propagatedAD) {
+        throw new Error(
+          'FASE 23.32 propagó indebidamente la transitividad y produjo A-D.'
+        );
+      }
+
+      /*
+       * La coexistencia no debe fabricar atribución causal
+       * global ni conceptos propios de fases posteriores.
+       */
+      if (
+        'knowledgeId' in derivedCoexistence ||
+        'sourcePatternId' in derivedCoexistence ||
+        'memoryIds' in derivedCoexistence ||
+        'occurrences' in derivedCoexistence ||
+        'closure' in derivedCoexistence ||
+        'transitiveClosure' in derivedCoexistence ||
+        'partialOrder' in derivedCoexistence ||
+        'orderedDecisionIds' in derivedCoexistence ||
+        'sortedDecisionIds' in derivedCoexistence ||
+        'order' in derivedCoexistence ||
+        'rank' in derivedCoexistence ||
+        'ranking' in derivedCoexistence ||
+        'position' in derivedCoexistence ||
+        'score' in derivedCoexistence ||
+        'weight' in derivedCoexistence ||
+        'confidence' in derivedCoexistence ||
+        'priority' in derivedCoexistence ||
+        'winner' in derivedCoexistence ||
+        'loser' in derivedCoexistence ||
+        'selected' in derivedCoexistence ||
+        'selection' in derivedCoexistence ||
+        'executed' in derivedCoexistence ||
+        'execution' in derivedCoexistence
+      ) {
+        throw new Error(
+          'FASE 23.32 detectó atribución global, cierre transitivo, orden parcial, ranking, ponderación, selección o ejecución.'
+        );
+      }
+
+      /*
+       * Ninguna operación debe modificar las precedencias
+       * explícitas fuente.
+       */
+      if (
+        JSON.stringify(
+          firstSourceCoexistence.precedences
+        ) !==
+          JSON.stringify([
+            precedenceAB,
+            precedenceBC,
+          ]) ||
+        JSON.stringify(
+          secondSourceCoexistence.precedences
+        ) !==
+          JSON.stringify([
+            precedenceBC,
+            precedenceCD,
+          ])
+      ) {
+        throw new Error(
+          'FASE 23.32 modificó alguna precedencia explícita fuente.'
+        );
+      }
+
+      /*
+       * Las recomendaciones y decisiones productivas deben
+       * permanecer completamente intactas.
+       */
+      const recommendationsAfterCoexistence =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterCoexistence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterCoexistence
+        );
+
+      if (
+        JSON.stringify(recommendationsAfterCoexistence) !==
+        JSON.stringify(recommendationsBeforeCoexistence)
+      ) {
+        throw new Error(
+          'FASE 23.32 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterCoexistence) !==
+        JSON.stringify(decisionsBeforeCoexistence)
+      ) {
+        throw new Error(
+          'FASE 23.32 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      const firstDecisionAfter =
+        decisionsAfterCoexistence.find(
+          (decision) =>
+            decision.id === firstDecision.id
+        );
+
+      const secondDecisionAfter =
+        decisionsAfterCoexistence.find(
+          (decision) =>
+            decision.id === secondDecision.id
+        );
+
+      const thirdDecisionAfter =
+        decisionsAfterCoexistence.find(
+          (decision) =>
+            decision.id === thirdDecision.id
+        );
+
+      const fourthDecisionAfter =
+        decisionsAfterCoexistence.find(
+          (decision) =>
+            decision.id === fourthDecision.id
+        );
+
+      if (
+        !firstDecisionAfter ||
+        !secondDecisionAfter ||
+        !thirdDecisionAfter ||
+        !fourthDecisionAfter
+      ) {
+        throw new Error(
+          'FASE 23.32 perdió alguna alternativa productiva después del experimento.'
+        );
+      }
+
+      if (
+        JSON.stringify(firstDecisionAfter) !==
+          firstDecisionSnapshot ||
+        JSON.stringify(secondDecisionAfter) !==
+          secondDecisionSnapshot ||
+        JSON.stringify(thirdDecisionAfter) !==
+          thirdDecisionSnapshot ||
+        JSON.stringify(fourthDecisionAfter) !==
+          fourthDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.32 alteró indirectamente alguna alternativa decisional productiva.'
+        );
+      }
+
+      addLog(
+        `FASE 23.32 OK: coexistieron dos relaciones transitivas derivadas independientes, ${firstDecision.id} -> ${thirdDecision.id} mediante ${knowledgeAB.id} + ${knowledgeBC.id} y ${secondDecision.id} -> ${fourthDecision.id} mediante ${knowledgeBC.id} + ${knowledgeCD.id}; ambas conservaron identidad, dirección, intermediateDecisionId y genealogía causal, compartieron legítimamente la precedencia explícita ${secondDecision.id} -> ${thirdDecision.id} mediante ${knowledgeBC.id}, no se fusionaron, no se convirtieron en precedencias explícitas, no produjeron ${firstDecision.id} -> ${fourthDecision.id}, no realimentaron la transitividad y no introdujeron propagación transitiva, cierre transitivo, orden parcial, reordenamiento, rank, score, ponderación, modificación de confidence o priority, selección ni ejecución, permaneciendo intactas ${recommendationsAfterCoexistence.length} recomendaciones y ${decisionsAfterCoexistence.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en coexistencia plural de relaciones transitivas derivadas 23.32: ${error.message}`
+          : 'Error inesperado en coexistencia plural de relaciones transitivas derivadas 23.32.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -13335,6 +14588,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-orange-950 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Consistencia Explícita-Derivada 23.31
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeControlledDerivedPrecedenceCoexistence}
+          disabled={loading}
+          className="rounded-xl bg-amber-950 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Coexistencia Derivadas 23.32
         </button>
 
         <button
