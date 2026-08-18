@@ -17638,6 +17638,952 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeControlledDerivedPrecedenceGenealogicalOverlap() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeGenealogicalOverlap =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeGenealogicalOverlap =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeGenealogicalOverlap
+        );
+
+      /*
+       * FASE 23.36 — Solapamiento genealógico contextual
+       * controlado de relaciones transitivas derivadas
+       * convergentes por conocimiento operativo.
+       *
+       * FASE 23.35 ya estableció la frontera:
+       *
+       * convergencia
+       *   -> diversidad genealógica.
+       *
+       * FASE 23.36 NO vuelve a calcular:
+       *
+       * - preferencia contextual;
+       * - precedencia contextual explícita;
+       * - coexistencia;
+       * - transitividad;
+       * - convergencia;
+       * - diversidad genealógica.
+       *
+       * Recibe exclusivamente una diversidad genealógica
+       * previamente evaluada y determina si las dos
+       * genealogías distintas:
+       *
+       * - comparten al menos un knowledgeId;
+       * - no comparten ningún knowledgeId;
+       * - no son evaluables porque no existe previamente
+       *   diversidad genealógica válida.
+       *
+       * IMPORTANTE:
+       *
+       * ausencia de solapamiento NO significa:
+       *
+       * - independencia causal;
+       * - independencia de evidencia;
+       * - evidencia adicional;
+       * - soporte independiente;
+       * - soporte acumulado;
+       * - supportCount;
+       * - refuerzo;
+       * - strength;
+       * - weight;
+       * - score;
+       * - mayor confidence;
+       * - mayor priority.
+       *
+       * Tampoco se materializa la intersección como una
+       * nueva genealogía, knowledgeId agregado o relación.
+       */
+
+      const firstDecision =
+        decisionsBeforeGenealogicalOverlap.find(
+          (decision) =>
+            decision.id === 'decision-review-movements'
+        );
+
+      const secondDecision =
+        decisionsBeforeGenealogicalOverlap.find(
+          (decision) =>
+            decision.id === 'decision-maintain-monitoring'
+        );
+
+      const thirdDecision =
+        decisionsBeforeGenealogicalOverlap.find(
+          (decision) =>
+            decision.id === 'decision-prioritize-high-value'
+        );
+
+      const fourthDecision =
+        decisionsBeforeGenealogicalOverlap.find(
+          (decision) =>
+            decision.id ===
+            'recommendation-prioritize-high-score-actions'
+        );
+
+      if (!firstDecision) {
+        throw new Error(
+          'FASE 23.36 no encontró decision-review-movements como alternativa A.'
+        );
+      }
+
+      if (!secondDecision) {
+        throw new Error(
+          'FASE 23.36 no encontró decision-maintain-monitoring como alternativa B.'
+        );
+      }
+
+      if (!thirdDecision) {
+        throw new Error(
+          'FASE 23.36 no encontró decision-prioritize-high-value como alternativa C.'
+        );
+      }
+
+      if (!fourthDecision) {
+        throw new Error(
+          'FASE 23.36 no encontró recommendation-prioritize-high-score-actions como alternativa D.'
+        );
+      }
+
+      const controlledDecisionIds = [
+        firstDecision.id,
+        secondDecision.id,
+        thirdDecision.id,
+        fourthDecision.id,
+      ];
+
+      if (new Set(controlledDecisionIds).size !== 4) {
+        throw new Error(
+          'FASE 23.36 esperaba cuatro alternativas decisionales distintas.'
+        );
+      }
+
+      const recommendationsSnapshot =
+        JSON.stringify(
+          recommendationsBeforeGenealogicalOverlap
+        );
+
+      const decisionsSnapshot =
+        JSON.stringify(
+          decisionsBeforeGenealogicalOverlap
+        );
+
+      const firstDecisionSnapshot =
+        JSON.stringify(firstDecision);
+
+      const secondDecisionSnapshot =
+        JSON.stringify(secondDecision);
+
+      const thirdDecisionSnapshot =
+        JSON.stringify(thirdDecision);
+
+      const fourthDecisionSnapshot =
+        JSON.stringify(fourthDecision);
+
+      /*
+       * Generamos cuatro conocimientos controlados.
+       *
+       * El conocimiento K1 será reutilizado deliberadamente
+       * por dos genealogías distintas en el escenario de
+       * solapamiento:
+       *
+       * G1 = K1 + K2
+       * G2 = K1 + K3
+       *
+       * El segundo escenario utilizará:
+       *
+       * G1 = K1 + K2
+       * G2 = K3 + K4
+       *
+       * para demostrar diversidad sin solapamiento.
+       */
+      const controlledPatterns = [
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-genealogical-overlap-k1',
+          title:
+            'Patrón controlado de solapamiento genealógico K1',
+          description:
+            'Patrón controlado que proporciona el conocimiento K1 compartido entre genealogías distintas sin convertirlo en evidencia acumulada o refuerzo.',
+          score: 95,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-genealogical-overlap-k1',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-genealogical-overlap-k1-1',
+              'memory-controlled-genealogical-overlap-k1-2',
+              'memory-controlled-genealogical-overlap-k1-3',
+              'memory-controlled-genealogical-overlap-k1-4',
+            ],
+          },
+        },
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-genealogical-overlap-k2',
+          title:
+            'Patrón controlado de solapamiento genealógico K2',
+          description:
+            'Patrón controlado que proporciona el conocimiento K2 de la primera genealogía.',
+          score: 94,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-genealogical-overlap-k2',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-genealogical-overlap-k2-1',
+              'memory-controlled-genealogical-overlap-k2-2',
+              'memory-controlled-genealogical-overlap-k2-3',
+              'memory-controlled-genealogical-overlap-k2-4',
+            ],
+          },
+        },
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-genealogical-overlap-k3',
+          title:
+            'Patrón controlado de solapamiento genealógico K3',
+          description:
+            'Patrón controlado que proporciona el conocimiento K3 de la segunda genealogía.',
+          score: 93,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-genealogical-overlap-k3',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-genealogical-overlap-k3-1',
+              'memory-controlled-genealogical-overlap-k3-2',
+              'memory-controlled-genealogical-overlap-k3-3',
+              'memory-controlled-genealogical-overlap-k3-4',
+            ],
+          },
+        },
+        {
+          id: 'recommendation-deviation-pattern-reubicacion-controlled-genealogical-overlap-k4',
+          title:
+            'Patrón controlado de solapamiento genealógico K4',
+          description:
+            'Patrón controlado que proporciona el conocimiento K4 para el escenario de ausencia de solapamiento.',
+          score: 92,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence' as const,
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-genealogical-overlap-k4',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-genealogical-overlap-k4-1',
+              'memory-controlled-genealogical-overlap-k4-2',
+              'memory-controlled-genealogical-overlap-k4-3',
+              'memory-controlled-genealogical-overlap-k4-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 4) {
+        throw new Error(
+          `FASE 23.36 esperaba exactamente 4 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledgeK1 = controlledKnowledge[0];
+      const knowledgeK2 = controlledKnowledge[1];
+      const knowledgeK3 = controlledKnowledge[2];
+      const knowledgeK4 = controlledKnowledge[3];
+
+      if (
+        !knowledgeK1 ||
+        !knowledgeK2 ||
+        !knowledgeK3 ||
+        !knowledgeK4
+      ) {
+        throw new Error(
+          'FASE 23.36 no pudo resolver los cuatro conocimientos controlados.'
+        );
+      }
+
+      const controlledKnowledgeIds = [
+        knowledgeK1.id,
+        knowledgeK2.id,
+        knowledgeK3.id,
+        knowledgeK4.id,
+      ];
+
+      if (new Set(controlledKnowledgeIds).size !== 4) {
+        throw new Error(
+          'FASE 23.36 esperaba cuatro knowledgeId distintos antes de construir los escenarios genealógicos.'
+        );
+      }
+
+      type ControlledGenealogicalSourcePrecedence = {
+        precedingDecisionId: string;
+        precededDecisionId: string;
+        knowledgeId: string;
+      };
+
+      type ControlledGenealogicalDerivedPrecedenceSnapshot = {
+        precedingDecisionId: string;
+        intermediateDecisionId: string;
+        precededDecisionId: string;
+        sourcePrecedences: [
+          ControlledGenealogicalSourcePrecedence,
+          ControlledGenealogicalSourcePrecedence,
+        ];
+      };
+
+      /*
+       * Contrato de entrada heredado conceptualmente de
+       * FASE 23.35.
+       *
+       * 23.36 no obtiene conocimiento directamente para
+       * decidir diversidad: consume este resultado ya
+       * clasificado.
+       */
+      type ControlledDerivedPrecedenceGenealogicalDiversity = {
+        decisionIds: [string, string, string, string];
+        relation:
+          | 'no_contextual_derived_precedence_genealogical_diversity'
+          | 'contextual_derived_precedence_genealogical_coincidence'
+          | 'contextual_derived_precedence_genealogical_diversity';
+        genealogicallyDistinct: boolean | null;
+        firstDerivedPrecedence:
+          | ControlledGenealogicalDerivedPrecedenceSnapshot
+          | null;
+        secondDerivedPrecedence:
+          | ControlledGenealogicalDerivedPrecedenceSnapshot
+          | null;
+        rationale: string;
+      };
+
+      type ControlledDerivedPrecedenceGenealogicalOverlap = {
+        decisionIds: [string, string, string, string];
+        relation:
+          | 'no_contextual_derived_precedence_genealogical_overlap'
+          | 'contextual_derived_precedence_genealogical_overlap'
+          | 'contextual_derived_precedence_genealogical_non_overlap';
+        genealogicallyOverlapping: boolean | null;
+        firstDerivedPrecedence:
+          | ControlledGenealogicalDerivedPrecedenceSnapshot
+          | null;
+        secondDerivedPrecedence:
+          | ControlledGenealogicalDerivedPrecedenceSnapshot
+          | null;
+        rationale: string;
+      };
+
+      /*
+       * NUEVO CONSUMIDOR DE FASE 23.36.
+       *
+       * Sólo acepta como evaluable una diversidad
+       * genealógica previamente reconocida por 23.35.
+       *
+       * La intersección se observa únicamente mediante
+       * knowledgeId presentes en sourcePrecedences.
+       *
+       * No devuelve:
+       *
+       * - sharedKnowledgeIds;
+       * - overlapCount;
+       * - overlapRatio;
+       * - causalIndependence;
+       * - evidence;
+       * - support;
+       * - strength.
+       */
+      const evaluateControlledDerivedPrecedenceGenealogicalOverlap =
+        (
+          diversity:
+            ControlledDerivedPrecedenceGenealogicalDiversity
+        ): ControlledDerivedPrecedenceGenealogicalOverlap => {
+          const diversityIsEvaluable =
+            diversity.relation ===
+              'contextual_derived_precedence_genealogical_diversity' &&
+            diversity.genealogicallyDistinct === true &&
+            diversity.firstDerivedPrecedence !== null &&
+            diversity.secondDerivedPrecedence !== null;
+
+          if (!diversityIsEvaluable) {
+            return {
+              decisionIds: diversity.decisionIds,
+              relation:
+                'no_contextual_derived_precedence_genealogical_overlap',
+              genealogicallyOverlapping: null,
+              firstDerivedPrecedence: null,
+              secondDerivedPrecedence: null,
+              rationale:
+                'El solapamiento genealógico requiere diversidad genealógica contextual válida previamente reconocida.',
+            };
+          }
+
+          const firstDerivedPrecedence =
+            diversity.firstDerivedPrecedence!;
+
+          const secondDerivedPrecedence =
+            diversity.secondDerivedPrecedence!;
+
+          const firstKnowledgeIds = new Set(
+            firstDerivedPrecedence.sourcePrecedences.map(
+              (sourcePrecedence) =>
+                sourcePrecedence.knowledgeId
+            )
+          );
+
+          const hasGenealogicalOverlap =
+            secondDerivedPrecedence.sourcePrecedences.some(
+              (sourcePrecedence) =>
+                firstKnowledgeIds.has(
+                  sourcePrecedence.knowledgeId
+                )
+            );
+
+          return {
+            decisionIds: diversity.decisionIds,
+            relation: hasGenealogicalOverlap
+              ? 'contextual_derived_precedence_genealogical_overlap'
+              : 'contextual_derived_precedence_genealogical_non_overlap',
+            genealogicallyOverlapping:
+              hasGenealogicalOverlap,
+            firstDerivedPrecedence,
+            secondDerivedPrecedence,
+            rationale: hasGenealogicalOverlap
+              ? 'Las genealogías previamente reconocidas como distintas comparten al menos un knowledgeId de origen, sin interpretar ese solapamiento como evidencia acumulada, soporte o dependencia causal.'
+              : 'Las genealogías previamente reconocidas como distintas no comparten knowledgeId de origen, sin interpretar esa ausencia de solapamiento como independencia causal o independencia de evidencia.',
+          };
+        };
+
+      /*
+       * ESCENARIO 1 — DIVERSIDAD CON SOLAPAMIENTO.
+       *
+       * R1:
+       * A -> B -> D
+       * G1 = K1 + K2
+       *
+       * R2:
+       * A -> C -> D
+       * G2 = K1 + K3
+       *
+       * Las genealogías son distintas por ruta y
+       * composición, pero comparten K1.
+       */
+      const overlappingDiversity:
+        ControlledDerivedPrecedenceGenealogicalDiversity = {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_genealogical_diversity',
+          genealogicallyDistinct: true,
+          firstDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: secondDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: secondDecision.id,
+                knowledgeId: knowledgeK1.id,
+              },
+              {
+                precedingDecisionId: secondDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: knowledgeK2.id,
+              },
+            ],
+          },
+          secondDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: thirdDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: thirdDecision.id,
+                knowledgeId: knowledgeK1.id,
+              },
+              {
+                precedingDecisionId: thirdDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: knowledgeK3.id,
+              },
+            ],
+          },
+          rationale:
+            'Diversidad genealógica controlada previamente reconocida con K1 compartido entre dos rutas causales distintas.',
+        };
+
+      /*
+       * ESCENARIO 2 — DIVERSIDAD SIN SOLAPAMIENTO.
+       *
+       * G1 = K1 + K2
+       * G2 = K3 + K4
+       */
+      const nonOverlappingDiversity:
+        ControlledDerivedPrecedenceGenealogicalDiversity = {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_genealogical_diversity',
+          genealogicallyDistinct: true,
+          firstDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: secondDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: secondDecision.id,
+                knowledgeId: knowledgeK1.id,
+              },
+              {
+                precedingDecisionId: secondDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: knowledgeK2.id,
+              },
+            ],
+          },
+          secondDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: thirdDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: thirdDecision.id,
+                knowledgeId: knowledgeK3.id,
+              },
+              {
+                precedingDecisionId: thirdDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: knowledgeK4.id,
+              },
+            ],
+          },
+          rationale:
+            'Diversidad genealógica controlada previamente reconocida sin knowledgeId compartidos.',
+        };
+
+      /*
+       * ESCENARIO 3 — NO EVALUABLE.
+       *
+       * La entrada representa coincidencia genealógica.
+       * Aunque dos genealogías coincidentes tendrían
+       * matemáticamente intersección total, 23.36 no debe
+       * clasificarlas porque su precondición estricta es
+       * diversidad genealógica válida.
+       */
+      const nonEvaluableDiversity:
+        ControlledDerivedPrecedenceGenealogicalDiversity = {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_genealogical_coincidence',
+          genealogicallyDistinct: false,
+          firstDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: secondDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: secondDecision.id,
+                knowledgeId: knowledgeK1.id,
+              },
+              {
+                precedingDecisionId: secondDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: knowledgeK2.id,
+              },
+            ],
+          },
+          secondDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: secondDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: secondDecision.id,
+                knowledgeId: knowledgeK1.id,
+              },
+              {
+                precedingDecisionId: secondDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: knowledgeK2.id,
+              },
+            ],
+          },
+          rationale:
+            'Coincidencia genealógica controlada utilizada para demostrar la frontera de no evaluabilidad.',
+        };
+
+      const overlappingDiversitySnapshot =
+        JSON.stringify(overlappingDiversity);
+
+      const nonOverlappingDiversitySnapshot =
+        JSON.stringify(nonOverlappingDiversity);
+
+      const nonEvaluableDiversitySnapshot =
+        JSON.stringify(nonEvaluableDiversity);
+
+      /*
+       * Confirmamos primero que el escenario positivo
+       * contiene exactamente un knowledgeId compartido.
+       *
+       * La intersección sólo se usa como aserción interna;
+       * no forma parte del resultado de 23.36.
+       */
+      const overlappingFirstKnowledgeIds = new Set(
+        overlappingDiversity.firstDerivedPrecedence!
+          .sourcePrecedences.map(
+            (sourcePrecedence) =>
+              sourcePrecedence.knowledgeId
+          )
+      );
+
+      const internallySharedKnowledgeIds =
+        overlappingDiversity.secondDerivedPrecedence!
+          .sourcePrecedences
+          .map(
+            (sourcePrecedence) =>
+              sourcePrecedence.knowledgeId
+          )
+          .filter((knowledgeId) =>
+            overlappingFirstKnowledgeIds.has(knowledgeId)
+          );
+
+      if (
+        internallySharedKnowledgeIds.length !== 1 ||
+        internallySharedKnowledgeIds[0] !== knowledgeK1.id
+      ) {
+        throw new Error(
+          'FASE 23.36 no construyó correctamente el escenario controlado G1 = K1 + K2 y G2 = K1 + K3.'
+        );
+      }
+
+      const overlapEvaluation =
+        evaluateControlledDerivedPrecedenceGenealogicalOverlap(
+          overlappingDiversity
+        );
+
+      const nonOverlapEvaluation =
+        evaluateControlledDerivedPrecedenceGenealogicalOverlap(
+          nonOverlappingDiversity
+        );
+
+      const nonEvaluableEvaluation =
+        evaluateControlledDerivedPrecedenceGenealogicalOverlap(
+          nonEvaluableDiversity
+        );
+
+      if (
+        overlapEvaluation.relation !==
+          'contextual_derived_precedence_genealogical_overlap' ||
+        overlapEvaluation.genealogicallyOverlapping !== true ||
+        overlapEvaluation.firstDerivedPrecedence === null ||
+        overlapEvaluation.secondDerivedPrecedence === null
+      ) {
+        throw new Error(
+          'FASE 23.36 no reconoció el solapamiento genealógico esperado entre G1 = K1 + K2 y G2 = K1 + K3.'
+        );
+      }
+
+      if (
+        nonOverlapEvaluation.relation !==
+          'contextual_derived_precedence_genealogical_non_overlap' ||
+        nonOverlapEvaluation.genealogicallyOverlapping !== false ||
+        nonOverlapEvaluation.firstDerivedPrecedence === null ||
+        nonOverlapEvaluation.secondDerivedPrecedence === null
+      ) {
+        throw new Error(
+          'FASE 23.36 no reconoció correctamente la diversidad genealógica sin solapamiento G1 = K1 + K2 y G2 = K3 + K4.'
+        );
+      }
+
+      if (
+        nonEvaluableEvaluation.relation !==
+          'no_contextual_derived_precedence_genealogical_overlap' ||
+        nonEvaluableEvaluation.genealogicallyOverlapping !== null ||
+        nonEvaluableEvaluation.firstDerivedPrecedence !== null ||
+        nonEvaluableEvaluation.secondDerivedPrecedence !== null
+      ) {
+        throw new Error(
+          'FASE 23.36 evaluó indebidamente solapamiento sin diversidad genealógica válida previa.'
+        );
+      }
+
+      /*
+       * El consumidor debe preservar las genealogías
+       * exactamente como fueron recibidas.
+       */
+      if (
+        overlapEvaluation.firstDerivedPrecedence !==
+          overlappingDiversity.firstDerivedPrecedence ||
+        overlapEvaluation.secondDerivedPrecedence !==
+          overlappingDiversity.secondDerivedPrecedence ||
+        nonOverlapEvaluation.firstDerivedPrecedence !==
+          nonOverlappingDiversity.firstDerivedPrecedence ||
+        nonOverlapEvaluation.secondDerivedPrecedence !==
+          nonOverlappingDiversity.secondDerivedPrecedence
+      ) {
+        throw new Error(
+          'FASE 23.36 reconstruyó, fusionó o sustituyó alguna genealogía de entrada.'
+        );
+      }
+
+      if (
+        JSON.stringify(overlappingDiversity) !==
+          overlappingDiversitySnapshot ||
+        JSON.stringify(nonOverlappingDiversity) !==
+          nonOverlappingDiversitySnapshot ||
+        JSON.stringify(nonEvaluableDiversity) !==
+          nonEvaluableDiversitySnapshot
+      ) {
+        throw new Error(
+          'FASE 23.36 modificó alguna diversidad genealógica durante su evaluación.'
+        );
+      }
+
+      /*
+       * 23.36 no puede materializar la intersección ni
+       * introducir semántica de independencia, evidencia,
+       * soporte, refuerzo, fuerza o decisión.
+       */
+      const forbiddenProperties = [
+        'knowledgeId',
+        'sharedKnowledgeId',
+        'sharedKnowledgeIds',
+        'uniqueKnowledgeIds',
+        'mergedKnowledgeIds',
+        'aggregatedKnowledgeId',
+        'genealogyId',
+        'overlapCount',
+        'overlapRatio',
+        'causalIndependence',
+        'independent',
+        'independence',
+        'evidenceId',
+        'evidenceIds',
+        'evidence',
+        'evidenceCount',
+        'independentEvidence',
+        'occurrences',
+        'supportCount',
+        'support',
+        'reinforcement',
+        'strength',
+        'weight',
+        'score',
+        'confidence',
+        'priority',
+        'closure',
+        'transitiveClosure',
+        'partialOrder',
+        'orderedDecisionIds',
+        'sortedDecisionIds',
+        'order',
+        'rank',
+        'ranking',
+        'position',
+        'winner',
+        'loser',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationObjects: Record<
+        string,
+        unknown
+      >[] = [
+        overlapEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+        nonOverlapEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+        nonEvaluableEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 23.36 introdujo indebidamente la propiedad "${detectedForbiddenProperty}" en la clasificación de solapamiento genealógico.`
+        );
+      }
+
+      const forbiddenStructuralProperties = [
+        'derivedPrecedence',
+        'thirdDerivedPrecedence',
+        'mergedDerivedPrecedence',
+        'deduplicatedDerivedPrecedence',
+        'canonicalDerivedPrecedence',
+        'composedDerivedPrecedence',
+        'aggregatedDerivedPrecedence',
+        'combinedDerivedPrecedence',
+        'mergedGenealogy',
+        'canonicalGenealogy',
+      ];
+
+      const detectedForbiddenStructuralProperty =
+        forbiddenStructuralProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenStructuralProperty) {
+        throw new Error(
+          `FASE 23.36 fabricó indebidamente la estructura "${detectedForbiddenStructuralProperty}".`
+        );
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * Ninguna recomendación ni decisión real puede
+       * cambiar por observar el solapamiento genealógico.
+       */
+      const recommendationsAfterGenealogicalOverlap =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterGenealogicalOverlap =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterGenealogicalOverlap
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterGenealogicalOverlap
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.36 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterGenealogicalOverlap
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.36 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      const firstDecisionAfter =
+        decisionsAfterGenealogicalOverlap.find(
+          (decision) =>
+            decision.id === firstDecision.id
+        );
+
+      const secondDecisionAfter =
+        decisionsAfterGenealogicalOverlap.find(
+          (decision) =>
+            decision.id === secondDecision.id
+        );
+
+      const thirdDecisionAfter =
+        decisionsAfterGenealogicalOverlap.find(
+          (decision) =>
+            decision.id === thirdDecision.id
+        );
+
+      const fourthDecisionAfter =
+        decisionsAfterGenealogicalOverlap.find(
+          (decision) =>
+            decision.id === fourthDecision.id
+        );
+
+      if (
+        !firstDecisionAfter ||
+        !secondDecisionAfter ||
+        !thirdDecisionAfter ||
+        !fourthDecisionAfter
+      ) {
+        throw new Error(
+          'FASE 23.36 perdió alguna alternativa productiva después del experimento.'
+        );
+      }
+
+      if (
+        JSON.stringify(firstDecisionAfter) !==
+          firstDecisionSnapshot ||
+        JSON.stringify(secondDecisionAfter) !==
+          secondDecisionSnapshot ||
+        JSON.stringify(thirdDecisionAfter) !==
+          thirdDecisionSnapshot ||
+        JSON.stringify(fourthDecisionAfter) !==
+          fourthDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.36 alteró indirectamente alguna alternativa decisional productiva.'
+        );
+      }
+
+      addLog(
+        `FASE 23.36 OK: sobre diversidades genealógicas contextuales previamente reconocidas para ${firstDecision.id} -> ${fourthDecision.id}, se distinguieron controladamente un solapamiento genealógico G1 = K1 + K2 / G2 = K1 + K3 y una ausencia de solapamiento G1 = K1 + K2 / G2 = K3 + K4; el control de coincidencia genealógica quedó correctamente no evaluable. La ausencia de knowledgeId compartidos no fue interpretada como independencia causal ni independencia de evidencia, y el solapamiento no produjo evidence, supportCount, refuerzo, strength, weight, score, modificación de confidence o priority, fusión, deduplicación, genealogía agregada, tercera relación derivada, composición derivada-derivada, composición derivada-explícita, propagación transitiva, cierre transitivo, orden parcial, reordenamiento, ranking, selección ni ejecución, permaneciendo intactas ${recommendationsAfterGenealogicalOverlap.length} recomendaciones y ${decisionsAfterGenealogicalOverlap.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en solapamiento genealógico contextual controlado de relaciones transitivas derivadas convergentes 23.36: ${error.message}`
+          : 'Error inesperado en solapamiento genealógico contextual controlado de relaciones transitivas derivadas convergentes 23.36.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -18379,6 +19325,14 @@ function IntegrationLabPage() {
           className="px-4 py-2 bg-slate-800 text-white rounded hover:bg-slate-700 disabled:opacity-50"
         >
           Test Diversidad Genealógica 23.35
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeControlledDerivedPrecedenceGenealogicalOverlap}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Solapamiento Genealógico 23.36
         </button>
 
         <button
