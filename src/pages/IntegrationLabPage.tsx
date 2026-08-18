@@ -16846,6 +16846,798 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeControlledDerivedPrecedenceGenealogicalDiversity() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeGenealogicalDiversity =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeGenealogicalDiversity =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeGenealogicalDiversity
+        );
+
+      /*
+      * FASE 23.35 — Diversidad genealógica contextual
+      * controlada de relaciones transitivas derivadas
+      * convergentes por conocimiento operativo.
+      *
+      * FASE 23.34 ya estableció la frontera:
+      *
+      * R1 = A -> D
+      * R2 = A -> D
+      *
+      * pueden ser reconocidas como convergentes cuando
+      * conservan los mismos extremos y dirección.
+      *
+      * FASE 23.35 NO vuelve a calcular:
+      *
+      * - preferencia contextual;
+      * - precedencia contextual explícita;
+      * - coexistencia;
+      * - transitividad;
+      * - convergencia.
+      *
+      * Recibe exclusivamente una convergencia ya evaluada
+      * y clasifica si sus genealogías son:
+      *
+      * - distintas;
+      * - coincidentes;
+      * - no evaluables.
+      *
+      * Diversidad genealógica NO significa:
+      *
+      * - independencia causal;
+      * - independencia de evidencia;
+      * - evidencia adicional;
+      * - soporte acumulado;
+      * - supportCount;
+      * - refuerzo;
+      * - strength;
+      * - weight;
+      * - score;
+      * - mayor confidence;
+      * - mayor priority;
+      * - selección de genealogía;
+      * - fusión;
+      * - deduplicación;
+      * - composición derivada-derivada;
+      * - composición derivada-explícita;
+      * - propagación transitiva;
+      * - cierre transitivo;
+      * - orden parcial;
+      * - reordenamiento;
+      * - ranking;
+      * - selección;
+      * - ejecución.
+      */
+
+      const firstDecision =
+        decisionsBeforeGenealogicalDiversity.find(
+          (decision) =>
+            decision.id === 'decision-review-movements'
+        );
+
+      const secondDecision =
+        decisionsBeforeGenealogicalDiversity.find(
+          (decision) =>
+            decision.id === 'decision-maintain-monitoring'
+        );
+
+      const thirdDecision =
+        decisionsBeforeGenealogicalDiversity.find(
+          (decision) =>
+            decision.id === 'decision-prioritize-high-value'
+        );
+
+      const fourthDecision =
+        decisionsBeforeGenealogicalDiversity.find(
+          (decision) =>
+            decision.id ===
+            'recommendation-prioritize-high-score-actions'
+        );
+
+      if (!firstDecision) {
+        throw new Error(
+          'FASE 23.35 no encontró decision-review-movements como alternativa A.'
+        );
+      }
+
+      if (!secondDecision) {
+        throw new Error(
+          'FASE 23.35 no encontró decision-maintain-monitoring como alternativa B.'
+        );
+      }
+
+      if (!thirdDecision) {
+        throw new Error(
+          'FASE 23.35 no encontró decision-prioritize-high-value como alternativa C.'
+        );
+      }
+
+      if (!fourthDecision) {
+        throw new Error(
+          'FASE 23.35 no encontró recommendation-prioritize-high-score-actions como alternativa D.'
+        );
+      }
+
+      const controlledDecisionIds = [
+        firstDecision.id,
+        secondDecision.id,
+        thirdDecision.id,
+        fourthDecision.id,
+      ];
+
+      if (new Set(controlledDecisionIds).size !== 4) {
+        throw new Error(
+          'FASE 23.35 esperaba cuatro alternativas decisionales distintas.'
+        );
+      }
+
+      const recommendationsSnapshot =
+        JSON.stringify(
+          recommendationsBeforeGenealogicalDiversity
+        );
+
+      const decisionsSnapshot =
+        JSON.stringify(
+          decisionsBeforeGenealogicalDiversity
+        );
+
+      const firstDecisionSnapshot =
+        JSON.stringify(firstDecision);
+
+      const secondDecisionSnapshot =
+        JSON.stringify(secondDecision);
+
+      const thirdDecisionSnapshot =
+        JSON.stringify(thirdDecision);
+
+      const fourthDecisionSnapshot =
+        JSON.stringify(fourthDecision);
+
+      type ControlledGenealogicalSourcePrecedence = {
+        precedingDecisionId: string;
+        precededDecisionId: string;
+        knowledgeId: string;
+      };
+
+      type ControlledGenealogicalDerivedPrecedenceSnapshot = {
+        precedingDecisionId: string;
+        intermediateDecisionId: string;
+        precededDecisionId: string;
+        sourcePrecedences: [
+          ControlledGenealogicalSourcePrecedence,
+          ControlledGenealogicalSourcePrecedence,
+        ];
+      };
+
+      type ControlledGenealogicalDerivedPrecedenceConvergence = {
+        decisionIds: [string, string, string, string];
+        relation:
+          | 'no_contextual_derived_precedence_convergence'
+          | 'contextual_derived_precedence_convergence';
+        convergent: boolean;
+        firstDerivedPrecedence:
+          | ControlledGenealogicalDerivedPrecedenceSnapshot
+          | null;
+        secondDerivedPrecedence:
+          | ControlledGenealogicalDerivedPrecedenceSnapshot
+          | null;
+        rationale: string;
+      };
+
+      type ControlledDerivedPrecedenceGenealogicalDiversity = {
+        decisionIds: [string, string, string, string];
+        relation:
+          | 'no_contextual_derived_precedence_genealogical_diversity'
+          | 'contextual_derived_precedence_genealogical_coincidence'
+          | 'contextual_derived_precedence_genealogical_diversity';
+        genealogicallyDistinct: boolean | null;
+        firstDerivedPrecedence:
+          | ControlledGenealogicalDerivedPrecedenceSnapshot
+          | null;
+        secondDerivedPrecedence:
+          | ControlledGenealogicalDerivedPrecedenceSnapshot
+          | null;
+        rationale: string;
+      };
+
+      /*
+      * NUEVO CONSUMIDOR DE FASE 23.35.
+      *
+      * Consume exclusivamente el resultado ya evaluado
+      * de convergencia de FASE 23.34.
+      *
+      * No reconstruye convergencia ni deriva relaciones.
+      * Únicamente observa la genealogía conservada por
+      * las dos relaciones convergentes.
+      */
+      const evaluateControlledDerivedPrecedenceGenealogicalDiversity =
+        (
+          convergence:
+            ControlledGenealogicalDerivedPrecedenceConvergence
+        ): ControlledDerivedPrecedenceGenealogicalDiversity => {
+          const convergenceIsEvaluable =
+            convergence.relation ===
+              'contextual_derived_precedence_convergence' &&
+            convergence.convergent === true &&
+            convergence.firstDerivedPrecedence !== null &&
+            convergence.secondDerivedPrecedence !== null;
+
+          if (!convergenceIsEvaluable) {
+            return {
+              decisionIds: convergence.decisionIds,
+              relation:
+                'no_contextual_derived_precedence_genealogical_diversity',
+              genealogicallyDistinct: null,
+              firstDerivedPrecedence: null,
+              secondDerivedPrecedence: null,
+              rationale:
+                'La diversidad genealógica requiere una convergencia contextual válida previamente reconocida.',
+            };
+          }
+
+          const firstDerivedPrecedence =
+            convergence.firstDerivedPrecedence!;
+
+          const secondDerivedPrecedence =
+            convergence.secondDerivedPrecedence!;
+
+          const sameSourcePrecedence = (
+            first:
+              ControlledGenealogicalSourcePrecedence,
+            second:
+              ControlledGenealogicalSourcePrecedence
+          ): boolean =>
+            first.precedingDecisionId ===
+              second.precedingDecisionId &&
+            first.precededDecisionId ===
+              second.precededDecisionId &&
+            first.knowledgeId === second.knowledgeId;
+
+          const sameIntermediateDecision =
+            firstDerivedPrecedence.intermediateDecisionId ===
+            secondDerivedPrecedence.intermediateDecisionId;
+
+          const sameFirstSource =
+            sameSourcePrecedence(
+              firstDerivedPrecedence.sourcePrecedences[0],
+              secondDerivedPrecedence.sourcePrecedences[0]
+            );
+
+          const sameSecondSource =
+            sameSourcePrecedence(
+              firstDerivedPrecedence.sourcePrecedences[1],
+              secondDerivedPrecedence.sourcePrecedences[1]
+            );
+
+          const sameGenealogy =
+            sameIntermediateDecision &&
+            sameFirstSource &&
+            sameSecondSource;
+
+          if (sameGenealogy) {
+            return {
+              decisionIds: convergence.decisionIds,
+              relation:
+                'contextual_derived_precedence_genealogical_coincidence',
+              genealogicallyDistinct: false,
+              firstDerivedPrecedence,
+              secondDerivedPrecedence,
+              rationale:
+                'Las relaciones transitivas derivadas convergentes conservan una genealogía causal coincidente; la coincidencia no implica fusión, deduplicación ni refuerzo.',
+            };
+          }
+
+          return {
+            decisionIds: convergence.decisionIds,
+            relation:
+              'contextual_derived_precedence_genealogical_diversity',
+            genealogicallyDistinct: true,
+            firstDerivedPrecedence,
+            secondDerivedPrecedence,
+            rationale:
+              'Las relaciones transitivas derivadas convergentes conservan genealogías causalmente distintas; la diversidad no implica independencia causal, evidencia adicional ni refuerzo.',
+          };
+        };
+
+      /*
+      * Escenario positivo.
+      *
+      * R1:
+      *
+      * A -> B [K1]
+      * B -> D [K2]
+      * => A -> D vía B
+      *
+      * R2:
+      *
+      * A -> C [K3]
+      * C -> D [K4]
+      * => A -> D vía C
+      *
+      * Ambas relaciones ya llegan clasificadas como
+      * convergentes por la frontera de FASE 23.34.
+      */
+      const diverseConvergence:
+        ControlledGenealogicalDerivedPrecedenceConvergence =
+        {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_convergence',
+          convergent: true,
+          firstDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: secondDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: secondDecision.id,
+                knowledgeId:
+                  'operational-knowledge-controlled-derived-convergence-ab',
+              },
+              {
+                precedingDecisionId: secondDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId:
+                  'operational-knowledge-controlled-derived-convergence-bd',
+              },
+            ],
+          },
+          secondDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: thirdDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: thirdDecision.id,
+                knowledgeId:
+                  'operational-knowledge-controlled-derived-convergence-ac',
+              },
+              {
+                precedingDecisionId: thirdDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId:
+                  'operational-knowledge-controlled-derived-convergence-cd',
+              },
+            ],
+          },
+          rationale:
+            'Convergencia contextual controlada previamente reconocida entre dos relaciones A -> D.',
+        };
+
+      /*
+      * Escenario negativo de diversidad.
+      *
+      * Dos objetos distintos representan:
+      *
+      * A -> B [K1]
+      * B -> D [K2]
+      * => A -> D vía B
+      *
+      * y conservan exactamente la misma genealogía.
+      *
+      * La convergencia sigue siendo válida, pero no existe
+      * diversidad genealógica.
+      */
+      const coincidentConvergence:
+        ControlledGenealogicalDerivedPrecedenceConvergence =
+        {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_convergence',
+          convergent: true,
+          firstDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: secondDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: secondDecision.id,
+                knowledgeId:
+                  'operational-knowledge-controlled-derived-convergence-ab',
+              },
+              {
+                precedingDecisionId: secondDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId:
+                  'operational-knowledge-controlled-derived-convergence-bd',
+              },
+            ],
+          },
+          secondDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: secondDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: secondDecision.id,
+                knowledgeId:
+                  'operational-knowledge-controlled-derived-convergence-ab',
+              },
+              {
+                precedingDecisionId: secondDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId:
+                  'operational-knowledge-controlled-derived-convergence-bd',
+              },
+            ],
+          },
+          rationale:
+            'Convergencia contextual controlada con genealogías coincidentes.',
+        };
+
+      /*
+      * Escenario no evaluable.
+      *
+      * 23.35 no debe intentar clasificar genealogías si
+      * FASE 23.34 no reconoció primero una convergencia.
+      */
+      const nonEvaluableConvergence:
+        ControlledGenealogicalDerivedPrecedenceConvergence =
+        {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'no_contextual_derived_precedence_convergence',
+          convergent: false,
+          firstDerivedPrecedence: null,
+          secondDerivedPrecedence: null,
+          rationale:
+            'Control negativo sin convergencia contextual.',
+        };
+
+      const diverseConvergenceSnapshot =
+        JSON.stringify(diverseConvergence);
+
+      const coincidentConvergenceSnapshot =
+        JSON.stringify(coincidentConvergence);
+
+      const nonEvaluableConvergenceSnapshot =
+        JSON.stringify(nonEvaluableConvergence);
+
+      const diversityEvaluation =
+        evaluateControlledDerivedPrecedenceGenealogicalDiversity(
+          diverseConvergence
+        );
+
+      const coincidenceEvaluation =
+        evaluateControlledDerivedPrecedenceGenealogicalDiversity(
+          coincidentConvergence
+        );
+
+      const nonEvaluableEvaluation =
+        evaluateControlledDerivedPrecedenceGenealogicalDiversity(
+          nonEvaluableConvergence
+        );
+
+      if (
+        diversityEvaluation.relation !==
+          'contextual_derived_precedence_genealogical_diversity' ||
+        diversityEvaluation.genealogicallyDistinct !== true ||
+        !diversityEvaluation.firstDerivedPrecedence ||
+        !diversityEvaluation.secondDerivedPrecedence
+      ) {
+        throw new Error(
+          'FASE 23.35 no reconoció la diversidad genealógica entre las dos derivaciones convergentes A-D.'
+        );
+      }
+
+      if (
+        coincidenceEvaluation.relation !==
+          'contextual_derived_precedence_genealogical_coincidence' ||
+        coincidenceEvaluation.genealogicallyDistinct !== false ||
+        !coincidenceEvaluation.firstDerivedPrecedence ||
+        !coincidenceEvaluation.secondDerivedPrecedence
+      ) {
+        throw new Error(
+          'FASE 23.35 no reconoció correctamente la coincidencia genealógica entre dos derivaciones convergentes.'
+        );
+      }
+
+      if (
+        nonEvaluableEvaluation.relation !==
+          'no_contextual_derived_precedence_genealogical_diversity' ||
+        nonEvaluableEvaluation.genealogicallyDistinct !== null ||
+        nonEvaluableEvaluation.firstDerivedPrecedence !== null ||
+        nonEvaluableEvaluation.secondDerivedPrecedence !== null
+      ) {
+        throw new Error(
+          'FASE 23.35 intentó clasificar diversidad genealógica sin una convergencia contextual válida.'
+        );
+      }
+
+      const diverseFirst =
+        diversityEvaluation.firstDerivedPrecedence;
+
+      const diverseSecond =
+        diversityEvaluation.secondDerivedPrecedence;
+
+      if (
+        diverseFirst.intermediateDecisionId !==
+          secondDecision.id ||
+        diverseSecond.intermediateDecisionId !==
+          thirdDecision.id ||
+        diverseFirst.intermediateDecisionId ===
+          diverseSecond.intermediateDecisionId
+      ) {
+        throw new Error(
+          'FASE 23.35 perdió la diferencia de intermediateDecisionId entre las genealogías diversas.'
+        );
+      }
+
+      const diverseKnowledgeIds = [
+        diverseFirst.sourcePrecedences[0].knowledgeId,
+        diverseFirst.sourcePrecedences[1].knowledgeId,
+        diverseSecond.sourcePrecedences[0].knowledgeId,
+        diverseSecond.sourcePrecedences[1].knowledgeId,
+      ];
+
+      if (new Set(diverseKnowledgeIds).size !== 4) {
+        throw new Error(
+          'FASE 23.35 perdió la diversidad de los cuatro knowledgeId causales del escenario positivo.'
+        );
+      }
+
+      const coincidentFirst =
+        coincidenceEvaluation.firstDerivedPrecedence;
+
+      const coincidentSecond =
+        coincidenceEvaluation.secondDerivedPrecedence;
+
+      if (
+        coincidentFirst.intermediateDecisionId !==
+          coincidentSecond.intermediateDecisionId ||
+        JSON.stringify(
+          coincidentFirst.sourcePrecedences
+        ) !==
+          JSON.stringify(
+            coincidentSecond.sourcePrecedences
+          )
+      ) {
+        throw new Error(
+          'FASE 23.35 clasificó como coincidencia dos genealogías que no eran estructuralmente coincidentes.'
+        );
+      }
+
+      /*
+      * El consumidor debe ser puramente observacional.
+      * Ninguna de sus entradas puede ser modificada.
+      */
+      if (
+        JSON.stringify(diverseConvergence) !==
+          diverseConvergenceSnapshot ||
+        JSON.stringify(coincidentConvergence) !==
+          coincidentConvergenceSnapshot ||
+        JSON.stringify(nonEvaluableConvergence) !==
+          nonEvaluableConvergenceSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.35 modificó alguna convergencia o genealogía durante su evaluación.'
+        );
+      }
+
+      /*
+      * La clasificación no puede incorporar semántica de
+      * evidencia, independencia, agregación, fuerza,
+      * ponderación ni efectos decisionales.
+      */
+      const forbiddenProperties = [
+        'knowledgeId',
+        'aggregatedKnowledgeId',
+        'genealogyId',
+        'evidenceId',
+        'evidenceIds',
+        'evidence',
+        'evidenceCount',
+        'occurrences',
+        'supportCount',
+        'support',
+        'causalIndependence',
+        'independent',
+        'independence',
+        'strength',
+        'reinforcement',
+        'weight',
+        'score',
+        'confidence',
+        'priority',
+        'closure',
+        'transitiveClosure',
+        'partialOrder',
+        'orderedDecisionIds',
+        'sortedDecisionIds',
+        'order',
+        'rank',
+        'ranking',
+        'position',
+        'winner',
+        'loser',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationObjects: Record<
+        string,
+        unknown
+      >[] = [
+        diversityEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+        coincidenceEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+        nonEvaluableEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 23.35 introdujo indebidamente la propiedad "${detectedForbiddenProperty}" en la clasificación genealógica.`
+        );
+      }
+
+      /*
+      * Tampoco puede producir una tercera relación derivada
+      * ni estructuras de agregación/fusión.
+      */
+      const forbiddenStructuralProperties = [
+        'derivedPrecedence',
+        'thirdDerivedPrecedence',
+        'mergedDerivedPrecedence',
+        'deduplicatedDerivedPrecedence',
+        'canonicalDerivedPrecedence',
+        'composedDerivedPrecedence',
+        'aggregatedDerivedPrecedence',
+        'combinedDerivedPrecedence',
+      ];
+
+      const detectedForbiddenStructuralProperty =
+        forbiddenStructuralProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenStructuralProperty) {
+        throw new Error(
+          `FASE 23.35 fabricó indebidamente la estructura "${detectedForbiddenStructuralProperty}".`
+        );
+      }
+
+      const recommendationsAfterGenealogicalDiversity =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterGenealogicalDiversity =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterGenealogicalDiversity
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterGenealogicalDiversity
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.35 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterGenealogicalDiversity
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.35 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      const firstDecisionAfter =
+        decisionsAfterGenealogicalDiversity.find(
+          (decision) =>
+            decision.id === firstDecision.id
+        );
+
+      const secondDecisionAfter =
+        decisionsAfterGenealogicalDiversity.find(
+          (decision) =>
+            decision.id === secondDecision.id
+        );
+
+      const thirdDecisionAfter =
+        decisionsAfterGenealogicalDiversity.find(
+          (decision) =>
+            decision.id === thirdDecision.id
+        );
+
+      const fourthDecisionAfter =
+        decisionsAfterGenealogicalDiversity.find(
+          (decision) =>
+            decision.id === fourthDecision.id
+        );
+
+      if (
+        !firstDecisionAfter ||
+        !secondDecisionAfter ||
+        !thirdDecisionAfter ||
+        !fourthDecisionAfter
+      ) {
+        throw new Error(
+          'FASE 23.35 perdió alguna alternativa productiva después del experimento.'
+        );
+      }
+
+      if (
+        JSON.stringify(firstDecisionAfter) !==
+          firstDecisionSnapshot ||
+        JSON.stringify(secondDecisionAfter) !==
+          secondDecisionSnapshot ||
+        JSON.stringify(thirdDecisionAfter) !==
+          thirdDecisionSnapshot ||
+        JSON.stringify(fourthDecisionAfter) !==
+          fourthDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.35 alteró indirectamente alguna alternativa decisional productiva.'
+        );
+      }
+
+      addLog(
+        `FASE 23.35 OK: sobre una convergencia contextual previamente reconocida ${firstDecision.id} -> ${fourthDecision.id}, se distinguieron controladamente una diversidad genealógica vía ${secondDecision.id} frente a ${thirdDecision.id} y una coincidencia genealógica vía ${secondDecision.id}. La diversidad conservó cuatro knowledgeId causales distintos sin interpretarlos como independencia causal, evidencia adicional, soporte acumulado ni refuerzo; el escenario coincidente demostró que convergencia no implica diversidad genealógica y el control no evaluable demostró que 23.35 no clasifica genealogías sin convergencia previa. La evaluación no fusionó ni deduplicó derivaciones, no fabricó una tercera relación ni knowledgeId agregado, no introdujo evidence, supportCount, strength, reinforcement, weight, score, modificación de confidence o priority, composición derivada-derivada, composición derivada-explícita, propagación transitiva, cierre transitivo, orden parcial, reordenamiento, ranking, selección ni ejecución, permaneciendo intactas ${recommendationsAfterGenealogicalDiversity.length} recomendaciones y ${decisionsAfterGenealogicalDiversity.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en diversidad genealógica contextual controlada de relaciones transitivas derivadas convergentes 23.35: ${error.message}`
+          : 'Error inesperado en diversidad genealógica contextual controlada de relaciones transitivas derivadas convergentes 23.35.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -17579,6 +18371,14 @@ function IntegrationLabPage() {
           className="bg-slate-800 text-white px-4 py-2 rounded disabled:opacity-50"
         >
           Test Convergencia Derivadas 23.34
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeControlledDerivedPrecedenceGenealogicalDiversity}
+          disabled={loading}
+          className="px-4 py-2 bg-slate-800 text-white rounded hover:bg-slate-700 disabled:opacity-50"
+        >
+          Test Diversidad Genealógica 23.35
         </button>
 
         <button
