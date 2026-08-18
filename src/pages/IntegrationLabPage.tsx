@@ -22264,6 +22264,770 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeControlledDerivedPrecedenceStructuralContinuityBoundary() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeStructuralBoundary =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeStructuralBoundary =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeStructuralBoundary
+        );
+
+      /*
+       * FASE 23.40 — Frontera estructural contextual controlada
+       * de continuidad operacional entre movimientos distintos
+       * por conocimiento operativo.
+       *
+       * PRECONDICIÓN ESTRICTA:
+       *
+       * FASE 23.39 debe haber reconocido previamente:
+       *
+       * contextual_derived_precedence_no_shared_pallet_continuity
+       *
+       * con:
+       *
+       * sharedPalletContinuity === false
+       *
+       * Por tanto, 23.40 NO busca un nuevo fallback estructural.
+       * Su única capacidad nueva consiste en reconocer que el
+       * modelo actual no conserva otra identidad persistente
+       * supra-movement capaz de prolongar legítimamente la
+       * continuidad operacional después de movement.id y
+       * movement.pallet_id.
+       *
+       * Esta frontera NO equivale a:
+       *
+       * - independencia operacional;
+       * - independencia de procedencia;
+       * - independencia de evidencia;
+       * - independencia causal.
+       */
+
+      const firstDecision =
+        decisionsBeforeStructuralBoundary.find(
+          (decision) =>
+            decision.id === 'decision-review-movements'
+        );
+
+      const secondDecision =
+        decisionsBeforeStructuralBoundary.find(
+          (decision) =>
+            decision.id === 'decision-maintain-monitoring'
+        );
+
+      const thirdDecision =
+        decisionsBeforeStructuralBoundary.find(
+          (decision) =>
+            decision.id === 'decision-prioritize-high-value'
+        );
+
+      const fourthDecision =
+        decisionsBeforeStructuralBoundary.find(
+          (decision) =>
+            decision.id ===
+            'recommendation-prioritize-high-score-actions'
+        );
+
+      if (
+        !firstDecision ||
+        !secondDecision ||
+        !thirdDecision ||
+        !fourthDecision
+      ) {
+        throw new Error(
+          'FASE 23.40 no pudo resolver las cuatro alternativas decisionales controladas.'
+        );
+      }
+
+      if (
+        new Set([
+          firstDecision.id,
+          secondDecision.id,
+          thirdDecision.id,
+          fourthDecision.id,
+        ]).size !== 4
+      ) {
+        throw new Error(
+          'FASE 23.40 esperaba cuatro alternativas decisionales distintas.'
+        );
+      }
+
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeStructuralBoundary
+      );
+
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeStructuralBoundary
+      );
+
+      const firstDecisionSnapshot =
+        JSON.stringify(firstDecision);
+      const secondDecisionSnapshot =
+        JSON.stringify(secondDecision);
+      const thirdDecisionSnapshot =
+        JSON.stringify(thirdDecision);
+      const fourthDecisionSnapshot =
+        JSON.stringify(fourthDecision);
+
+      const createControlledPattern = (
+        suffix: string,
+        memoryIds: string[]
+      ) => ({
+        id: `pattern-controlled-structural-boundary-${suffix}`,
+        title:
+          `Patrón controlado de frontera estructural ${suffix}`,
+        description:
+          `Patrón controlado utilizado exclusivamente por FASE 23.40 ${suffix}.`,
+        score: Math.min(100, memoryIds.length * 25),
+        occurrences: memoryIds.length,
+        kind: 'recommendation-deviation-recurrence' as const,
+        context: {
+          movementType: 'reubicacion',
+          deviationReason:
+            `motivo-controlado-structural-boundary-${suffix}`,
+        },
+        evidence: {
+          memoryIds,
+        },
+      });
+
+      const controlledPatterns = [
+        createControlledPattern(
+          'k1',
+          [
+            'memory-controlled-structural-boundary-k1-1',
+            'memory-controlled-structural-boundary-k1-2',
+            'memory-controlled-structural-boundary-k1-3',
+            'memory-controlled-structural-boundary-k1-4',
+          ]
+        ),
+        createControlledPattern(
+          'k2',
+          [
+            'memory-controlled-structural-boundary-k2-1',
+            'memory-controlled-structural-boundary-k2-2',
+            'memory-controlled-structural-boundary-k2-3',
+            'memory-controlled-structural-boundary-k2-4',
+          ]
+        ),
+        createControlledPattern(
+          'k3',
+          [
+            'memory-controlled-structural-boundary-k3-1',
+            'memory-controlled-structural-boundary-k3-2',
+            'memory-controlled-structural-boundary-k3-3',
+            'memory-controlled-structural-boundary-k3-4',
+          ]
+        ),
+        createControlledPattern(
+          'k4',
+          [
+            'memory-controlled-structural-boundary-k4-1',
+            'memory-controlled-structural-boundary-k4-2',
+            'memory-controlled-structural-boundary-k4-3',
+            'memory-controlled-structural-boundary-k4-4',
+          ]
+        ),
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 4) {
+        throw new Error(
+          `FASE 23.40 esperaba 4 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledgeK1 = controlledKnowledge[0];
+      const knowledgeK2 = controlledKnowledge[1];
+      const knowledgeK3 = controlledKnowledge[2];
+      const knowledgeK4 = controlledKnowledge[3];
+
+      if (
+        !knowledgeK1 ||
+        !knowledgeK2 ||
+        !knowledgeK3 ||
+        !knowledgeK4
+      ) {
+        throw new Error(
+          'FASE 23.40 no pudo resolver los cuatro conocimientos controlados.'
+        );
+      }
+
+      if (
+        new Set([
+          knowledgeK1.id,
+          knowledgeK2.id,
+          knowledgeK3.id,
+          knowledgeK4.id,
+        ]).size !== 4
+      ) {
+        throw new Error(
+          'FASE 23.40 esperaba cuatro knowledgeId distintos.'
+        );
+      }
+
+      type ControlledStructuralBoundarySourcePrecedence = {
+        precedingDecisionId: string;
+        precededDecisionId: string;
+        knowledgeId: string;
+      };
+
+      type ControlledStructuralBoundaryDerivedPrecedence = {
+        precedingDecisionId: string;
+        intermediateDecisionId: string;
+        precededDecisionId: string;
+        sourcePrecedences: [
+          ControlledStructuralBoundarySourcePrecedence,
+          ControlledStructuralBoundarySourcePrecedence,
+        ];
+      };
+
+      type ControlledInheritedPalletContinuity = {
+        decisionIds: [string, string, string, string];
+        relation:
+          | 'no_contextual_derived_precedence_pallet_continuity'
+          | 'contextual_derived_precedence_shared_pallet_continuity'
+          | 'contextual_derived_precedence_no_shared_pallet_continuity';
+        sharedPalletContinuity: boolean | null;
+        firstDerivedPrecedence:
+          | ControlledStructuralBoundaryDerivedPrecedence
+          | null;
+        secondDerivedPrecedence:
+          | ControlledStructuralBoundaryDerivedPrecedence
+          | null;
+        rationale: string;
+      };
+
+      type ControlledStructuralContinuityBoundary = {
+        decisionIds: [string, string, string, string];
+        relation:
+          | 'no_contextual_structural_continuity_boundary'
+          | 'contextual_structural_continuity_boundary_reached';
+        structuralBoundaryReached: boolean | null;
+        firstDerivedPrecedence:
+          | ControlledStructuralBoundaryDerivedPrecedence
+          | null;
+        secondDerivedPrecedence:
+          | ControlledStructuralBoundaryDerivedPrecedence
+          | null;
+        rationale: string;
+      };
+
+      type ControlledMovementRecord = {
+        id: string;
+        pallet_id: string | null;
+        warehouse_id: string;
+        product_id: string;
+      };
+
+      const createDerivedPrecedence = (
+        firstKnowledgeId: string,
+        secondKnowledgeId: string,
+        intermediateDecisionId: string
+      ): ControlledStructuralBoundaryDerivedPrecedence => ({
+        precedingDecisionId: firstDecision.id,
+        intermediateDecisionId,
+        precededDecisionId: fourthDecision.id,
+        sourcePrecedences: [
+          {
+            precedingDecisionId: firstDecision.id,
+            precededDecisionId: intermediateDecisionId,
+            knowledgeId: firstKnowledgeId,
+          },
+          {
+            precedingDecisionId: intermediateDecisionId,
+            precededDecisionId: fourthDecision.id,
+            knowledgeId: secondKnowledgeId,
+          },
+        ],
+      });
+
+      const inheritedNoSharedPallet:
+        ControlledInheritedPalletContinuity = {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_no_shared_pallet_continuity',
+          sharedPalletContinuity: false,
+          firstDerivedPrecedence: createDerivedPrecedence(
+            knowledgeK1.id,
+            knowledgeK2.id,
+            secondDecision.id
+          ),
+          secondDerivedPrecedence: createDerivedPrecedence(
+            knowledgeK3.id,
+            knowledgeK4.id,
+            thirdDecision.id
+          ),
+          rationale:
+            'FASE 23.39 estableció movimientos distintos sin una misma entidad pallet compartida.',
+        };
+
+      const inheritedSharedPallet:
+        ControlledInheritedPalletContinuity = {
+          ...inheritedNoSharedPallet,
+          relation:
+            'contextual_derived_precedence_shared_pallet_continuity',
+          sharedPalletContinuity: true,
+          rationale:
+            'Control no evaluable: FASE 23.39 todavía observa continuidad mediante una misma entidad pallet.',
+        };
+
+      const inheritedNotEvaluable:
+        ControlledInheritedPalletContinuity = {
+          decisionIds:
+            inheritedNoSharedPallet.decisionIds,
+          relation:
+            'no_contextual_derived_precedence_pallet_continuity',
+          sharedPalletContinuity: null,
+          firstDerivedPrecedence: null,
+          secondDerivedPrecedence: null,
+          rationale:
+            'Control no evaluable: FASE 23.39 no estableció todavía su precondición estructural.',
+        };
+
+      const controlledMemories: OperationalMemoryRecord[] =
+        controlledKnowledge.flatMap((knowledge) =>
+          knowledge.evidence.memoryIds.map(
+            (memoryId): OperationalMemoryRecord => ({
+              id: memoryId,
+              memory_type: 'movement',
+              entity_id: `movement-${memoryId}`,
+              entity_type: 'movement',
+              title: `Memoria controlada ${memoryId}`,
+              description:
+                'Memoria controlada para FASE 23.40.',
+              score: 100,
+              metadata: {
+                phase: '23.40',
+                source: 'IntegrationLabPage',
+              },
+              created_at:
+                '2026-08-18T00:00:00.000Z',
+            })
+          )
+        );
+
+      const controlledMovements: ControlledMovementRecord[] =
+        controlledMemories.map((memory) => ({
+          id: String(memory.entity_id),
+          pallet_id: `pallet-${memory.id}`,
+          warehouse_id:
+            'warehouse-controlled-structural-boundary-shared',
+          product_id:
+            'product-controlled-structural-boundary-shared',
+        }));
+
+      const firstKnowledgeIds = new Set([
+        knowledgeK1.id,
+        knowledgeK2.id,
+      ]);
+
+      if (
+        [knowledgeK3.id, knowledgeK4.id].some(
+          (knowledgeId) =>
+            firstKnowledgeIds.has(knowledgeId)
+        )
+      ) {
+        throw new Error(
+          'FASE 23.40 construyó genealogías con knowledgeId compartidos.'
+        );
+      }
+
+      const firstMemoryIds = new Set([
+        ...knowledgeK1.evidence.memoryIds,
+        ...knowledgeK2.evidence.memoryIds,
+      ]);
+
+      const secondMemoryIds = [
+        ...knowledgeK3.evidence.memoryIds,
+        ...knowledgeK4.evidence.memoryIds,
+      ];
+
+      if (
+        secondMemoryIds.some((memoryId) =>
+          firstMemoryIds.has(memoryId)
+        )
+      ) {
+        throw new Error(
+          'FASE 23.40 construyó genealogías con memoryId compartidos.'
+        );
+      }
+
+      const firstMovementIds = new Set(
+        controlledMemories
+          .filter((memory) =>
+            firstMemoryIds.has(memory.id)
+          )
+          .map((memory) => String(memory.entity_id))
+      );
+
+      const secondMovementIds = controlledMemories
+        .filter((memory) =>
+          secondMemoryIds.includes(memory.id)
+        )
+        .map((memory) => String(memory.entity_id));
+
+      if (
+        secondMovementIds.some((movementId) =>
+          firstMovementIds.has(movementId)
+        )
+      ) {
+        throw new Error(
+          'FASE 23.40 construyó genealogías con movement.id compartidos.'
+        );
+      }
+
+      const firstPalletIds = new Set(
+        controlledMovements
+          .filter((movement) =>
+            firstMovementIds.has(movement.id)
+          )
+          .map((movement) => movement.pallet_id)
+      );
+
+      const secondPalletIds = controlledMovements
+        .filter((movement) =>
+          secondMovementIds.includes(movement.id)
+        )
+        .map((movement) => movement.pallet_id);
+
+      if (
+        secondPalletIds.some((palletId) =>
+          firstPalletIds.has(palletId)
+        )
+      ) {
+        throw new Error(
+          'FASE 23.40 construyó genealogías con pallet_id compartidos.'
+        );
+      }
+
+      /*
+       * Control contextual deliberado.
+       *
+       * Todos los movimientos comparten warehouse_id y product_id.
+       * Esa coincidencia NO debe prolongar la continuidad
+       * estructural después de movement.id y pallet_id.
+       */
+      if (
+        new Set(
+          controlledMovements.map(
+            (movement) => movement.warehouse_id
+          )
+        ).size !== 1 ||
+        new Set(
+          controlledMovements.map(
+            (movement) => movement.product_id
+          )
+        ).size !== 1
+      ) {
+        throw new Error(
+          'FASE 23.40 no construyó correctamente el control de contexto compartido por warehouse_id y product_id.'
+        );
+      }
+
+      const evaluateControlledStructuralContinuityBoundary =
+        (
+          palletContinuity:
+            ControlledInheritedPalletContinuity
+        ): ControlledStructuralContinuityBoundary => {
+          if (
+            palletContinuity.relation !==
+              'contextual_derived_precedence_no_shared_pallet_continuity' ||
+            palletContinuity.sharedPalletContinuity !== false ||
+            palletContinuity.firstDerivedPrecedence === null ||
+            palletContinuity.secondDerivedPrecedence === null
+          ) {
+            return {
+              decisionIds:
+                palletContinuity.decisionIds,
+              relation:
+                'no_contextual_structural_continuity_boundary',
+              structuralBoundaryReached: null,
+              firstDerivedPrecedence: null,
+              secondDerivedPrecedence: null,
+              rationale:
+                'FASE 23.40 no evalúa la frontera estructural mientras FASE 23.39 no haya establecido previamente movimientos distintos sin una misma entidad pallet compartida.',
+            };
+          }
+
+          return {
+            decisionIds:
+              palletContinuity.decisionIds,
+            relation:
+              'contextual_structural_continuity_boundary_reached',
+            structuralBoundaryReached: true,
+            firstDerivedPrecedence:
+              palletContinuity.firstDerivedPrecedence,
+            secondDerivedPrecedence:
+              palletContinuity.secondDerivedPrecedence,
+            rationale:
+              'El modelo actual alcanza su frontera estructural observable después de movement.id y movement.pallet_id; coincidencias contextuales adicionales no se promueven a continuidad, procedencia, agrupación, episodio, evidencia o causa común.',
+          };
+        };
+
+      const inheritedNoSharedPalletSnapshot =
+        JSON.stringify(inheritedNoSharedPallet);
+      const inheritedSharedPalletSnapshot =
+        JSON.stringify(inheritedSharedPallet);
+      const inheritedNotEvaluableSnapshot =
+        JSON.stringify(inheritedNotEvaluable);
+      const controlledKnowledgeSnapshot =
+        JSON.stringify(controlledKnowledge);
+      const controlledMemoriesSnapshot =
+        JSON.stringify(controlledMemories);
+      const controlledMovementsSnapshot =
+        JSON.stringify(controlledMovements);
+
+      const boundaryEvaluation =
+        evaluateControlledStructuralContinuityBoundary(
+          inheritedNoSharedPallet
+        );
+
+      const sharedPalletControl =
+        evaluateControlledStructuralContinuityBoundary(
+          inheritedSharedPallet
+        );
+
+      const inheritedNotEvaluableControl =
+        evaluateControlledStructuralContinuityBoundary(
+          inheritedNotEvaluable
+        );
+
+      if (
+        boundaryEvaluation.relation !==
+          'contextual_structural_continuity_boundary_reached' ||
+        boundaryEvaluation.structuralBoundaryReached !== true ||
+        boundaryEvaluation.firstDerivedPrecedence === null ||
+        boundaryEvaluation.secondDerivedPrecedence === null
+      ) {
+        throw new Error(
+          'FASE 23.40 no reconoció la frontera estructural esperada después de movement.id y pallet_id.'
+        );
+      }
+
+      if (
+        sharedPalletControl.relation !==
+          'no_contextual_structural_continuity_boundary' ||
+        sharedPalletControl.structuralBoundaryReached !== null ||
+        sharedPalletControl.firstDerivedPrecedence !== null ||
+        sharedPalletControl.secondDerivedPrecedence !== null
+      ) {
+        throw new Error(
+          'FASE 23.40 avanzó indebidamente cuando FASE 23.39 todavía observaba una misma entidad pallet compartida.'
+        );
+      }
+
+      if (
+        inheritedNotEvaluableControl.relation !==
+          'no_contextual_structural_continuity_boundary' ||
+        inheritedNotEvaluableControl.structuralBoundaryReached !== null ||
+        inheritedNotEvaluableControl.firstDerivedPrecedence !== null ||
+        inheritedNotEvaluableControl.secondDerivedPrecedence !== null
+      ) {
+        throw new Error(
+          'FASE 23.40 avanzó indebidamente sin una clasificación evaluable previa de FASE 23.39.'
+        );
+      }
+
+      if (
+        boundaryEvaluation.firstDerivedPrecedence !==
+          inheritedNoSharedPallet.firstDerivedPrecedence ||
+        boundaryEvaluation.secondDerivedPrecedence !==
+          inheritedNoSharedPallet.secondDerivedPrecedence
+      ) {
+        throw new Error(
+          'FASE 23.40 reconstruyó, sustituyó o fusionó alguna genealogía heredada.'
+        );
+      }
+
+      if (
+        JSON.stringify(inheritedNoSharedPallet) !==
+          inheritedNoSharedPalletSnapshot ||
+        JSON.stringify(inheritedSharedPallet) !==
+          inheritedSharedPalletSnapshot ||
+        JSON.stringify(inheritedNotEvaluable) !==
+          inheritedNotEvaluableSnapshot ||
+        JSON.stringify(controlledKnowledge) !==
+          controlledKnowledgeSnapshot ||
+        JSON.stringify(controlledMemories) !==
+          controlledMemoriesSnapshot ||
+        JSON.stringify(controlledMovements) !==
+          controlledMovementsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.40 modificó alguna entrada o catálogo controlado durante la evaluación.'
+        );
+      }
+
+      const forbiddenProperties = [
+        'operationalEpisodeId',
+        'episodeId',
+        'parentMovementId',
+        'correlationId',
+        'requestId',
+        'batchId',
+        'groupId',
+        'sourceId',
+        'sharedInventoryIds',
+        'sharedRecommendationIds',
+        'sharedProductIds',
+        'independentEvidence',
+        'evidenceIndependence',
+        'operationalIndependence',
+        'provenanceIndependence',
+        'causalIndependence',
+        'independent',
+        'independence',
+        'evidenceCount',
+        'provenanceCount',
+        'supportCount',
+        'support',
+        'overlapCount',
+        'overlapRatio',
+        'reinforcement',
+        'strength',
+        'weight',
+        'score',
+        'confidence',
+        'priority',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationObjects: Record<string, unknown>[] = [
+        boundaryEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+        sharedPalletControl as unknown as Record<
+          string,
+          unknown
+        >,
+        inheritedNotEvaluableControl as unknown as Record<
+          string,
+          unknown
+        >,
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 23.40 introdujo indebidamente la propiedad "${detectedForbiddenProperty}".`
+        );
+      }
+
+      const recommendationsAfterStructuralBoundary =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterStructuralBoundary =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterStructuralBoundary
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterStructuralBoundary
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.40 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterStructuralBoundary) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.40 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      const firstDecisionAfter =
+        decisionsAfterStructuralBoundary.find(
+          (decision) => decision.id === firstDecision.id
+        );
+      const secondDecisionAfter =
+        decisionsAfterStructuralBoundary.find(
+          (decision) => decision.id === secondDecision.id
+        );
+      const thirdDecisionAfter =
+        decisionsAfterStructuralBoundary.find(
+          (decision) => decision.id === thirdDecision.id
+        );
+      const fourthDecisionAfter =
+        decisionsAfterStructuralBoundary.find(
+          (decision) => decision.id === fourthDecision.id
+        );
+
+      if (
+        !firstDecisionAfter ||
+        !secondDecisionAfter ||
+        !thirdDecisionAfter ||
+        !fourthDecisionAfter
+      ) {
+        throw new Error(
+          'FASE 23.40 perdió alguna alternativa productiva después del experimento.'
+        );
+      }
+
+      if (
+        JSON.stringify(firstDecisionAfter) !==
+          firstDecisionSnapshot ||
+        JSON.stringify(secondDecisionAfter) !==
+          secondDecisionSnapshot ||
+        JSON.stringify(thirdDecisionAfter) !==
+          thirdDecisionSnapshot ||
+        JSON.stringify(fourthDecisionAfter) !==
+          fourthDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.40 alteró indirectamente alguna alternativa decisional productiva.'
+        );
+      }
+
+      addLog(
+        `FASE 23.40 OK: partiendo exclusivamente de la ausencia previa de una misma entidad movement y de una misma entidad pallet entre las genealogías de ${firstDecision.id} -> ${fourthDecision.id}, se reconoció controladamente la frontera estructural observable del modelo actual. Los movimientos conservaron warehouse_id y product_id compartidos como contexto sin promoverlos a continuidad, procedencia, agrupación, episodio, evidencia o causa común. Los controles con pallet compartido y con FASE 23.39 no evaluable quedaron correctamente no evaluables. La frontera estructural no fue interpretada como independencia operacional, de procedencia, de evidencia ni causal, no introdujo identificadores artificiales, soporte, refuerzo, strength, weight, score, modificación de confidence o priority, fusión, deduplicación, propagación transitiva, cierre transitivo, orden parcial, reordenamiento, ranking, selección ni ejecución, permaneciendo intactas ${recommendationsAfterStructuralBoundary.length} recomendaciones y ${decisionsAfterStructuralBoundary.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en frontera estructural contextual controlada de continuidad operacional entre movimientos distintos por conocimiento operativo 23.40: ${error.message}`
+          : 'Error inesperado en frontera estructural contextual controlada de continuidad operacional entre movimientos distintos por conocimiento operativo 23.40.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -23038,6 +23802,15 @@ function IntegrationLabPage() {
         >
           Test Continuidad Pallet 23.39
         </button>
+
+        <button
+          onClick={testOperationalKnowledgeControlledDerivedPrecedenceStructuralContinuityBoundary}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Frontera Estructural 23.40
+        </button>
+
 
         <button
           onClick={testMandatoryPhysicalPlacement}
