@@ -23028,6 +23028,403 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeControlledStructuralBoundaryEligibilityOrthogonality() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeOrthogonality =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeOrthogonality =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeOrthogonality
+        );
+
+      /*
+       * FASE 23.41 — Ortogonalidad contextual controlada entre
+       * frontera de continuidad estructural y elegibilidad del
+       * conocimiento operativo.
+       *
+       * PRECONDICIÓN ESTRICTA:
+       *
+       * FASE 23.40 debe haber reconocido previamente:
+       *
+       * contextual_structural_continuity_boundary_reached
+       *
+       * con:
+       *
+       * structuralBoundaryReached === true
+       *
+       * FASE 23.41 NO busca otra continuidad estructural y NO
+       * reinterpreta la frontera como independencia.
+       *
+       * Su única capacidad nueva consiste en demostrar que una
+       * misma frontera estructural observable puede coexistir
+       * tanto con elegibilidad contextual compatible como con
+       * inelegibilidad contextual, según exclusivamente la regla
+       * productiva existente basada en movementType.
+       *
+       * Por tanto:
+       *
+       * frontera estructural observable
+       *   != elegibilidad contextual
+       *   != inelegibilidad contextual
+       *   != independencia operacional
+       *   != independencia de procedencia
+       *   != independencia de evidencia
+       *   != independencia causal.
+       */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeOrthogonality
+      );
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeOrthogonality
+      );
+
+      const controlledPattern = {
+        id: 'pattern-controlled-structural-boundary-eligibility-23-41',
+        title:
+          'Patrón controlado de ortogonalidad estructural-contextual',
+        description:
+          'Patrón controlado utilizado exclusivamente por FASE 23.41.',
+        score: 100,
+        occurrences: 4,
+        kind: 'recommendation-deviation-recurrence' as const,
+        context: {
+          movementType: 'reubicacion',
+          deviationReason:
+            'motivo-controlado-structural-boundary-eligibility-23-41',
+        },
+        evidence: {
+          memoryIds: [
+            'memory-controlled-structural-boundary-eligibility-23-41-1',
+            'memory-controlled-structural-boundary-eligibility-23-41-2',
+            'memory-controlled-structural-boundary-eligibility-23-41-3',
+            'memory-controlled-structural-boundary-eligibility-23-41-4',
+          ],
+        },
+      };
+
+      const controlledKnowledge =
+        generateOperationalKnowledge([controlledPattern]);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 23.41 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 23.41 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      type ControlledInheritedStructuralBoundary = {
+        relation:
+          | 'no_contextual_structural_continuity_boundary'
+          | 'contextual_structural_continuity_boundary_reached';
+        structuralBoundaryReached: boolean | null;
+        rationale: string;
+      };
+
+      type ControlledStructuralBoundaryEligibilityCoexistence = {
+        relation:
+          | 'no_contextual_structural_boundary_eligibility_coexistence'
+          | 'contextual_structural_boundary_eligibility_coexistence';
+        structuralBoundaryReached: boolean | null;
+        eligibility:
+          | ReturnType<
+              typeof evaluateOperationalKnowledgeEligibility
+            >
+          | null;
+        rationale: string;
+      };
+
+      const inheritedStructuralBoundary:
+        ControlledInheritedStructuralBoundary = {
+          relation:
+            'contextual_structural_continuity_boundary_reached',
+          structuralBoundaryReached: true,
+          rationale:
+            'FASE 23.40 alcanzó previamente la frontera estructural observable después de movement.id y movement.pallet_id.',
+        };
+
+      const inheritedNotEvaluableBoundary:
+        ControlledInheritedStructuralBoundary = {
+          relation:
+            'no_contextual_structural_continuity_boundary',
+          structuralBoundaryReached: null,
+          rationale:
+            'Control no evaluable: FASE 23.40 no estableció previamente una frontera estructural observable.',
+        };
+
+      const evaluateControlledStructuralBoundaryEligibilityCoexistence =
+        (
+          structuralBoundary:
+            ControlledInheritedStructuralBoundary,
+          movementType:
+            Parameters<
+              typeof evaluateOperationalKnowledgeEligibility
+            >[1]['movementType']
+        ): ControlledStructuralBoundaryEligibilityCoexistence => {
+          if (
+            structuralBoundary.relation !==
+              'contextual_structural_continuity_boundary_reached' ||
+            structuralBoundary.structuralBoundaryReached !== true
+          ) {
+            return {
+              relation:
+                'no_contextual_structural_boundary_eligibility_coexistence',
+              structuralBoundaryReached: null,
+              eligibility: null,
+              rationale:
+                'FASE 23.41 no evalúa la coexistencia estructural-contextual mientras FASE 23.40 no haya establecido previamente su frontera estructural observable.',
+            };
+          }
+
+          return {
+            relation:
+              'contextual_structural_boundary_eligibility_coexistence',
+            structuralBoundaryReached: true,
+            eligibility:
+              evaluateOperationalKnowledgeEligibility(
+                knowledge,
+                {
+                  movementType,
+                }
+              ),
+            rationale:
+              'La frontera estructural heredada permanece intacta mientras la elegibilidad se resuelve exclusivamente mediante la compatibilidad contextual productiva de movementType.',
+          };
+        };
+
+      const compatibleMovementType =
+        knowledge.context.movementType as Parameters<
+          typeof evaluateOperationalKnowledgeEligibility
+        >[1]['movementType'];
+
+      const incompatibleMovementType =
+        compatibleMovementType === 'entrada'
+          ? 'salida'
+          : 'entrada';
+
+      const inheritedStructuralBoundarySnapshot =
+        JSON.stringify(inheritedStructuralBoundary);
+      const inheritedNotEvaluableBoundarySnapshot =
+        JSON.stringify(inheritedNotEvaluableBoundary);
+      const controlledKnowledgeSnapshot =
+        JSON.stringify(controlledKnowledge);
+
+      const compatibleEvaluation =
+        evaluateControlledStructuralBoundaryEligibilityCoexistence(
+          inheritedStructuralBoundary,
+          compatibleMovementType
+        );
+
+      const incompatibleEvaluation =
+        evaluateControlledStructuralBoundaryEligibilityCoexistence(
+          inheritedStructuralBoundary,
+          incompatibleMovementType
+        );
+
+      const notEvaluableControl =
+        evaluateControlledStructuralBoundaryEligibilityCoexistence(
+          inheritedNotEvaluableBoundary,
+          compatibleMovementType
+        );
+
+      if (
+        compatibleEvaluation.relation !==
+          'contextual_structural_boundary_eligibility_coexistence' ||
+        compatibleEvaluation.structuralBoundaryReached !== true ||
+        compatibleEvaluation.eligibility === null ||
+        compatibleEvaluation.eligibility.eligible !== true ||
+        compatibleEvaluation.eligibility.reason !==
+          'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 23.41 no reconoció la coexistencia esperada entre frontera estructural alcanzada y elegibilidad contextual compatible.'
+        );
+      }
+
+      if (
+        incompatibleEvaluation.relation !==
+          'contextual_structural_boundary_eligibility_coexistence' ||
+        incompatibleEvaluation.structuralBoundaryReached !== true ||
+        incompatibleEvaluation.eligibility === null ||
+        incompatibleEvaluation.eligibility.eligible !== false ||
+        incompatibleEvaluation.eligibility.reason !==
+          'context-incompatible'
+      ) {
+        throw new Error(
+          'FASE 23.41 no reconoció la coexistencia esperada entre la misma frontera estructural y una elegibilidad contextual incompatible.'
+        );
+      }
+
+      if (
+        compatibleEvaluation.structuralBoundaryReached !==
+          incompatibleEvaluation.structuralBoundaryReached ||
+        compatibleEvaluation.relation !==
+          incompatibleEvaluation.relation
+      ) {
+        throw new Error(
+          'FASE 23.41 dejó que el cambio de movementType alterara indebidamente la frontera estructural heredada.'
+        );
+      }
+
+      if (
+        compatibleEvaluation.eligibility.knowledgeId !==
+          knowledge.id ||
+        incompatibleEvaluation.eligibility.knowledgeId !==
+          knowledge.id ||
+        compatibleEvaluation.eligibility.sourcePatternId !==
+          knowledge.sourcePatternId ||
+        incompatibleEvaluation.eligibility.sourcePatternId !==
+          knowledge.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.41 perdió trazabilidad del conocimiento durante la evaluación contextual.'
+        );
+      }
+
+      if (
+        notEvaluableControl.relation !==
+          'no_contextual_structural_boundary_eligibility_coexistence' ||
+        notEvaluableControl.structuralBoundaryReached !== null ||
+        notEvaluableControl.eligibility !== null
+      ) {
+        throw new Error(
+          'FASE 23.41 avanzó indebidamente sin una frontera estructural evaluable heredada de FASE 23.40.'
+        );
+      }
+
+      if (
+        JSON.stringify(inheritedStructuralBoundary) !==
+          inheritedStructuralBoundarySnapshot ||
+        JSON.stringify(inheritedNotEvaluableBoundary) !==
+          inheritedNotEvaluableBoundarySnapshot ||
+        JSON.stringify(controlledKnowledge) !==
+          controlledKnowledgeSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.41 modificó alguna entrada controlada durante la evaluación.'
+        );
+      }
+
+      const forbiddenProperties = [
+        'operationalEpisodeId',
+        'episodeId',
+        'parentMovementId',
+        'correlationId',
+        'requestId',
+        'batchId',
+        'groupId',
+        'structuralIndependence',
+        'eligibilityIndependence',
+        'contextualIndependence',
+        'independentEvidence',
+        'evidenceIndependence',
+        'operationalIndependence',
+        'provenanceIndependence',
+        'causalIndependence',
+        'independent',
+        'orthogonal',
+        'orthogonalityScore',
+        'eligibilityStrength',
+        'applicabilityScore',
+        'structuralDistance',
+        'support',
+        'supportCount',
+        'evidenceCount',
+        'provenanceCount',
+        'strength',
+        'weight',
+        'score',
+        'confidence',
+        'priority',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationObjects: Array<Record<string, unknown>> = [
+        inheritedStructuralBoundary,
+        inheritedNotEvaluableBoundary,
+        compatibleEvaluation,
+        incompatibleEvaluation,
+        notEvaluableControl,
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 23.41 introdujo indebidamente la propiedad "${detectedForbiddenProperty}".`
+        );
+      }
+
+      const recommendationsAfterOrthogonality =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterOrthogonality =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterOrthogonality
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterOrthogonality
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.41 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterOrthogonality) !==
+          decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.41 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 23.41 OK: una misma frontera estructural observable previamente alcanzada coexistió controladamente con elegibilidad contextual compatible (${compatibleMovementType}) e incompatible (${incompatibleMovementType}) según exclusivamente movementType.
+La frontera estructural no determinó elegibilidad ni inelegibilidad, y la elegibilidad no fue interpretada como continuidad, procedencia, evidencia o causalidad compartida.
+El control sin frontera estructural previamente evaluable permaneció correctamente no evaluable.
+No se introdujeron indicadores de independencia, nuevos identificadores, soporte, conteos, strength, weight, score, modificación de confidence o priority, fusión, deduplicación, propagación transitiva, cierre transitivo, orden parcial, reordenamiento, ranking, selección ni ejecución, permaneciendo intactas ${recommendationsAfterOrthogonality.length} recomendaciones y ${decisionsAfterOrthogonality.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+      addLog(
+        error instanceof Error
+          ? `Error en ortogonalidad contextual controlada entre frontera de continuidad estructural y elegibilidad del conocimiento operativo 23.41: ${error.message}`
+          : 'Error inesperado en ortogonalidad contextual controlada entre frontera de continuidad estructural y elegibilidad del conocimiento operativo 23.41.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -23812,6 +24209,13 @@ function IntegrationLabPage() {
         </button>
 
 
+        <button
+          onClick={testOperationalKnowledgeControlledStructuralBoundaryEligibilityOrthogonality}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Ortogonalidad Estructural-Contextual 23.41
+        </button>
         <button
           onClick={testMandatoryPhysicalPlacement}
           disabled={loading}
