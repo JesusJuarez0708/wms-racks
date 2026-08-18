@@ -19740,6 +19740,1197 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeControlledDerivedPrecedenceOperationalProvenance() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeOperationalProvenance =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeOperationalProvenance =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeOperationalProvenance
+        );
+
+      /*
+       * FASE 23.38 — Procedencia operacional común contextual
+       * controlada de evidencias no solapadas por conocimiento
+       * operativo.
+       *
+       * PRECONDICIÓN ESTRICTA:
+       *
+       * FASE 23.37 debe haber reconocido previamente:
+       *
+       * contextual_derived_precedence_evidential_non_overlap
+       *
+       * Por tanto, 23.38 NO vuelve a decidir:
+       *
+       * - diversidad genealógica;
+       * - solapamiento de knowledgeId;
+       * - solapamiento de memoryId.
+       *
+       * Su única capacidad nueva consiste en observar si
+       * memoryId distintos pertenecientes a ambas genealogías
+       * refieren estructuralmente a una misma entidad persistente:
+       *
+       * entity_type === 'movement'
+       * entity_id   === mismo MovementRecord.id
+       *
+       * Esto NO define "episodio operacional" y NO introduce
+       * independencia de evidencia, operacional ni causal.
+       */
+
+      const firstDecision =
+        decisionsBeforeOperationalProvenance.find(
+          (decision) =>
+            decision.id === 'decision-review-movements'
+        );
+
+      const secondDecision =
+        decisionsBeforeOperationalProvenance.find(
+          (decision) =>
+            decision.id === 'decision-maintain-monitoring'
+        );
+
+      const thirdDecision =
+        decisionsBeforeOperationalProvenance.find(
+          (decision) =>
+            decision.id === 'decision-prioritize-high-value'
+        );
+
+      const fourthDecision =
+        decisionsBeforeOperationalProvenance.find(
+          (decision) =>
+            decision.id ===
+            'recommendation-prioritize-high-score-actions'
+        );
+
+      if (!firstDecision) {
+        throw new Error(
+          'FASE 23.38 no encontró decision-review-movements como alternativa A.'
+        );
+      }
+
+      if (!secondDecision) {
+        throw new Error(
+          'FASE 23.38 no encontró decision-maintain-monitoring como alternativa B.'
+        );
+      }
+
+      if (!thirdDecision) {
+        throw new Error(
+          'FASE 23.38 no encontró decision-prioritize-high-value como alternativa C.'
+        );
+      }
+
+      if (!fourthDecision) {
+        throw new Error(
+          'FASE 23.38 no encontró recommendation-prioritize-high-score-actions como alternativa D.'
+        );
+      }
+
+      if (
+        new Set([
+          firstDecision.id,
+          secondDecision.id,
+          thirdDecision.id,
+          fourthDecision.id,
+        ]).size !== 4
+      ) {
+        throw new Error(
+          'FASE 23.38 esperaba cuatro alternativas decisionales distintas.'
+        );
+      }
+
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeOperationalProvenance
+      );
+
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeOperationalProvenance
+      );
+
+      const firstDecisionSnapshot =
+        JSON.stringify(firstDecision);
+
+      const secondDecisionSnapshot =
+        JSON.stringify(secondDecision);
+
+      const thirdDecisionSnapshot =
+        JSON.stringify(thirdDecision);
+
+      const fourthDecisionSnapshot =
+        JSON.stringify(fourthDecision);
+
+      /*
+       * Construimos conocimiento controlado siguiendo la misma
+       * forma real utilizada por OperationalKnowledge.
+       *
+       * Cada conocimiento conserva memoryId distintos.
+       */
+      const createControlledPattern = (
+        suffix: string,
+        memoryIds: string[]
+      ) => ({
+        id: `pattern-controlled-operational-provenance-${suffix}`,
+        title:
+          `Patrón controlado de procedencia operacional ${suffix}`,
+        description:
+          `Patrón controlado para FASE 23.38 ${suffix}.`,
+        score: Math.min(100, memoryIds.length * 25),
+        occurrences: memoryIds.length,
+        kind: 'recommendation-deviation-recurrence' as const,
+        context: {
+          movementType: 'reubicacion',
+          deviationReason:
+            `motivo-controlado-operational-provenance-${suffix}`,
+        },
+        evidence: {
+          memoryIds,
+        },
+      });
+
+      /*
+       * ESCENARIO POSITIVO.
+       *
+       * G1 = K1 + K2
+       * G2 = K3 + K4
+       *
+       * knowledgeId distintos.
+       * memoryId distintos.
+       *
+       * M1 y M3, aunque son memorias distintas, refieren a:
+       *
+       * entity_type = movement
+       * entity_id   = movement-controlled-provenance-shared
+       */
+      const positivePatterns = [
+        createControlledPattern(
+          'positive-k1',
+          [
+            'memory-controlled-provenance-positive-k1-1',
+            'memory-controlled-provenance-positive-k1-2',
+            'memory-controlled-provenance-positive-k1-3',
+            'memory-controlled-provenance-positive-k1-4',
+          ]
+        ),
+        createControlledPattern(
+          'positive-k2',
+          [
+            'memory-controlled-provenance-positive-k2-1',
+            'memory-controlled-provenance-positive-k2-2',
+            'memory-controlled-provenance-positive-k2-3',
+            'memory-controlled-provenance-positive-k2-4',
+          ]
+        ),
+        createControlledPattern(
+          'positive-k3',
+          [
+            'memory-controlled-provenance-positive-k3-1',
+            'memory-controlled-provenance-positive-k3-2',
+            'memory-controlled-provenance-positive-k3-3',
+            'memory-controlled-provenance-positive-k3-4',
+          ]
+        ),
+        createControlledPattern(
+          'positive-k4',
+          [
+            'memory-controlled-provenance-positive-k4-1',
+            'memory-controlled-provenance-positive-k4-2',
+            'memory-controlled-provenance-positive-k4-3',
+            'memory-controlled-provenance-positive-k4-4',
+          ]
+        ),
+      ];
+
+      const positiveKnowledge =
+        generateOperationalKnowledge(positivePatterns);
+
+      if (positiveKnowledge.length !== 4) {
+        throw new Error(
+          `FASE 23.38 esperaba 4 conocimientos para el escenario de procedencia operacional común y generó ${positiveKnowledge.length}.`
+        );
+      }
+
+      const positiveK1 = positiveKnowledge[0];
+      const positiveK2 = positiveKnowledge[1];
+      const positiveK3 = positiveKnowledge[2];
+      const positiveK4 = positiveKnowledge[3];
+
+      if (
+        !positiveK1 ||
+        !positiveK2 ||
+        !positiveK3 ||
+        !positiveK4
+      ) {
+        throw new Error(
+          'FASE 23.38 no pudo resolver los cuatro conocimientos del escenario positivo.'
+        );
+      }
+
+      if (
+        new Set([
+          positiveK1.id,
+          positiveK2.id,
+          positiveK3.id,
+          positiveK4.id,
+        ]).size !== 4
+      ) {
+        throw new Error(
+          'FASE 23.38 esperaba cuatro knowledgeId distintos en el escenario positivo.'
+        );
+      }
+
+      /*
+       * CONTROL NEGATIVO.
+       *
+       * También conserva knowledgeId y memoryId completamente
+       * distintos, pero ninguna memoria de una genealogía
+       * refiere al mismo movement que una memoria de la otra.
+       */
+      const negativePatterns = [
+        createControlledPattern(
+          'negative-k1',
+          [
+            'memory-controlled-provenance-negative-k1-1',
+            'memory-controlled-provenance-negative-k1-2',
+            'memory-controlled-provenance-negative-k1-3',
+            'memory-controlled-provenance-negative-k1-4',
+          ]
+        ),
+        createControlledPattern(
+          'negative-k2',
+          [
+            'memory-controlled-provenance-negative-k2-1',
+            'memory-controlled-provenance-negative-k2-2',
+            'memory-controlled-provenance-negative-k2-3',
+            'memory-controlled-provenance-negative-k2-4',
+          ]
+        ),
+        createControlledPattern(
+          'negative-k3',
+          [
+            'memory-controlled-provenance-negative-k3-1',
+            'memory-controlled-provenance-negative-k3-2',
+            'memory-controlled-provenance-negative-k3-3',
+            'memory-controlled-provenance-negative-k3-4',
+          ]
+        ),
+        createControlledPattern(
+          'negative-k4',
+          [
+            'memory-controlled-provenance-negative-k4-1',
+            'memory-controlled-provenance-negative-k4-2',
+            'memory-controlled-provenance-negative-k4-3',
+            'memory-controlled-provenance-negative-k4-4',
+          ]
+        ),
+      ];
+
+      const negativeKnowledge =
+        generateOperationalKnowledge(negativePatterns);
+
+      if (negativeKnowledge.length !== 4) {
+        throw new Error(
+          `FASE 23.38 esperaba 4 conocimientos para el escenario sin procedencia operacional común y generó ${negativeKnowledge.length}.`
+        );
+      }
+
+      const negativeK1 = negativeKnowledge[0];
+      const negativeK2 = negativeKnowledge[1];
+      const negativeK3 = negativeKnowledge[2];
+      const negativeK4 = negativeKnowledge[3];
+
+      if (
+        !negativeK1 ||
+        !negativeK2 ||
+        !negativeK3 ||
+        !negativeK4
+      ) {
+        throw new Error(
+          'FASE 23.38 no pudo resolver los cuatro conocimientos del escenario negativo.'
+        );
+      }
+
+      if (
+        new Set([
+          negativeK1.id,
+          negativeK2.id,
+          negativeK3.id,
+          negativeK4.id,
+        ]).size !== 4
+      ) {
+        throw new Error(
+          'FASE 23.38 esperaba cuatro knowledgeId distintos en el escenario negativo.'
+        );
+      }
+
+      type ControlledOperationalProvenanceSourcePrecedence = {
+        precedingDecisionId: string;
+        precededDecisionId: string;
+        knowledgeId: string;
+      };
+
+      type ControlledOperationalProvenanceDerivedPrecedenceSnapshot = {
+        precedingDecisionId: string;
+        intermediateDecisionId: string;
+        precededDecisionId: string;
+        sourcePrecedences: [
+          ControlledOperationalProvenanceSourcePrecedence,
+          ControlledOperationalProvenanceSourcePrecedence,
+        ];
+      };
+
+      /*
+       * Contrato conceptual heredado de FASE 23.37.
+       *
+       * 23.38 únicamente acepta como evaluable la ausencia
+       * evidencial previamente reconocida.
+       */
+      type ControlledDerivedPrecedenceEvidentialOverlap = {
+        decisionIds: [string, string, string, string];
+        relation:
+          | 'no_contextual_derived_precedence_evidential_overlap'
+          | 'contextual_derived_precedence_evidential_overlap'
+          | 'contextual_derived_precedence_evidential_non_overlap';
+        evidentiallyOverlapping: boolean | null;
+        firstDerivedPrecedence:
+          | ControlledOperationalProvenanceDerivedPrecedenceSnapshot
+          | null;
+        secondDerivedPrecedence:
+          | ControlledOperationalProvenanceDerivedPrecedenceSnapshot
+          | null;
+        rationale: string;
+      };
+
+      type ControlledDerivedPrecedenceOperationalProvenance = {
+        decisionIds: [string, string, string, string];
+        relation:
+          | 'no_contextual_derived_precedence_operational_provenance'
+          | 'contextual_derived_precedence_common_operational_provenance'
+          | 'contextual_derived_precedence_no_common_operational_provenance';
+        commonOperationalProvenance: boolean | null;
+        firstDerivedPrecedence:
+          | ControlledOperationalProvenanceDerivedPrecedenceSnapshot
+          | null;
+        secondDerivedPrecedence:
+          | ControlledOperationalProvenanceDerivedPrecedenceSnapshot
+          | null;
+        rationale: string;
+      };
+
+      type ControlledKnowledgeCatalog =
+        ReturnType<typeof generateOperationalKnowledge>;
+
+      /*
+       * Memorias controladas.
+       *
+       * No se persisten y no se modifica OperationalMemoryRecord.
+       * Únicamente reproducen los campos estructurales que el
+       * modelo ya conserva.
+       */
+      const createControlledMemory = (
+        id: string,
+        entityId: string
+      ): OperationalMemoryRecord => ({
+        id,
+        memory_type: 'movement',
+        entity_id: entityId,
+        entity_type: 'movement',
+        title: `Memoria controlada ${id}`,
+        description:
+          'Memoria controlada para FASE 23.38.',
+        score: 100,
+        metadata: {
+          phase: '23.38',
+          source: 'IntegrationLabPage',
+        },
+        created_at: '2026-08-18T00:00:00.000Z',
+      });
+
+      const positiveMemories: OperationalMemoryRecord[] = [
+        ...[
+          'memory-controlled-provenance-positive-k1-1',
+          'memory-controlled-provenance-positive-k1-2',
+          'memory-controlled-provenance-positive-k1-3',
+          'memory-controlled-provenance-positive-k1-4',
+        ].map((id, index) =>
+          createControlledMemory(
+            id,
+            index === 0
+              ? 'movement-controlled-provenance-shared'
+              : `movement-controlled-provenance-positive-k1-${index + 1}`
+          )
+        ),
+
+        ...[
+          'memory-controlled-provenance-positive-k2-1',
+          'memory-controlled-provenance-positive-k2-2',
+          'memory-controlled-provenance-positive-k2-3',
+          'memory-controlled-provenance-positive-k2-4',
+        ].map((id, index) =>
+          createControlledMemory(
+            id,
+            `movement-controlled-provenance-positive-k2-${index + 1}`
+          )
+        ),
+
+        ...[
+          'memory-controlled-provenance-positive-k3-1',
+          'memory-controlled-provenance-positive-k3-2',
+          'memory-controlled-provenance-positive-k3-3',
+          'memory-controlled-provenance-positive-k3-4',
+        ].map((id, index) =>
+          createControlledMemory(
+            id,
+            index === 0
+              ? 'movement-controlled-provenance-shared'
+              : `movement-controlled-provenance-positive-k3-${index + 1}`
+          )
+        ),
+
+        ...[
+          'memory-controlled-provenance-positive-k4-1',
+          'memory-controlled-provenance-positive-k4-2',
+          'memory-controlled-provenance-positive-k4-3',
+          'memory-controlled-provenance-positive-k4-4',
+        ].map((id, index) =>
+          createControlledMemory(
+            id,
+            `movement-controlled-provenance-positive-k4-${index + 1}`
+          )
+        ),
+      ];
+
+      const negativeMemories: OperationalMemoryRecord[] = [
+        ...negativePatterns.flatMap((pattern) =>
+          pattern.evidence.memoryIds.map((memoryId) =>
+            createControlledMemory(
+              memoryId,
+              `movement-${memoryId}`
+            )
+          )
+        ),
+      ];
+
+      /*
+       * Resultados heredados conceptualmente de FASE 23.37.
+       *
+       * Ambos escenarios evaluables tienen:
+       *
+       * - knowledgeId distintos;
+       * - memoryId distintos;
+       * - evidentiallyOverlapping === false.
+       */
+      const positiveEvidentialNonOverlap:
+        ControlledDerivedPrecedenceEvidentialOverlap = {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_evidential_non_overlap',
+          evidentiallyOverlapping: false,
+          firstDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: secondDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: secondDecision.id,
+                knowledgeId: positiveK1.id,
+              },
+              {
+                precedingDecisionId: secondDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: positiveK2.id,
+              },
+            ],
+          },
+          secondDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: thirdDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: thirdDecision.id,
+                knowledgeId: positiveK3.id,
+              },
+              {
+                precedingDecisionId: thirdDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: positiveK4.id,
+              },
+            ],
+          },
+          rationale:
+            'Ausencia de solapamiento evidencial previamente reconocida por FASE 23.37 para un escenario con posible procedencia operacional común.',
+        };
+
+      const negativeEvidentialNonOverlap:
+        ControlledDerivedPrecedenceEvidentialOverlap = {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_evidential_non_overlap',
+          evidentiallyOverlapping: false,
+          firstDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: secondDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: secondDecision.id,
+                knowledgeId: negativeK1.id,
+              },
+              {
+                precedingDecisionId: secondDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: negativeK2.id,
+              },
+            ],
+          },
+          secondDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: thirdDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: thirdDecision.id,
+                knowledgeId: negativeK3.id,
+              },
+              {
+                precedingDecisionId: thirdDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: negativeK4.id,
+              },
+            ],
+          },
+          rationale:
+            'Ausencia de solapamiento evidencial previamente reconocida por FASE 23.37 para un escenario sin entidad movement compartida.',
+        };
+
+      /*
+       * CONTROL NO EVALUABLE.
+       *
+       * FASE 23.37 reconoció solapamiento de memoryId.
+       * Aunque las memorias pudieran compartir también
+       * entity_id, 23.38 debe negarse a inspeccionarlo.
+       */
+      const nonEvaluableEvidentialOverlap:
+        ControlledDerivedPrecedenceEvidentialOverlap = {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_evidential_overlap',
+          evidentiallyOverlapping: true,
+          firstDerivedPrecedence:
+            positiveEvidentialNonOverlap.firstDerivedPrecedence,
+          secondDerivedPrecedence:
+            positiveEvidentialNonOverlap.secondDerivedPrecedence,
+          rationale:
+            'Solapamiento evidencial previamente reconocido utilizado para demostrar la frontera de no evaluabilidad de FASE 23.38.',
+        };
+
+      /*
+       * NUEVO CONSUMIDOR DE FASE 23.38.
+       *
+       * Resuelve knowledgeId -> evidence.memoryIds -> memoria.
+       *
+       * Una memoria sólo aporta procedencia estructural si:
+       *
+       * entity_type === 'movement'
+       * entity_id es un string no vacío.
+       *
+       * No se usa metadata.movementId como fallback.
+       */
+      const evaluateControlledDerivedPrecedenceOperationalProvenance =
+        (
+          evidentialOverlap:
+            ControlledDerivedPrecedenceEvidentialOverlap,
+          knowledgeCatalog: ControlledKnowledgeCatalog,
+          memoryCatalog: OperationalMemoryRecord[]
+        ): ControlledDerivedPrecedenceOperationalProvenance => {
+          const evidentialNonOverlapIsEvaluable =
+            evidentialOverlap.relation ===
+              'contextual_derived_precedence_evidential_non_overlap' &&
+            evidentialOverlap.evidentiallyOverlapping === false &&
+            evidentialOverlap.firstDerivedPrecedence !== null &&
+            evidentialOverlap.secondDerivedPrecedence !== null;
+
+          if (!evidentialNonOverlapIsEvaluable) {
+            return {
+              decisionIds: evidentialOverlap.decisionIds,
+              relation:
+                'no_contextual_derived_precedence_operational_provenance',
+              commonOperationalProvenance: null,
+              firstDerivedPrecedence: null,
+              secondDerivedPrecedence: null,
+              rationale:
+                'La procedencia operacional común requiere ausencia contextual de solapamiento evidencial previamente reconocida por FASE 23.37.',
+            };
+          }
+
+          const firstDerivedPrecedence =
+            evidentialOverlap.firstDerivedPrecedence!;
+
+          const secondDerivedPrecedence =
+            evidentialOverlap.secondDerivedPrecedence!;
+
+          const firstKnowledge =
+            firstDerivedPrecedence.sourcePrecedences.map(
+              (sourcePrecedence) =>
+                knowledgeCatalog.find(
+                  (knowledge) =>
+                    knowledge.id ===
+                    sourcePrecedence.knowledgeId
+                )
+            );
+
+          const secondKnowledge =
+            secondDerivedPrecedence.sourcePrecedences.map(
+              (sourcePrecedence) =>
+                knowledgeCatalog.find(
+                  (knowledge) =>
+                    knowledge.id ===
+                    sourcePrecedence.knowledgeId
+                )
+            );
+
+          if (
+            firstKnowledge.some(
+              (knowledge) => knowledge === undefined
+            ) ||
+            secondKnowledge.some(
+              (knowledge) => knowledge === undefined
+            )
+          ) {
+            return {
+              decisionIds: evidentialOverlap.decisionIds,
+              relation:
+                'no_contextual_derived_precedence_operational_provenance',
+              commonOperationalProvenance: null,
+              firstDerivedPrecedence: null,
+              secondDerivedPrecedence: null,
+              rationale:
+                'La procedencia operacional común no es evaluable porque no pudieron resolverse todos los knowledgeId de las genealogías.',
+            };
+          }
+
+          const resolveMovementEntityIds = (
+            knowledgeItems: typeof firstKnowledge
+          ) => {
+            const memoryIds = knowledgeItems.flatMap(
+              (knowledge) =>
+                knowledge?.evidence.memoryIds ?? []
+            );
+
+            return memoryIds.flatMap((memoryId) => {
+              const memory = memoryCatalog.find(
+                (candidate) =>
+                  candidate.id === memoryId
+              );
+
+              if (
+                !memory ||
+                memory.entity_type !== 'movement' ||
+                typeof memory.entity_id !== 'string' ||
+                memory.entity_id.trim().length === 0
+              ) {
+                return [];
+              }
+
+              return [memory.entity_id];
+            });
+          };
+
+          const firstMovementEntityIds = new Set(
+            resolveMovementEntityIds(firstKnowledge)
+          );
+
+          const hasCommonOperationalProvenance =
+            resolveMovementEntityIds(secondKnowledge).some(
+              (entityId) =>
+                firstMovementEntityIds.has(entityId)
+            );
+
+          return {
+            decisionIds: evidentialOverlap.decisionIds,
+            relation: hasCommonOperationalProvenance
+              ? 'contextual_derived_precedence_common_operational_provenance'
+              : 'contextual_derived_precedence_no_common_operational_provenance',
+            commonOperationalProvenance:
+              hasCommonOperationalProvenance,
+            firstDerivedPrecedence,
+            secondDerivedPrecedence,
+            rationale: hasCommonOperationalProvenance
+              ? 'Memorias distintas de ambas genealogías refieren estructuralmente a una misma entidad persistente movement mediante entity_type y entity_id, sin interpretar esa coincidencia como identidad de evidencia, recomendación, episodio operacional o causa.'
+              : 'No se identificó una misma entidad persistente movement referenciada por memorias de ambas genealogías, sin interpretar esa ausencia como independencia de evidencia, independencia operacional ni independencia causal.',
+          };
+        };
+
+      const positiveInputSnapshot =
+        JSON.stringify(positiveEvidentialNonOverlap);
+
+      const negativeInputSnapshot =
+        JSON.stringify(negativeEvidentialNonOverlap);
+
+      const nonEvaluableInputSnapshot =
+        JSON.stringify(nonEvaluableEvidentialOverlap);
+
+      const positiveKnowledgeSnapshot =
+        JSON.stringify(positiveKnowledge);
+
+      const negativeKnowledgeSnapshot =
+        JSON.stringify(negativeKnowledge);
+
+      const positiveMemorySnapshot =
+        JSON.stringify(positiveMemories);
+
+      const negativeMemorySnapshot =
+        JSON.stringify(negativeMemories);
+
+      /*
+       * Aserciones internas de construcción.
+       *
+       * Los memoryId deben ser completamente distintos.
+       */
+      const positiveFirstMemoryIds = new Set([
+        ...positiveK1.evidence.memoryIds,
+        ...positiveK2.evidence.memoryIds,
+      ]);
+
+      const positiveSharedMemoryIds = [
+        ...positiveK3.evidence.memoryIds,
+        ...positiveK4.evidence.memoryIds,
+      ].filter((memoryId) =>
+        positiveFirstMemoryIds.has(memoryId)
+      );
+
+      if (positiveSharedMemoryIds.length !== 0) {
+        throw new Error(
+          'FASE 23.38 construyó incorrectamente el escenario positivo con memoryId compartidos.'
+        );
+      }
+
+      const negativeFirstMemoryIds = new Set([
+        ...negativeK1.evidence.memoryIds,
+        ...negativeK2.evidence.memoryIds,
+      ]);
+
+      const negativeSharedMemoryIds = [
+        ...negativeK3.evidence.memoryIds,
+        ...negativeK4.evidence.memoryIds,
+      ].filter((memoryId) =>
+        negativeFirstMemoryIds.has(memoryId)
+      );
+
+      if (negativeSharedMemoryIds.length !== 0) {
+        throw new Error(
+          'FASE 23.38 construyó incorrectamente el escenario negativo con memoryId compartidos.'
+        );
+      }
+
+      /*
+       * Comprobación interna del escenario positivo.
+       *
+       * Esta intersección NO se materializa en el resultado.
+       */
+      const positiveFirstMovementEntityIds = new Set(
+        positiveMemories
+          .filter((memory) =>
+            positiveFirstMemoryIds.has(memory.id)
+          )
+          .filter(
+            (memory) =>
+              memory.entity_type === 'movement' &&
+              typeof memory.entity_id === 'string'
+          )
+          .map((memory) => memory.entity_id as string)
+      );
+
+      const internallySharedMovementEntityIds =
+        positiveMemories
+          .filter(
+            (memory) =>
+              !positiveFirstMemoryIds.has(memory.id)
+          )
+          .filter(
+            (memory) =>
+              memory.entity_type === 'movement' &&
+              typeof memory.entity_id === 'string'
+          )
+          .map((memory) => memory.entity_id as string)
+          .filter((entityId) =>
+            positiveFirstMovementEntityIds.has(entityId)
+          );
+
+      if (
+        internallySharedMovementEntityIds.length !== 1 ||
+        internallySharedMovementEntityIds[0] !==
+          'movement-controlled-provenance-shared'
+      ) {
+        throw new Error(
+          'FASE 23.38 no construyó correctamente el escenario controlado de procedencia operacional común entre memorias distintas.'
+        );
+      }
+
+      const positiveEvaluation =
+        evaluateControlledDerivedPrecedenceOperationalProvenance(
+          positiveEvidentialNonOverlap,
+          positiveKnowledge,
+          positiveMemories
+        );
+
+      const negativeEvaluation =
+        evaluateControlledDerivedPrecedenceOperationalProvenance(
+          negativeEvidentialNonOverlap,
+          negativeKnowledge,
+          negativeMemories
+        );
+
+      const nonEvaluableEvaluation =
+        evaluateControlledDerivedPrecedenceOperationalProvenance(
+          nonEvaluableEvidentialOverlap,
+          positiveKnowledge,
+          positiveMemories
+        );
+
+      if (
+        positiveEvaluation.relation !==
+          'contextual_derived_precedence_common_operational_provenance' ||
+        positiveEvaluation.commonOperationalProvenance !== true ||
+        positiveEvaluation.firstDerivedPrecedence === null ||
+        positiveEvaluation.secondDerivedPrecedence === null
+      ) {
+        throw new Error(
+          'FASE 23.38 no reconoció la procedencia operacional común esperada entre memorias distintas.'
+        );
+      }
+
+      if (
+        negativeEvaluation.relation !==
+          'contextual_derived_precedence_no_common_operational_provenance' ||
+        negativeEvaluation.commonOperationalProvenance !== false ||
+        negativeEvaluation.firstDerivedPrecedence === null ||
+        negativeEvaluation.secondDerivedPrecedence === null
+      ) {
+        throw new Error(
+          'FASE 23.38 no reconoció correctamente la ausencia de entidad movement compartida.'
+        );
+      }
+
+      if (
+        nonEvaluableEvaluation.relation !==
+          'no_contextual_derived_precedence_operational_provenance' ||
+        nonEvaluableEvaluation.commonOperationalProvenance !== null ||
+        nonEvaluableEvaluation.firstDerivedPrecedence !== null ||
+        nonEvaluableEvaluation.secondDerivedPrecedence !== null
+      ) {
+        throw new Error(
+          'FASE 23.38 inspeccionó indebidamente procedencia operacional sin ausencia de solapamiento evidencial válida previa.'
+        );
+      }
+
+      /*
+       * Las genealogías heredadas deben conservarse por
+       * referencia en los escenarios evaluables.
+       */
+      if (
+        positiveEvaluation.firstDerivedPrecedence !==
+          positiveEvidentialNonOverlap.firstDerivedPrecedence ||
+        positiveEvaluation.secondDerivedPrecedence !==
+          positiveEvidentialNonOverlap.secondDerivedPrecedence ||
+        negativeEvaluation.firstDerivedPrecedence !==
+          negativeEvidentialNonOverlap.firstDerivedPrecedence ||
+        negativeEvaluation.secondDerivedPrecedence !==
+          negativeEvidentialNonOverlap.secondDerivedPrecedence
+      ) {
+        throw new Error(
+          'FASE 23.38 reconstruyó, fusionó o sustituyó alguna genealogía heredada de FASE 23.37.'
+        );
+      }
+
+      /*
+       * Ninguna entrada, conocimiento ni memoria controlada
+       * puede ser modificada durante la observación.
+       */
+      if (
+        JSON.stringify(positiveEvidentialNonOverlap) !==
+          positiveInputSnapshot ||
+        JSON.stringify(negativeEvidentialNonOverlap) !==
+          negativeInputSnapshot ||
+        JSON.stringify(nonEvaluableEvidentialOverlap) !==
+          nonEvaluableInputSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.38 modificó alguna clasificación evidencial heredada de FASE 23.37.'
+        );
+      }
+
+      if (
+        JSON.stringify(positiveKnowledge) !==
+          positiveKnowledgeSnapshot ||
+        JSON.stringify(negativeKnowledge) !==
+          negativeKnowledgeSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.38 modificó algún OperationalKnowledge durante la evaluación.'
+        );
+      }
+
+      if (
+        JSON.stringify(positiveMemories) !==
+          positiveMemorySnapshot ||
+        JSON.stringify(negativeMemories) !==
+          negativeMemorySnapshot
+      ) {
+        throw new Error(
+          'FASE 23.38 modificó alguna OperationalMemory durante la evaluación.'
+        );
+      }
+
+      /*
+       * La coincidencia de entity_id sólo puede observarse
+       * internamente.
+       *
+       * NO materializamos identificadores compartidos,
+       * episodios, independencia, soporte o fuerza.
+       */
+      const forbiddenProperties = [
+        'knowledgeId',
+        'knowledgeIds',
+        'memoryId',
+        'memoryIds',
+        'sharedMemoryId',
+        'sharedMemoryIds',
+        'entityId',
+        'entityIds',
+        'movementId',
+        'movementIds',
+        'sharedMovementId',
+        'sharedMovementIds',
+        'commonEntityId',
+        'commonEntityIds',
+        'operationalEpisodeId',
+        'operationalEpisodeIds',
+        'episodeId',
+        'episodeIds',
+        'evidence',
+        'evidenceCount',
+        'provenanceCount',
+        'overlapCount',
+        'overlapRatio',
+        'independentEvidence',
+        'evidenceIndependence',
+        'operationalIndependence',
+        'causalIndependence',
+        'independent',
+        'independence',
+        'occurrences',
+        'supportCount',
+        'support',
+        'reinforcement',
+        'strength',
+        'weight',
+        'score',
+        'confidence',
+        'priority',
+        'closure',
+        'transitiveClosure',
+        'partialOrder',
+        'orderedDecisionIds',
+        'sortedDecisionIds',
+        'order',
+        'rank',
+        'ranking',
+        'position',
+        'winner',
+        'loser',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationObjects: Record<string, unknown>[] = [
+        positiveEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+        negativeEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+        nonEvaluableEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) =>
+              property in evaluation
+          )
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 23.38 introdujo indebidamente la propiedad "${detectedForbiddenProperty}" en la clasificación de procedencia operacional.`
+        );
+      }
+
+      const forbiddenStructuralProperties = [
+        'derivedPrecedence',
+        'thirdDerivedPrecedence',
+        'mergedDerivedPrecedence',
+        'deduplicatedDerivedPrecedence',
+        'canonicalDerivedPrecedence',
+        'composedDerivedPrecedence',
+        'aggregatedDerivedPrecedence',
+        'combinedDerivedPrecedence',
+        'mergedGenealogy',
+        'canonicalGenealogy',
+        'aggregatedGenealogy',
+        'combinedGenealogy',
+      ];
+
+      const detectedForbiddenStructuralProperty =
+        forbiddenStructuralProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) =>
+              property in evaluation
+          )
+        );
+
+      if (detectedForbiddenStructuralProperty) {
+        throw new Error(
+          `FASE 23.38 fabricó indebidamente la estructura "${detectedForbiddenStructuralProperty}".`
+        );
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * Observar procedencia estructural común entre memorias
+       * no puede modificar recomendaciones ni decisiones.
+       */
+      const recommendationsAfterOperationalProvenance =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterOperationalProvenance =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterOperationalProvenance
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterOperationalProvenance
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.38 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterOperationalProvenance
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.38 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      const firstDecisionAfter =
+        decisionsAfterOperationalProvenance.find(
+          (decision) =>
+            decision.id === firstDecision.id
+        );
+
+      const secondDecisionAfter =
+        decisionsAfterOperationalProvenance.find(
+          (decision) =>
+            decision.id === secondDecision.id
+        );
+
+      const thirdDecisionAfter =
+        decisionsAfterOperationalProvenance.find(
+          (decision) =>
+            decision.id === thirdDecision.id
+        );
+
+      const fourthDecisionAfter =
+        decisionsAfterOperationalProvenance.find(
+          (decision) =>
+            decision.id === fourthDecision.id
+        );
+
+      if (
+        !firstDecisionAfter ||
+        !secondDecisionAfter ||
+        !thirdDecisionAfter ||
+        !fourthDecisionAfter
+      ) {
+        throw new Error(
+          'FASE 23.38 perdió alguna alternativa productiva después del experimento.'
+        );
+      }
+
+      if (
+        JSON.stringify(firstDecisionAfter) !==
+          firstDecisionSnapshot ||
+        JSON.stringify(secondDecisionAfter) !==
+          secondDecisionSnapshot ||
+        JSON.stringify(thirdDecisionAfter) !==
+          thirdDecisionSnapshot ||
+        JSON.stringify(fourthDecisionAfter) !==
+          fourthDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.38 alteró indirectamente alguna alternativa decisional productiva.'
+        );
+      }
+
+      addLog(
+        `FASE 23.38 OK: sobre genealogías previamente reconocidas por FASE 23.37 como no solapadas en memoryId para ${firstDecision.id} -> ${fourthDecision.id}, se distinguieron controladamente una procedencia operacional común entre memorias distintas que refieren a una misma entidad persistente movement mediante entity_type/entity_id y una ausencia de entidad movement compartida; el control con solapamiento evidencial quedó correctamente no evaluable. La coincidencia de entity_id no fue interpretada como identidad de memoria, evidencia, recomendación, episodio operacional o causa, y la ausencia de entity_id compartido no fue interpretada como independencia de evidencia, independencia operacional ni independencia causal. La observación no produjo identificadores compartidos materializados, episodios operacionales, soporte, refuerzo, strength, weight, score, modificación de confidence o priority, fusión, deduplicación, genealogía agregada, tercera relación derivada, composición derivada-derivada, composición derivada-explícita, propagación transitiva, cierre transitivo, orden parcial, reordenamiento, ranking, selección ni ejecución, permaneciendo intactas ${recommendationsAfterOperationalProvenance.length} recomendaciones y ${decisionsAfterOperationalProvenance.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en procedencia operacional común contextual controlada de evidencias no solapadas por conocimiento operativo 23.38: ${error.message}`
+          : 'Error inesperado en procedencia operacional común contextual controlada de evidencias no solapadas por conocimiento operativo 23.38.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -20497,6 +21688,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Solapamiento Evidencial 23.37
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeControlledDerivedPrecedenceOperationalProvenance}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Procedencia Operacional 23.38
         </button>
 
         <button
