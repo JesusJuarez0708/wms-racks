@@ -18584,6 +18584,1162 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeControlledDerivedPrecedenceEvidentialOverlap() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeEvidentialOverlap =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeEvidentialOverlap =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeEvidentialOverlap
+        );
+
+      /*
+      * FASE 23.37 — Solapamiento evidencial contextual
+      * controlado de genealogías no solapadas por
+      * conocimiento operativo.
+      *
+      * FASE 23.36 ya estableció la frontera:
+      *
+      * diversidad genealógica
+      *   -> solapamiento / no solapamiento de knowledgeId.
+      *
+      * FASE 23.37 NO vuelve a calcular:
+      *
+      * - preferencia contextual;
+      * - precedencia contextual explícita;
+      * - coexistencia;
+      * - transitividad;
+      * - convergencia;
+      * - diversidad genealógica;
+      * - solapamiento genealógico.
+      *
+      * Recibe exclusivamente un resultado previamente
+      * clasificado por 23.36 como:
+      *
+      * contextual_derived_precedence_genealogical_non_overlap
+      *
+      * y observa si los OperationalKnowledge involucrados
+      * reutilizan al menos un mismo memoryId dentro de
+      * evidence.memoryIds.
+      *
+      * IMPORTANTE:
+      *
+      * ausencia de memoryId compartidos NO significa:
+      *
+      * - independencia de evidencia;
+      * - independencia de procedencia operacional;
+      * - independencia causal;
+      * - evidencia adicional;
+      * - soporte independiente;
+      * - soporte acumulado;
+      * - supportCount;
+      * - refuerzo;
+      * - strength;
+      * - weight;
+      * - score;
+      * - mayor confidence;
+      * - mayor priority.
+      *
+      * memoryId diferente tampoco implica necesariamente
+      * evento operacional diferente ni causa diferente.
+      *
+      * La intersección de memorias sólo se observa
+      * internamente y NO se materializa en el resultado.
+      */
+
+      const firstDecision =
+        decisionsBeforeEvidentialOverlap.find(
+          (decision) =>
+            decision.id === 'decision-review-movements'
+        );
+
+      const secondDecision =
+        decisionsBeforeEvidentialOverlap.find(
+          (decision) =>
+            decision.id === 'decision-maintain-monitoring'
+        );
+
+      const thirdDecision =
+        decisionsBeforeEvidentialOverlap.find(
+          (decision) =>
+            decision.id === 'decision-prioritize-high-value'
+        );
+
+      const fourthDecision =
+        decisionsBeforeEvidentialOverlap.find(
+          (decision) =>
+            decision.id ===
+            'recommendation-prioritize-high-score-actions'
+        );
+
+      if (!firstDecision) {
+        throw new Error(
+          'FASE 23.37 no encontró decision-review-movements como alternativa A.'
+        );
+      }
+
+      if (!secondDecision) {
+        throw new Error(
+          'FASE 23.37 no encontró decision-maintain-monitoring como alternativa B.'
+        );
+      }
+
+      if (!thirdDecision) {
+        throw new Error(
+          'FASE 23.37 no encontró decision-prioritize-high-value como alternativa C.'
+        );
+      }
+
+      if (!fourthDecision) {
+        throw new Error(
+          'FASE 23.37 no encontró recommendation-prioritize-high-score-actions como alternativa D.'
+        );
+      }
+
+      const controlledDecisionIds = [
+        firstDecision.id,
+        secondDecision.id,
+        thirdDecision.id,
+        fourthDecision.id,
+      ];
+
+      if (new Set(controlledDecisionIds).size !== 4) {
+        throw new Error(
+          'FASE 23.37 esperaba cuatro alternativas decisionales distintas.'
+        );
+      }
+
+      const recommendationsSnapshot =
+        JSON.stringify(
+          recommendationsBeforeEvidentialOverlap
+        );
+
+      const decisionsSnapshot =
+        JSON.stringify(decisionsBeforeEvidentialOverlap);
+
+      const firstDecisionSnapshot =
+        JSON.stringify(firstDecision);
+
+      const secondDecisionSnapshot =
+        JSON.stringify(secondDecision);
+
+      const thirdDecisionSnapshot =
+        JSON.stringify(thirdDecision);
+
+      const fourthDecisionSnapshot =
+        JSON.stringify(fourthDecision);
+
+      /*
+      * Constructor exclusivamente local para generar
+      * conocimientos controlados válidos a partir de
+      * MemoryPattern.
+      *
+      * No modifica servicios productivos ni introduce
+      * una nueva abstracción fuera del experimento.
+      */
+      const createControlledPattern = (
+        suffix: string,
+        score: number,
+        memoryIds: string[]
+      ) => ({
+        id:
+          `recommendation-deviation-pattern-reubicacion-` +
+          `controlled-evidential-overlap-${suffix}`,
+        title:
+          `Patrón controlado de solapamiento evidencial ${suffix}`,
+        description:
+          `Patrón controlado utilizado exclusivamente por ` +
+          `FASE 23.37 para observar reutilización de memoryId ` +
+          `sin convertirla en soporte, refuerzo o dependencia causal.`,
+        score,
+        occurrences: memoryIds.length,
+        kind: 'recommendation-deviation-recurrence' as const,
+        context: {
+          movementType: 'reubicacion',
+          deviationReason:
+            `motivo-controlado-evidential-overlap-${suffix}`,
+        },
+        evidence: {
+          memoryIds,
+        },
+      });
+
+      /*
+      * ESCENARIO 1 — NO SOLAPAMIENTO GENEALÓGICO
+      * CON SOLAPAMIENTO EVIDENCIAL.
+      *
+      * G1 = K1 + K2
+      * G2 = K3 + K4
+      *
+      * Todos los knowledgeId son distintos.
+      *
+      * Sin embargo:
+      *
+      * K1 contiene M-SHARED
+      * K4 contiene M-SHARED
+      *
+      * Por tanto:
+      *
+      * knowledgeIds(G1) ∩ knowledgeIds(G2) = ∅
+      *
+      * pero:
+      *
+      * memoryIds(G1) ∩ memoryIds(G2) = { M-SHARED }
+      */
+      const evidentialOverlapPatterns = [
+        createControlledPattern(
+          'positive-k1',
+          95,
+          [
+            'memory-controlled-evidential-positive-k1-1',
+            'memory-controlled-evidential-positive-shared',
+            'memory-controlled-evidential-positive-k1-3',
+            'memory-controlled-evidential-positive-k1-4',
+          ]
+        ),
+        createControlledPattern(
+          'positive-k2',
+          94,
+          [
+            'memory-controlled-evidential-positive-k2-1',
+            'memory-controlled-evidential-positive-k2-2',
+            'memory-controlled-evidential-positive-k2-3',
+            'memory-controlled-evidential-positive-k2-4',
+          ]
+        ),
+        createControlledPattern(
+          'positive-k3',
+          93,
+          [
+            'memory-controlled-evidential-positive-k3-1',
+            'memory-controlled-evidential-positive-k3-2',
+            'memory-controlled-evidential-positive-k3-3',
+            'memory-controlled-evidential-positive-k3-4',
+          ]
+        ),
+        createControlledPattern(
+          'positive-k4',
+          92,
+          [
+            'memory-controlled-evidential-positive-k4-1',
+            'memory-controlled-evidential-positive-shared',
+            'memory-controlled-evidential-positive-k4-3',
+            'memory-controlled-evidential-positive-k4-4',
+          ]
+        ),
+      ];
+
+      const evidentialOverlapKnowledge =
+        generateOperationalKnowledge(
+          evidentialOverlapPatterns
+        );
+
+      if (evidentialOverlapKnowledge.length !== 4) {
+        throw new Error(
+          `FASE 23.37 esperaba 4 conocimientos para el escenario de solapamiento evidencial y generó ${evidentialOverlapKnowledge.length}.`
+        );
+      }
+
+      const overlapK1 = evidentialOverlapKnowledge[0];
+      const overlapK2 = evidentialOverlapKnowledge[1];
+      const overlapK3 = evidentialOverlapKnowledge[2];
+      const overlapK4 = evidentialOverlapKnowledge[3];
+
+      if (
+        !overlapK1 ||
+        !overlapK2 ||
+        !overlapK3 ||
+        !overlapK4
+      ) {
+        throw new Error(
+          'FASE 23.37 no pudo resolver los cuatro conocimientos del escenario de solapamiento evidencial.'
+        );
+      }
+
+      const overlapKnowledgeIds = [
+        overlapK1.id,
+        overlapK2.id,
+        overlapK3.id,
+        overlapK4.id,
+      ];
+
+      if (new Set(overlapKnowledgeIds).size !== 4) {
+        throw new Error(
+          'FASE 23.37 esperaba cuatro knowledgeId distintos en el escenario de solapamiento evidencial.'
+        );
+      }
+
+      /*
+      * ESCENARIO 2 — NO SOLAPAMIENTO GENEALÓGICO
+      * Y AUSENCIA DE SOLAPAMIENTO EVIDENCIAL.
+      *
+      * G1 = K1 + K2
+      * G2 = K3 + K4
+      *
+      * No se comparte ningún knowledgeId ni memoryId.
+      */
+      const evidentialNonOverlapPatterns = [
+        createControlledPattern(
+          'negative-k1',
+          91,
+          [
+            'memory-controlled-evidential-negative-k1-1',
+            'memory-controlled-evidential-negative-k1-2',
+            'memory-controlled-evidential-negative-k1-3',
+            'memory-controlled-evidential-negative-k1-4',
+          ]
+        ),
+        createControlledPattern(
+          'negative-k2',
+          90,
+          [
+            'memory-controlled-evidential-negative-k2-1',
+            'memory-controlled-evidential-negative-k2-2',
+            'memory-controlled-evidential-negative-k2-3',
+            'memory-controlled-evidential-negative-k2-4',
+          ]
+        ),
+        createControlledPattern(
+          'negative-k3',
+          89,
+          [
+            'memory-controlled-evidential-negative-k3-1',
+            'memory-controlled-evidential-negative-k3-2',
+            'memory-controlled-evidential-negative-k3-3',
+            'memory-controlled-evidential-negative-k3-4',
+          ]
+        ),
+        createControlledPattern(
+          'negative-k4',
+          88,
+          [
+            'memory-controlled-evidential-negative-k4-1',
+            'memory-controlled-evidential-negative-k4-2',
+            'memory-controlled-evidential-negative-k4-3',
+            'memory-controlled-evidential-negative-k4-4',
+          ]
+        ),
+      ];
+
+      const evidentialNonOverlapKnowledge =
+        generateOperationalKnowledge(
+          evidentialNonOverlapPatterns
+        );
+
+      if (evidentialNonOverlapKnowledge.length !== 4) {
+        throw new Error(
+          `FASE 23.37 esperaba 4 conocimientos para el escenario sin solapamiento evidencial y generó ${evidentialNonOverlapKnowledge.length}.`
+        );
+      }
+
+      const nonOverlapK1 =
+        evidentialNonOverlapKnowledge[0];
+
+      const nonOverlapK2 =
+        evidentialNonOverlapKnowledge[1];
+
+      const nonOverlapK3 =
+        evidentialNonOverlapKnowledge[2];
+
+      const nonOverlapK4 =
+        evidentialNonOverlapKnowledge[3];
+
+      if (
+        !nonOverlapK1 ||
+        !nonOverlapK2 ||
+        !nonOverlapK3 ||
+        !nonOverlapK4
+      ) {
+        throw new Error(
+          'FASE 23.37 no pudo resolver los cuatro conocimientos del escenario sin solapamiento evidencial.'
+        );
+      }
+
+      const nonOverlapKnowledgeIds = [
+        nonOverlapK1.id,
+        nonOverlapK2.id,
+        nonOverlapK3.id,
+        nonOverlapK4.id,
+      ];
+
+      if (new Set(nonOverlapKnowledgeIds).size !== 4) {
+        throw new Error(
+          'FASE 23.37 esperaba cuatro knowledgeId distintos en el escenario sin solapamiento evidencial.'
+        );
+      }
+
+      /*
+      * Contratos heredados conceptualmente de FASE 23.36.
+      *
+      * 23.37 NO vuelve a evaluar diversidad ni
+      * solapamiento genealógico.
+      */
+      type ControlledEvidentialSourcePrecedence = {
+        precedingDecisionId: string;
+        precededDecisionId: string;
+        knowledgeId: string;
+      };
+
+      type ControlledEvidentialDerivedPrecedenceSnapshot = {
+        precedingDecisionId: string;
+        intermediateDecisionId: string;
+        precededDecisionId: string;
+        sourcePrecedences: [
+          ControlledEvidentialSourcePrecedence,
+          ControlledEvidentialSourcePrecedence,
+        ];
+      };
+
+      type ControlledDerivedPrecedenceGenealogicalOverlap = {
+        decisionIds: [string, string, string, string];
+        relation:
+          | 'no_contextual_derived_precedence_genealogical_overlap'
+          | 'contextual_derived_precedence_genealogical_overlap'
+          | 'contextual_derived_precedence_genealogical_non_overlap';
+        genealogicallyOverlapping: boolean | null;
+        firstDerivedPrecedence:
+          | ControlledEvidentialDerivedPrecedenceSnapshot
+          | null;
+        secondDerivedPrecedence:
+          | ControlledEvidentialDerivedPrecedenceSnapshot
+          | null;
+        rationale: string;
+      };
+
+      type ControlledDerivedPrecedenceEvidentialOverlap = {
+        decisionIds: [string, string, string, string];
+        relation:
+          | 'no_contextual_derived_precedence_evidential_overlap'
+          | 'contextual_derived_precedence_evidential_overlap'
+          | 'contextual_derived_precedence_evidential_non_overlap';
+        evidentiallyOverlapping: boolean | null;
+        firstDerivedPrecedence:
+          | ControlledEvidentialDerivedPrecedenceSnapshot
+          | null;
+        secondDerivedPrecedence:
+          | ControlledEvidentialDerivedPrecedenceSnapshot
+          | null;
+        rationale: string;
+      };
+
+      type ControlledKnowledgeCatalog =
+        ReturnType<typeof generateOperationalKnowledge>;
+
+      /*
+      * NUEVO CONSUMIDOR DE FASE 23.37.
+      *
+      * Únicamente acepta como evaluable una ausencia
+      * contextual de solapamiento genealógico previamente
+      * reconocida por FASE 23.36.
+      *
+      * Utiliza knowledgeId exclusivamente para resolver
+      * OperationalKnowledge y observar internamente sus
+      * evidence.memoryIds.
+      *
+      * NO devuelve:
+      *
+      * - memoryId;
+      * - memoryIds;
+      * - sharedMemoryIds;
+      * - evidence;
+      * - overlapCount;
+      * - overlapRatio;
+      * - independentEvidence;
+      * - causalIndependence;
+      * - support;
+      * - strength.
+      */
+      const evaluateControlledDerivedPrecedenceEvidentialOverlap =
+        (
+          genealogicalOverlap:
+            ControlledDerivedPrecedenceGenealogicalOverlap,
+          knowledgeCatalog: ControlledKnowledgeCatalog
+        ): ControlledDerivedPrecedenceEvidentialOverlap => {
+          const genealogicalNonOverlapIsEvaluable =
+            genealogicalOverlap.relation ===
+              'contextual_derived_precedence_genealogical_non_overlap' &&
+            genealogicalOverlap.genealogicallyOverlapping === false &&
+            genealogicalOverlap.firstDerivedPrecedence !== null &&
+            genealogicalOverlap.secondDerivedPrecedence !== null;
+
+          if (!genealogicalNonOverlapIsEvaluable) {
+            return {
+              decisionIds:
+                genealogicalOverlap.decisionIds,
+              relation:
+                'no_contextual_derived_precedence_evidential_overlap',
+              evidentiallyOverlapping: null,
+              firstDerivedPrecedence: null,
+              secondDerivedPrecedence: null,
+              rationale:
+                'El solapamiento evidencial requiere ausencia contextual de solapamiento genealógico previamente reconocida por FASE 23.36.',
+            };
+          }
+
+          const firstDerivedPrecedence =
+            genealogicalOverlap.firstDerivedPrecedence!;
+
+          const secondDerivedPrecedence =
+            genealogicalOverlap.secondDerivedPrecedence!;
+
+          const firstKnowledge =
+            firstDerivedPrecedence.sourcePrecedences.map(
+              (sourcePrecedence) =>
+                knowledgeCatalog.find(
+                  (knowledge) =>
+                    knowledge.id ===
+                    sourcePrecedence.knowledgeId
+                )
+            );
+
+          const secondKnowledge =
+            secondDerivedPrecedence.sourcePrecedences.map(
+              (sourcePrecedence) =>
+                knowledgeCatalog.find(
+                  (knowledge) =>
+                    knowledge.id ===
+                    sourcePrecedence.knowledgeId
+                )
+            );
+
+          if (
+            firstKnowledge.some(
+              (knowledge) => knowledge === undefined
+            ) ||
+            secondKnowledge.some(
+              (knowledge) => knowledge === undefined
+            )
+          ) {
+            return {
+              decisionIds:
+                genealogicalOverlap.decisionIds,
+              relation:
+                'no_contextual_derived_precedence_evidential_overlap',
+              evidentiallyOverlapping: null,
+              firstDerivedPrecedence: null,
+              secondDerivedPrecedence: null,
+              rationale:
+                'El solapamiento evidencial no es evaluable porque no pudieron resolverse todos los knowledgeId de las genealogías previamente reconocidas.',
+            };
+          }
+
+          const firstMemoryIds = new Set(
+            firstKnowledge.flatMap(
+              (knowledge) =>
+                knowledge?.evidence.memoryIds ?? []
+            )
+          );
+
+          const hasEvidentialOverlap =
+            secondKnowledge.some((knowledge) =>
+              (knowledge?.evidence.memoryIds ?? []).some(
+                (memoryId) =>
+                  firstMemoryIds.has(memoryId)
+              )
+            );
+
+          return {
+            decisionIds:
+              genealogicalOverlap.decisionIds,
+            relation: hasEvidentialOverlap
+              ? 'contextual_derived_precedence_evidential_overlap'
+              : 'contextual_derived_precedence_evidential_non_overlap',
+            evidentiallyOverlapping:
+              hasEvidentialOverlap,
+            firstDerivedPrecedence,
+            secondDerivedPrecedence,
+            rationale: hasEvidentialOverlap
+              ? 'Las genealogías previamente reconocidas como no solapadas en knowledgeId reutilizan al menos un mismo memoryId de evidencia, sin interpretar esa reutilización como evidencia acumulada, soporte, refuerzo o dependencia causal.'
+              : 'Las genealogías previamente reconocidas como no solapadas en knowledgeId tampoco reutilizan memoryId de evidencia, sin interpretar esa ausencia como independencia de evidencia, independencia de procedencia operacional o independencia causal.',
+          };
+        };
+
+      /*
+      * Resultado heredado de 23.36 para el escenario
+      * positivo de 23.37.
+      *
+      * G1 = K1 + K2
+      * G2 = K3 + K4
+      *
+      * Todos los knowledgeId son distintos.
+      */
+      const genealogicalNonOverlapWithEvidentialOverlap:
+        ControlledDerivedPrecedenceGenealogicalOverlap = {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_genealogical_non_overlap',
+          genealogicallyOverlapping: false,
+          firstDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: secondDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: secondDecision.id,
+                knowledgeId: overlapK1.id,
+              },
+              {
+                precedingDecisionId: secondDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: overlapK2.id,
+              },
+            ],
+          },
+          secondDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: thirdDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: thirdDecision.id,
+                knowledgeId: overlapK3.id,
+              },
+              {
+                precedingDecisionId: thirdDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: overlapK4.id,
+              },
+            ],
+          },
+          rationale:
+            'Ausencia de solapamiento genealógico previamente reconocida por FASE 23.36 para un escenario que conserva posible procedencia evidencial compartida.',
+        };
+
+      /*
+      * Resultado heredado de 23.36 para el control
+      * complementario.
+      *
+      * G1 = K1 + K2
+      * G2 = K3 + K4
+      *
+      * No hay knowledgeId compartidos.
+      */
+      const genealogicalNonOverlapWithoutEvidentialOverlap:
+        ControlledDerivedPrecedenceGenealogicalOverlap = {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_genealogical_non_overlap',
+          genealogicallyOverlapping: false,
+          firstDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: secondDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: secondDecision.id,
+                knowledgeId: nonOverlapK1.id,
+              },
+              {
+                precedingDecisionId: secondDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: nonOverlapK2.id,
+              },
+            ],
+          },
+          secondDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: thirdDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: thirdDecision.id,
+                knowledgeId: nonOverlapK3.id,
+              },
+              {
+                precedingDecisionId: thirdDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: nonOverlapK4.id,
+              },
+            ],
+          },
+          rationale:
+            'Ausencia de solapamiento genealógico previamente reconocida por FASE 23.36 para un escenario sin memoryId compartidos.',
+        };
+
+      /*
+      * CONTROL NO EVALUABLE.
+      *
+      * 23.36 reconoció solapamiento genealógico:
+      *
+      * G1 = K1 + K2
+      * G2 = K1 + K3
+      *
+      * Aunque K1 implica naturalmente evidencia
+      * reutilizada, FASE 23.37 NO debe inspeccionarla,
+      * porque su precondición estricta es ausencia de
+      * solapamiento genealógico previamente reconocida.
+      */
+      const genealogicalOverlapNotEvaluable:
+        ControlledDerivedPrecedenceGenealogicalOverlap = {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_genealogical_overlap',
+          genealogicallyOverlapping: true,
+          firstDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: secondDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: secondDecision.id,
+                knowledgeId: overlapK1.id,
+              },
+              {
+                precedingDecisionId: secondDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: overlapK2.id,
+              },
+            ],
+          },
+          secondDerivedPrecedence: {
+            precedingDecisionId: firstDecision.id,
+            intermediateDecisionId: thirdDecision.id,
+            precededDecisionId: fourthDecision.id,
+            sourcePrecedences: [
+              {
+                precedingDecisionId: firstDecision.id,
+                precededDecisionId: thirdDecision.id,
+                knowledgeId: overlapK1.id,
+              },
+              {
+                precedingDecisionId: thirdDecision.id,
+                precededDecisionId: fourthDecision.id,
+                knowledgeId: overlapK3.id,
+              },
+            ],
+          },
+          rationale:
+            'Solapamiento genealógico previamente reconocido utilizado para demostrar la frontera de no evaluabilidad de FASE 23.37.',
+        };
+
+      const positiveInputSnapshot =
+        JSON.stringify(
+          genealogicalNonOverlapWithEvidentialOverlap
+        );
+
+      const negativeInputSnapshot =
+        JSON.stringify(
+          genealogicalNonOverlapWithoutEvidentialOverlap
+        );
+
+      const nonEvaluableInputSnapshot =
+        JSON.stringify(
+          genealogicalOverlapNotEvaluable
+        );
+
+      const positiveKnowledgeSnapshot =
+        JSON.stringify(evidentialOverlapKnowledge);
+
+      const negativeKnowledgeSnapshot =
+        JSON.stringify(evidentialNonOverlapKnowledge);
+
+      /*
+      * Aserción interna del escenario positivo.
+      *
+      * La intersección se verifica para demostrar que el
+      * escenario está correctamente construido.
+      *
+      * NO forma parte del resultado de FASE 23.37.
+      */
+      const positiveFirstMemoryIds = new Set([
+        ...overlapK1.evidence.memoryIds,
+        ...overlapK2.evidence.memoryIds,
+      ]);
+
+      const internallySharedMemoryIds = [
+        ...overlapK3.evidence.memoryIds,
+        ...overlapK4.evidence.memoryIds,
+      ].filter((memoryId) =>
+        positiveFirstMemoryIds.has(memoryId)
+      );
+
+      if (
+        internallySharedMemoryIds.length !== 1 ||
+        internallySharedMemoryIds[0] !==
+          'memory-controlled-evidential-positive-shared'
+      ) {
+        throw new Error(
+          'FASE 23.37 no construyó correctamente el escenario controlado con exactamente un memoryId compartido entre genealogías no solapadas.'
+        );
+      }
+
+      /*
+      * Confirmamos también que el control complementario
+      * realmente no comparte ninguna memoria.
+      */
+      const negativeFirstMemoryIds = new Set([
+        ...nonOverlapK1.evidence.memoryIds,
+        ...nonOverlapK2.evidence.memoryIds,
+      ]);
+
+      const internallySharedNegativeMemoryIds = [
+        ...nonOverlapK3.evidence.memoryIds,
+        ...nonOverlapK4.evidence.memoryIds,
+      ].filter((memoryId) =>
+        negativeFirstMemoryIds.has(memoryId)
+      );
+
+      if (internallySharedNegativeMemoryIds.length !== 0) {
+        throw new Error(
+          'FASE 23.37 construyó incorrectamente el escenario de ausencia de solapamiento evidencial.'
+        );
+      }
+
+      const evidentialOverlapEvaluation =
+        evaluateControlledDerivedPrecedenceEvidentialOverlap(
+          genealogicalNonOverlapWithEvidentialOverlap,
+          evidentialOverlapKnowledge
+        );
+
+      const evidentialNonOverlapEvaluation =
+        evaluateControlledDerivedPrecedenceEvidentialOverlap(
+          genealogicalNonOverlapWithoutEvidentialOverlap,
+          evidentialNonOverlapKnowledge
+        );
+
+      const nonEvaluableEvaluation =
+        evaluateControlledDerivedPrecedenceEvidentialOverlap(
+          genealogicalOverlapNotEvaluable,
+          evidentialOverlapKnowledge
+        );
+
+      if (
+        evidentialOverlapEvaluation.relation !==
+          'contextual_derived_precedence_evidential_overlap' ||
+        evidentialOverlapEvaluation.evidentiallyOverlapping !==
+          true ||
+        evidentialOverlapEvaluation.firstDerivedPrecedence ===
+          null ||
+        evidentialOverlapEvaluation.secondDerivedPrecedence ===
+          null
+      ) {
+        throw new Error(
+          'FASE 23.37 no reconoció el solapamiento evidencial esperado entre genealogías sin knowledgeId compartidos.'
+        );
+      }
+
+      if (
+        evidentialNonOverlapEvaluation.relation !==
+          'contextual_derived_precedence_evidential_non_overlap' ||
+        evidentialNonOverlapEvaluation.evidentiallyOverlapping !==
+          false ||
+        evidentialNonOverlapEvaluation.firstDerivedPrecedence ===
+          null ||
+        evidentialNonOverlapEvaluation.secondDerivedPrecedence ===
+          null
+      ) {
+        throw new Error(
+          'FASE 23.37 no reconoció correctamente la ausencia de solapamiento evidencial entre genealogías sin knowledgeId compartidos.'
+        );
+      }
+
+      if (
+        nonEvaluableEvaluation.relation !==
+          'no_contextual_derived_precedence_evidential_overlap' ||
+        nonEvaluableEvaluation.evidentiallyOverlapping !==
+          null ||
+        nonEvaluableEvaluation.firstDerivedPrecedence !== null ||
+        nonEvaluableEvaluation.secondDerivedPrecedence !== null
+      ) {
+        throw new Error(
+          'FASE 23.37 evaluó indebidamente evidencia sin ausencia de solapamiento genealógico válida previa.'
+        );
+      }
+
+      /*
+      * Los snapshots genealógicos recibidos de 23.36 deben
+      * conservarse por referencia cuando son evaluables.
+      */
+      if (
+        evidentialOverlapEvaluation.firstDerivedPrecedence !==
+          genealogicalNonOverlapWithEvidentialOverlap.firstDerivedPrecedence ||
+        evidentialOverlapEvaluation.secondDerivedPrecedence !==
+          genealogicalNonOverlapWithEvidentialOverlap.secondDerivedPrecedence ||
+        evidentialNonOverlapEvaluation.firstDerivedPrecedence !==
+          genealogicalNonOverlapWithoutEvidentialOverlap.firstDerivedPrecedence ||
+        evidentialNonOverlapEvaluation.secondDerivedPrecedence !==
+          genealogicalNonOverlapWithoutEvidentialOverlap.secondDerivedPrecedence
+      ) {
+        throw new Error(
+          'FASE 23.37 reconstruyó, fusionó o sustituyó alguna genealogía heredada de FASE 23.36.'
+        );
+      }
+
+      /*
+      * Ninguna entrada heredada ni conocimiento consultado
+      * puede ser modificado por observar memoryIds.
+      */
+      if (
+        JSON.stringify(
+          genealogicalNonOverlapWithEvidentialOverlap
+        ) !== positiveInputSnapshot ||
+        JSON.stringify(
+          genealogicalNonOverlapWithoutEvidentialOverlap
+        ) !== negativeInputSnapshot ||
+        JSON.stringify(
+          genealogicalOverlapNotEvaluable
+        ) !== nonEvaluableInputSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.37 modificó alguna clasificación genealógica heredada de FASE 23.36.'
+        );
+      }
+
+      if (
+        JSON.stringify(evidentialOverlapKnowledge) !==
+          positiveKnowledgeSnapshot ||
+        JSON.stringify(evidentialNonOverlapKnowledge) !==
+          negativeKnowledgeSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.37 modificó algún OperationalKnowledge o su evidencia durante la evaluación.'
+        );
+      }
+
+      /*
+      * FASE 23.37 puede consultar memoryIds internamente,
+      * pero NO puede materializarlos ni introducir
+      * independencia, soporte, refuerzo, fuerza o decisión
+      * en el resultado.
+      */
+      const forbiddenProperties = [
+        'knowledgeId',
+        'knowledgeIds',
+        'memoryId',
+        'memoryIds',
+        'sharedMemoryId',
+        'sharedMemoryIds',
+        'uniqueMemoryIds',
+        'mergedMemoryIds',
+        'aggregatedMemoryIds',
+        'evidenceId',
+        'evidenceIds',
+        'evidence',
+        'evidenceCount',
+        'overlapCount',
+        'overlapRatio',
+        'independentEvidence',
+        'evidenceIndependence',
+        'causalIndependence',
+        'operationalIndependence',
+        'independent',
+        'independence',
+        'occurrences',
+        'supportCount',
+        'support',
+        'reinforcement',
+        'strength',
+        'weight',
+        'score',
+        'confidence',
+        'priority',
+        'closure',
+        'transitiveClosure',
+        'partialOrder',
+        'orderedDecisionIds',
+        'sortedDecisionIds',
+        'order',
+        'rank',
+        'ranking',
+        'position',
+        'winner',
+        'loser',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationObjects: Record<
+        string,
+        unknown
+      >[] = [
+        evidentialOverlapEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+        evidentialNonOverlapEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+        nonEvaluableEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) =>
+              property in evaluation
+          )
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 23.37 introdujo indebidamente la propiedad "${detectedForbiddenProperty}" en la clasificación de solapamiento evidencial.`
+        );
+      }
+
+      const forbiddenStructuralProperties = [
+        'derivedPrecedence',
+        'thirdDerivedPrecedence',
+        'mergedDerivedPrecedence',
+        'deduplicatedDerivedPrecedence',
+        'canonicalDerivedPrecedence',
+        'composedDerivedPrecedence',
+        'aggregatedDerivedPrecedence',
+        'combinedDerivedPrecedence',
+        'mergedGenealogy',
+        'canonicalGenealogy',
+        'aggregatedGenealogy',
+        'combinedGenealogy',
+      ];
+
+      const detectedForbiddenStructuralProperty =
+        forbiddenStructuralProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) =>
+              property in evaluation
+          )
+        );
+
+      if (detectedForbiddenStructuralProperty) {
+        throw new Error(
+          `FASE 23.37 fabricó indebidamente la estructura "${detectedForbiddenStructuralProperty}".`
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      *
+      * Observar solapamiento de memoryId no puede cambiar
+      * recomendaciones ni decisiones reales.
+      */
+      const recommendationsAfterEvidentialOverlap =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterEvidentialOverlap =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterEvidentialOverlap
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterEvidentialOverlap
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.37 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterEvidentialOverlap
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.37 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      const firstDecisionAfter =
+        decisionsAfterEvidentialOverlap.find(
+          (decision) =>
+            decision.id === firstDecision.id
+        );
+
+      const secondDecisionAfter =
+        decisionsAfterEvidentialOverlap.find(
+          (decision) =>
+            decision.id === secondDecision.id
+        );
+
+      const thirdDecisionAfter =
+        decisionsAfterEvidentialOverlap.find(
+          (decision) =>
+            decision.id === thirdDecision.id
+        );
+
+      const fourthDecisionAfter =
+        decisionsAfterEvidentialOverlap.find(
+          (decision) =>
+            decision.id === fourthDecision.id
+        );
+
+      if (
+        !firstDecisionAfter ||
+        !secondDecisionAfter ||
+        !thirdDecisionAfter ||
+        !fourthDecisionAfter
+      ) {
+        throw new Error(
+          'FASE 23.37 perdió alguna alternativa productiva después del experimento.'
+        );
+      }
+
+      if (
+        JSON.stringify(firstDecisionAfter) !==
+          firstDecisionSnapshot ||
+        JSON.stringify(secondDecisionAfter) !==
+          secondDecisionSnapshot ||
+        JSON.stringify(thirdDecisionAfter) !==
+          thirdDecisionSnapshot ||
+        JSON.stringify(fourthDecisionAfter) !==
+          fourthDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.37 alteró indirectamente alguna alternativa decisional productiva.'
+        );
+      }
+
+      addLog(
+        `FASE 23.37 OK: sobre genealogías previamente reconocidas por FASE 23.36 como no solapadas en knowledgeId para ${firstDecision.id} -> ${fourthDecision.id}, se distinguieron controladamente un solapamiento evidencial por reutilización de un mismo memoryId y una ausencia de solapamiento evidencial sin memoryId compartidos; el control con solapamiento genealógico quedó correctamente no evaluable. La ausencia de memoryId compartidos no fue interpretada como independencia de evidencia, independencia de procedencia operacional ni independencia causal, y el solapamiento evidencial no produjo evidencia acumulada, supportCount, refuerzo, strength, weight, score, modificación de confidence o priority, fusión, deduplicación, genealogía agregada, tercera relación derivada, composición derivada-derivada, composición derivada-explícita, propagación transitiva, cierre transitivo, orden parcial, reordenamiento, ranking, selección ni ejecución, permaneciendo intactas ${recommendationsAfterEvidentialOverlap.length} recomendaciones y ${decisionsAfterEvidentialOverlap.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en solapamiento evidencial contextual controlado de genealogías no solapadas por conocimiento operativo 23.37: ${error.message}`
+          : 'Error inesperado en solapamiento evidencial contextual controlado de genealogías no solapadas por conocimiento operativo 23.37.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -19333,6 +20489,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Solapamiento Genealógico 23.36
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeControlledDerivedPrecedenceEvidentialOverlap}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Solapamiento Evidencial 23.37
         </button>
 
         <button
