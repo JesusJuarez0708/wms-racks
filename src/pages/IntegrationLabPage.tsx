@@ -20931,6 +20931,1339 @@ function IntegrationLabPage() {
     }
   }
 
+  async function testOperationalKnowledgeControlledDerivedPrecedencePalletContinuity() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforePalletContinuity =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforePalletContinuity =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforePalletContinuity
+        );
+
+      /*
+       * FASE 23.39 — Continuidad operacional contextual
+       * controlada de entidad pallet entre movimientos distintos
+       * por conocimiento operativo.
+       *
+       * PRECONDICIÓN ESTRICTA:
+       *
+       * FASE 23.38 debe haber reconocido previamente:
+       *
+       * contextual_derived_precedence_no_common_operational_provenance
+       *
+       * con:
+       *
+       * commonOperationalProvenance === false
+       *
+       * Por tanto, 23.39 NO vuelve a decidir:
+       *
+       * - diversidad genealógica;
+       * - solapamiento de knowledgeId;
+       * - solapamiento de memoryId;
+       * - coincidencia de entidad movement.
+       *
+       * Su única capacidad nueva consiste en observar si
+       * MovementRecord distintos, alcanzados estructuralmente
+       * desde ambas genealogías, participan sobre una misma
+       * entidad persistente pallet mediante movement.pallet_id.
+       *
+       * Esto NO convierte palletId en identidad de episodio,
+       * procedencia, evidencia o causa.
+       */
+
+      const firstDecision =
+        decisionsBeforePalletContinuity.find(
+          (decision) =>
+            decision.id === 'decision-review-movements'
+        );
+
+      const secondDecision =
+        decisionsBeforePalletContinuity.find(
+          (decision) =>
+            decision.id === 'decision-maintain-monitoring'
+        );
+
+      const thirdDecision =
+        decisionsBeforePalletContinuity.find(
+          (decision) =>
+            decision.id === 'decision-prioritize-high-value'
+        );
+
+      const fourthDecision =
+        decisionsBeforePalletContinuity.find(
+          (decision) =>
+            decision.id ===
+            'recommendation-prioritize-high-score-actions'
+        );
+
+      if (!firstDecision) {
+        throw new Error(
+          'FASE 23.39 no encontró decision-review-movements como alternativa A.'
+        );
+      }
+
+      if (!secondDecision) {
+        throw new Error(
+          'FASE 23.39 no encontró decision-maintain-monitoring como alternativa B.'
+        );
+      }
+
+      if (!thirdDecision) {
+        throw new Error(
+          'FASE 23.39 no encontró decision-prioritize-high-value como alternativa C.'
+        );
+      }
+
+      if (!fourthDecision) {
+        throw new Error(
+          'FASE 23.39 no encontró recommendation-prioritize-high-score-actions como alternativa D.'
+        );
+      }
+
+      if (
+        new Set([
+          firstDecision.id,
+          secondDecision.id,
+          thirdDecision.id,
+          fourthDecision.id,
+        ]).size !== 4
+      ) {
+        throw new Error(
+          'FASE 23.39 esperaba cuatro alternativas decisionales distintas.'
+        );
+      }
+
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforePalletContinuity
+      );
+
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforePalletContinuity
+      );
+
+      const firstDecisionSnapshot =
+        JSON.stringify(firstDecision);
+
+      const secondDecisionSnapshot =
+        JSON.stringify(secondDecision);
+
+      const thirdDecisionSnapshot =
+        JSON.stringify(thirdDecision);
+
+      const fourthDecisionSnapshot =
+        JSON.stringify(fourthDecision);
+
+      const createControlledPattern = (
+        suffix: string,
+        memoryIds: string[]
+      ) => ({
+        id: `pattern-controlled-pallet-continuity-${suffix}`,
+        title:
+          `Patrón controlado de continuidad pallet ${suffix}`,
+        description:
+          `Patrón controlado para FASE 23.39 ${suffix}.`,
+        score: Math.min(100, memoryIds.length * 25),
+        occurrences: memoryIds.length,
+        kind: 'recommendation-deviation-recurrence' as const,
+        context: {
+          movementType: 'reubicacion',
+          deviationReason:
+            `motivo-controlado-pallet-continuity-${suffix}`,
+        },
+        evidence: {
+          memoryIds,
+        },
+      });
+
+      /*
+       * ESCENARIO POSITIVO.
+       *
+       * G1 = K1 + K2
+       * G2 = K3 + K4
+       *
+       * knowledgeId distintos.
+       * memoryId distintos.
+       * movementId distintos entre genealogías.
+       *
+       * Sin embargo:
+       *
+       * movement-positive-k1-1.pallet_id
+       * ===
+       * movement-positive-k3-1.pallet_id
+       *
+       * Esto demuestra exclusivamente continuidad de una misma
+       * entidad pallet entre movimientos persistentes distintos.
+       */
+      const positivePatterns = [
+        createControlledPattern(
+          'positive-k1',
+          [
+            'memory-controlled-pallet-continuity-positive-k1-1',
+            'memory-controlled-pallet-continuity-positive-k1-2',
+            'memory-controlled-pallet-continuity-positive-k1-3',
+            'memory-controlled-pallet-continuity-positive-k1-4',
+          ]
+        ),
+        createControlledPattern(
+          'positive-k2',
+          [
+            'memory-controlled-pallet-continuity-positive-k2-1',
+            'memory-controlled-pallet-continuity-positive-k2-2',
+            'memory-controlled-pallet-continuity-positive-k2-3',
+            'memory-controlled-pallet-continuity-positive-k2-4',
+          ]
+        ),
+        createControlledPattern(
+          'positive-k3',
+          [
+            'memory-controlled-pallet-continuity-positive-k3-1',
+            'memory-controlled-pallet-continuity-positive-k3-2',
+            'memory-controlled-pallet-continuity-positive-k3-3',
+            'memory-controlled-pallet-continuity-positive-k3-4',
+          ]
+        ),
+        createControlledPattern(
+          'positive-k4',
+          [
+            'memory-controlled-pallet-continuity-positive-k4-1',
+            'memory-controlled-pallet-continuity-positive-k4-2',
+            'memory-controlled-pallet-continuity-positive-k4-3',
+            'memory-controlled-pallet-continuity-positive-k4-4',
+          ]
+        ),
+      ];
+
+      const positiveKnowledge =
+        generateOperationalKnowledge(positivePatterns);
+
+      if (positiveKnowledge.length !== 4) {
+        throw new Error(
+          `FASE 23.39 esperaba 4 conocimientos para el escenario de continuidad pallet y generó ${positiveKnowledge.length}.`
+        );
+      }
+
+      const positiveK1 = positiveKnowledge[0];
+      const positiveK2 = positiveKnowledge[1];
+      const positiveK3 = positiveKnowledge[2];
+      const positiveK4 = positiveKnowledge[3];
+
+      if (
+        !positiveK1 ||
+        !positiveK2 ||
+        !positiveK3 ||
+        !positiveK4
+      ) {
+        throw new Error(
+          'FASE 23.39 no pudo resolver los cuatro conocimientos del escenario positivo.'
+        );
+      }
+
+      if (
+        new Set([
+          positiveK1.id,
+          positiveK2.id,
+          positiveK3.id,
+          positiveK4.id,
+        ]).size !== 4
+      ) {
+        throw new Error(
+          'FASE 23.39 esperaba cuatro knowledgeId distintos en el escenario positivo.'
+        );
+      }
+
+      /*
+       * CONTROL NEGATIVO.
+       *
+       * Conserva knowledgeId, memoryId y movementId distintos,
+       * y además ningún movement de una genealogía comparte
+       * pallet_id con un movement de la otra.
+       */
+      const negativePatterns = [
+        createControlledPattern(
+          'negative-k1',
+          [
+            'memory-controlled-pallet-continuity-negative-k1-1',
+            'memory-controlled-pallet-continuity-negative-k1-2',
+            'memory-controlled-pallet-continuity-negative-k1-3',
+            'memory-controlled-pallet-continuity-negative-k1-4',
+          ]
+        ),
+        createControlledPattern(
+          'negative-k2',
+          [
+            'memory-controlled-pallet-continuity-negative-k2-1',
+            'memory-controlled-pallet-continuity-negative-k2-2',
+            'memory-controlled-pallet-continuity-negative-k2-3',
+            'memory-controlled-pallet-continuity-negative-k2-4',
+          ]
+        ),
+        createControlledPattern(
+          'negative-k3',
+          [
+            'memory-controlled-pallet-continuity-negative-k3-1',
+            'memory-controlled-pallet-continuity-negative-k3-2',
+            'memory-controlled-pallet-continuity-negative-k3-3',
+            'memory-controlled-pallet-continuity-negative-k3-4',
+          ]
+        ),
+        createControlledPattern(
+          'negative-k4',
+          [
+            'memory-controlled-pallet-continuity-negative-k4-1',
+            'memory-controlled-pallet-continuity-negative-k4-2',
+            'memory-controlled-pallet-continuity-negative-k4-3',
+            'memory-controlled-pallet-continuity-negative-k4-4',
+          ]
+        ),
+      ];
+
+      const negativeKnowledge =
+        generateOperationalKnowledge(negativePatterns);
+
+      if (negativeKnowledge.length !== 4) {
+        throw new Error(
+          `FASE 23.39 esperaba 4 conocimientos para el escenario sin continuidad pallet y generó ${negativeKnowledge.length}.`
+        );
+      }
+
+      const negativeK1 = negativeKnowledge[0];
+      const negativeK2 = negativeKnowledge[1];
+      const negativeK3 = negativeKnowledge[2];
+      const negativeK4 = negativeKnowledge[3];
+
+      if (
+        !negativeK1 ||
+        !negativeK2 ||
+        !negativeK3 ||
+        !negativeK4
+      ) {
+        throw new Error(
+          'FASE 23.39 no pudo resolver los cuatro conocimientos del escenario negativo.'
+        );
+      }
+
+      if (
+        new Set([
+          negativeK1.id,
+          negativeK2.id,
+          negativeK3.id,
+          negativeK4.id,
+        ]).size !== 4
+      ) {
+        throw new Error(
+          'FASE 23.39 esperaba cuatro knowledgeId distintos en el escenario negativo.'
+        );
+      }
+
+      type ControlledPalletContinuitySourcePrecedence = {
+        precedingDecisionId: string;
+        precededDecisionId: string;
+        knowledgeId: string;
+      };
+
+      type ControlledPalletContinuityDerivedPrecedenceSnapshot = {
+        precedingDecisionId: string;
+        intermediateDecisionId: string;
+        precededDecisionId: string;
+        sourcePrecedences: [
+          ControlledPalletContinuitySourcePrecedence,
+          ControlledPalletContinuitySourcePrecedence,
+        ];
+      };
+
+      type ControlledDerivedPrecedenceOperationalProvenance = {
+        decisionIds: [string, string, string, string];
+        relation:
+          | 'no_contextual_derived_precedence_operational_provenance'
+          | 'contextual_derived_precedence_common_operational_provenance'
+          | 'contextual_derived_precedence_no_common_operational_provenance';
+        commonOperationalProvenance: boolean | null;
+        firstDerivedPrecedence:
+          | ControlledPalletContinuityDerivedPrecedenceSnapshot
+          | null;
+        secondDerivedPrecedence:
+          | ControlledPalletContinuityDerivedPrecedenceSnapshot
+          | null;
+        rationale: string;
+      };
+
+      type ControlledDerivedPrecedencePalletContinuity = {
+        decisionIds: [string, string, string, string];
+        relation:
+          | 'no_contextual_derived_precedence_pallet_continuity'
+          | 'contextual_derived_precedence_shared_pallet_continuity'
+          | 'contextual_derived_precedence_no_shared_pallet_continuity';
+        sharedPalletContinuity: boolean | null;
+        firstDerivedPrecedence:
+          | ControlledPalletContinuityDerivedPrecedenceSnapshot
+          | null;
+        secondDerivedPrecedence:
+          | ControlledPalletContinuityDerivedPrecedenceSnapshot
+          | null;
+        rationale: string;
+      };
+
+      type ControlledKnowledgeCatalog =
+        ReturnType<typeof generateOperationalKnowledge>;
+
+      /*
+       * Representación mínima local de los campos estructurales
+       * de MovementRecord que FASE 23.39 necesita observar.
+       *
+       * No se crea una nueva entidad productiva ni se persiste.
+       */
+      type ControlledMovementRecord = {
+        id: string;
+        pallet_id: string | null;
+      };
+
+      const createControlledMemory = (
+        id: string,
+        movementId: string
+      ): OperationalMemoryRecord => ({
+        id,
+        memory_type: 'movement',
+        entity_id: movementId,
+        entity_type: 'movement',
+        title: `Memoria controlada ${id}`,
+        description:
+          'Memoria controlada para FASE 23.39.',
+        score: 100,
+        metadata: {
+          phase: '23.39',
+          source: 'IntegrationLabPage',
+        },
+        created_at: '2026-08-18T00:00:00.000Z',
+      });
+
+      const positiveMemories: OperationalMemoryRecord[] =
+        positivePatterns.flatMap((pattern) =>
+          pattern.evidence.memoryIds.map((memoryId) =>
+            createControlledMemory(
+              memoryId,
+              `movement-${memoryId}`
+            )
+          )
+        );
+
+      const negativeMemories: OperationalMemoryRecord[] =
+        negativePatterns.flatMap((pattern) =>
+          pattern.evidence.memoryIds.map((memoryId) =>
+            createControlledMemory(
+              memoryId,
+              `movement-${memoryId}`
+            )
+          )
+        );
+
+      /*
+       * Cada memoria apunta a un MovementRecord distinto.
+       *
+       * En el escenario positivo únicamente dos movimientos
+       * distintos, uno por genealogía, comparten pallet_id.
+       */
+      const positiveMovements: ControlledMovementRecord[] =
+        positiveMemories.map((memory) => ({
+          id: String(memory.entity_id),
+          pallet_id:
+            memory.id ===
+              'memory-controlled-pallet-continuity-positive-k1-1' ||
+            memory.id ===
+              'memory-controlled-pallet-continuity-positive-k3-1'
+              ? 'pallet-controlled-continuity-shared'
+              : `pallet-${memory.id}`,
+        }));
+
+      const negativeMovements: ControlledMovementRecord[] =
+        negativeMemories.map((memory) => ({
+          id: String(memory.entity_id),
+          pallet_id: `pallet-${memory.id}`,
+        }));
+
+      const createDerivedPrecedencePair = (
+        firstKnowledgeId: string,
+        secondKnowledgeId: string,
+        intermediateDecisionId: string
+      ): ControlledPalletContinuityDerivedPrecedenceSnapshot => ({
+        precedingDecisionId: firstDecision.id,
+        intermediateDecisionId,
+        precededDecisionId: fourthDecision.id,
+        sourcePrecedences: [
+          {
+            precedingDecisionId: firstDecision.id,
+            precededDecisionId: intermediateDecisionId,
+            knowledgeId: firstKnowledgeId,
+          },
+          {
+            precedingDecisionId: intermediateDecisionId,
+            precededDecisionId: fourthDecision.id,
+            knowledgeId: secondKnowledgeId,
+          },
+        ],
+      });
+
+      /*
+       * Resultados heredados conceptualmente de FASE 23.38.
+       *
+       * Ambos escenarios evaluables ya han sido reconocidos como:
+       *
+       * contextual_derived_precedence_no_common_operational_provenance
+       *
+       * Es decir: ninguna entidad movement está compartida entre
+       * genealogías.
+       */
+      const positiveOperationalProvenance:
+        ControlledDerivedPrecedenceOperationalProvenance = {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_no_common_operational_provenance',
+          commonOperationalProvenance: false,
+          firstDerivedPrecedence: createDerivedPrecedencePair(
+            positiveK1.id,
+            positiveK2.id,
+            secondDecision.id
+          ),
+          secondDerivedPrecedence: createDerivedPrecedencePair(
+            positiveK3.id,
+            positiveK4.id,
+            thirdDecision.id
+          ),
+          rationale:
+            'FASE 23.38 no identificó una misma entidad movement compartida entre las genealogías del escenario positivo de FASE 23.39.',
+        };
+
+      const negativeOperationalProvenance:
+        ControlledDerivedPrecedenceOperationalProvenance = {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_no_common_operational_provenance',
+          commonOperationalProvenance: false,
+          firstDerivedPrecedence: createDerivedPrecedencePair(
+            negativeK1.id,
+            negativeK2.id,
+            secondDecision.id
+          ),
+          secondDerivedPrecedence: createDerivedPrecedencePair(
+            negativeK3.id,
+            negativeK4.id,
+            thirdDecision.id
+          ),
+          rationale:
+            'FASE 23.38 no identificó una misma entidad movement compartida entre las genealogías del escenario negativo de FASE 23.39.',
+        };
+
+      /*
+       * CONTROL NO EVALUABLE.
+       *
+       * Si FASE 23.38 ya encontró una misma entidad movement,
+       * 23.39 no debe descender a pallet_id para reclasificar ese
+       * caso como continuidad entre movimientos distintos.
+       */
+      const nonEvaluableOperationalProvenance:
+        ControlledDerivedPrecedenceOperationalProvenance = {
+          decisionIds: [
+            firstDecision.id,
+            secondDecision.id,
+            thirdDecision.id,
+            fourthDecision.id,
+          ],
+          relation:
+            'contextual_derived_precedence_common_operational_provenance',
+          commonOperationalProvenance: true,
+          firstDerivedPrecedence:
+            positiveOperationalProvenance.firstDerivedPrecedence,
+          secondDerivedPrecedence:
+            positiveOperationalProvenance.secondDerivedPrecedence,
+          rationale:
+            'FASE 23.38 ya identificó una misma entidad movement; FASE 23.39 debe respetar esa frontera y no inspeccionar continuidad entre movimientos distintos.',
+        };
+
+      /*
+       * NUEVO CONSUMIDOR DE FASE 23.39.
+       *
+       * Resuelve exclusivamente:
+       *
+       * sourcePrecedence.knowledgeId
+       * -> OperationalKnowledge.evidence.memoryIds
+       * -> OperationalMemory.entity_type/entity_id
+       * -> MovementRecord.id
+       * -> MovementRecord.pallet_id
+       *
+       * No usa metadata.palletId como fallback.
+       * No utiliza product_id, warehouse_id, posiciones,
+       * movement_type, recommendation_id ni timestamps.
+       */
+      const evaluateControlledDerivedPrecedencePalletContinuity =
+        (
+          operationalProvenance:
+            ControlledDerivedPrecedenceOperationalProvenance,
+          knowledgeCatalog: ControlledKnowledgeCatalog,
+          memoryCatalog: OperationalMemoryRecord[],
+          movementCatalog: ControlledMovementRecord[]
+        ): ControlledDerivedPrecedencePalletContinuity => {
+          const distinctMovementsAreEvaluable =
+            operationalProvenance.relation ===
+              'contextual_derived_precedence_no_common_operational_provenance' &&
+            operationalProvenance.commonOperationalProvenance ===
+              false &&
+            operationalProvenance.firstDerivedPrecedence !==
+              null &&
+            operationalProvenance.secondDerivedPrecedence !==
+              null;
+
+          if (!distinctMovementsAreEvaluable) {
+            return {
+              decisionIds: operationalProvenance.decisionIds,
+              relation:
+                'no_contextual_derived_precedence_pallet_continuity',
+              sharedPalletContinuity: null,
+              firstDerivedPrecedence: null,
+              secondDerivedPrecedence: null,
+              rationale:
+                'La continuidad de entidad pallet entre movimientos distintos requiere ausencia de una misma entidad movement previamente reconocida por FASE 23.38.',
+            };
+          }
+
+          const firstDerivedPrecedence =
+            operationalProvenance.firstDerivedPrecedence!;
+
+          const secondDerivedPrecedence =
+            operationalProvenance.secondDerivedPrecedence!;
+
+          const resolvePalletIds = (
+            derivedPrecedence:
+              ControlledPalletContinuityDerivedPrecedenceSnapshot
+          ): {
+            evaluable: boolean;
+            palletIds: string[];
+          } => {
+            const palletIds: string[] = [];
+
+            for (const sourcePrecedence of
+              derivedPrecedence.sourcePrecedences) {
+              const knowledge = knowledgeCatalog.find(
+                (candidate) =>
+                  candidate.id === sourcePrecedence.knowledgeId
+              );
+
+              if (!knowledge) {
+                return {
+                  evaluable: false,
+                  palletIds: [],
+                };
+              }
+
+              for (const memoryId of
+                knowledge.evidence.memoryIds) {
+                const memory = memoryCatalog.find(
+                  (candidate) => candidate.id === memoryId
+                );
+
+                if (
+                  !memory ||
+                  memory.entity_type !== 'movement' ||
+                  typeof memory.entity_id !== 'string' ||
+                  memory.entity_id.trim().length === 0
+                ) {
+                  return {
+                    evaluable: false,
+                    palletIds: [],
+                  };
+                }
+
+                const movement = movementCatalog.find(
+                  (candidate) =>
+                    candidate.id === memory.entity_id
+                );
+
+                if (
+                  !movement ||
+                  typeof movement.pallet_id !== 'string' ||
+                  movement.pallet_id.trim().length === 0
+                ) {
+                  return {
+                    evaluable: false,
+                    palletIds: [],
+                  };
+                }
+
+                palletIds.push(movement.pallet_id);
+              }
+            }
+
+            return {
+              evaluable: true,
+              palletIds,
+            };
+          };
+
+          const firstResolution = resolvePalletIds(
+            firstDerivedPrecedence
+          );
+
+          const secondResolution = resolvePalletIds(
+            secondDerivedPrecedence
+          );
+
+          if (
+            !firstResolution.evaluable ||
+            !secondResolution.evaluable
+          ) {
+            return {
+              decisionIds: operationalProvenance.decisionIds,
+              relation:
+                'no_contextual_derived_precedence_pallet_continuity',
+              sharedPalletContinuity: null,
+              firstDerivedPrecedence: null,
+              secondDerivedPrecedence: null,
+              rationale:
+                'La continuidad de entidad pallet no es evaluable porque no pudo resolverse estructuralmente knowledgeId -> memoryId -> movement -> pallet_id para todas las evidencias de ambas genealogías.',
+            };
+          }
+
+          const firstPalletIds = new Set(
+            firstResolution.palletIds
+          );
+
+          const hasSharedPalletContinuity =
+            secondResolution.palletIds.some((palletId) =>
+              firstPalletIds.has(palletId)
+            );
+
+          return {
+            decisionIds: operationalProvenance.decisionIds,
+            relation: hasSharedPalletContinuity
+              ? 'contextual_derived_precedence_shared_pallet_continuity'
+              : 'contextual_derived_precedence_no_shared_pallet_continuity',
+            sharedPalletContinuity:
+              hasSharedPalletContinuity,
+            firstDerivedPrecedence,
+            secondDerivedPrecedence,
+            rationale: hasSharedPalletContinuity
+              ? 'Movimientos persistentes distintos alcanzados desde ambas genealogías participan sobre una misma entidad pallet mediante movement.pallet_id, sin interpretar esa coincidencia como identidad de movimiento, memoria, evidencia, recomendación, episodio operacional, procedencia operacional o causa.'
+              : 'No se identificó una misma entidad pallet participante en movimientos de ambas genealogías, sin interpretar esa ausencia como independencia operacional, independencia de procedencia, independencia de evidencia ni independencia causal.',
+          };
+        };
+
+      const positiveInputSnapshot = JSON.stringify(
+        positiveOperationalProvenance
+      );
+
+      const negativeInputSnapshot = JSON.stringify(
+        negativeOperationalProvenance
+      );
+
+      const nonEvaluableInputSnapshot = JSON.stringify(
+        nonEvaluableOperationalProvenance
+      );
+
+      const positiveKnowledgeSnapshot = JSON.stringify(
+        positiveKnowledge
+      );
+
+      const negativeKnowledgeSnapshot = JSON.stringify(
+        negativeKnowledge
+      );
+
+      const positiveMemorySnapshot = JSON.stringify(
+        positiveMemories
+      );
+
+      const negativeMemorySnapshot = JSON.stringify(
+        negativeMemories
+      );
+
+      const positiveMovementSnapshot = JSON.stringify(
+        positiveMovements
+      );
+
+      const negativeMovementSnapshot = JSON.stringify(
+        negativeMovements
+      );
+
+      /*
+       * Aserciones de construcción heredadas de 23.36-23.38.
+       *
+       * No puede existir knowledgeId, memoryId ni movementId
+       * compartido entre genealogías en los escenarios evaluables.
+       */
+      const assertNoSharedKnowledgeIds = (
+        firstKnowledgeItems: ControlledKnowledgeCatalog,
+        secondKnowledgeItems: ControlledKnowledgeCatalog,
+        scenario: string
+      ) => {
+        const firstKnowledgeIds = new Set(
+          firstKnowledgeItems.map((knowledge) => knowledge.id)
+        );
+
+        const sharedKnowledgeIds =
+          secondKnowledgeItems
+            .map((knowledge) => knowledge.id)
+            .filter((knowledgeId) =>
+              firstKnowledgeIds.has(knowledgeId)
+            );
+
+        if (sharedKnowledgeIds.length !== 0) {
+          throw new Error(
+            `FASE 23.39 construyó el escenario ${scenario} con knowledgeId compartidos.`
+          );
+        }
+      };
+
+      assertNoSharedKnowledgeIds(
+        [positiveK1, positiveK2],
+        [positiveK3, positiveK4],
+        'positivo'
+      );
+
+      assertNoSharedKnowledgeIds(
+        [negativeK1, negativeK2],
+        [negativeK3, negativeK4],
+        'negativo'
+      );
+
+      const positiveFirstMemoryIds = new Set([
+        ...positiveK1.evidence.memoryIds,
+        ...positiveK2.evidence.memoryIds,
+      ]);
+
+      const positiveSecondMemoryIds = [
+        ...positiveK3.evidence.memoryIds,
+        ...positiveK4.evidence.memoryIds,
+      ];
+
+      if (
+        positiveSecondMemoryIds.some((memoryId) =>
+          positiveFirstMemoryIds.has(memoryId)
+        )
+      ) {
+        throw new Error(
+          'FASE 23.39 construyó incorrectamente el escenario positivo con memoryId compartidos.'
+        );
+      }
+
+      const negativeFirstMemoryIds = new Set([
+        ...negativeK1.evidence.memoryIds,
+        ...negativeK2.evidence.memoryIds,
+      ]);
+
+      const negativeSecondMemoryIds = [
+        ...negativeK3.evidence.memoryIds,
+        ...negativeK4.evidence.memoryIds,
+      ];
+
+      if (
+        negativeSecondMemoryIds.some((memoryId) =>
+          negativeFirstMemoryIds.has(memoryId)
+        )
+      ) {
+        throw new Error(
+          'FASE 23.39 construyó incorrectamente el escenario negativo con memoryId compartidos.'
+        );
+      }
+
+      const resolveMovementIdsForMemoryIds = (
+        memoryIds: Set<string> | string[],
+        memoryCatalog: OperationalMemoryRecord[]
+      ) =>
+        memoryCatalog
+          .filter((memory) =>
+            memoryIds instanceof Set
+              ? memoryIds.has(memory.id)
+              : memoryIds.includes(memory.id)
+          )
+          .filter(
+            (memory) =>
+              memory.entity_type === 'movement' &&
+              typeof memory.entity_id === 'string'
+          )
+          .map((memory) => memory.entity_id as string);
+
+      const positiveFirstMovementIds = new Set(
+        resolveMovementIdsForMemoryIds(
+          positiveFirstMemoryIds,
+          positiveMemories
+        )
+      );
+
+      const positiveSecondMovementIds =
+        resolveMovementIdsForMemoryIds(
+          positiveSecondMemoryIds,
+          positiveMemories
+        );
+
+      if (
+        positiveSecondMovementIds.some((movementId) =>
+          positiveFirstMovementIds.has(movementId)
+        )
+      ) {
+        throw new Error(
+          'FASE 23.39 construyó incorrectamente el escenario positivo con una entidad movement compartida entre genealogías.'
+        );
+      }
+
+      const negativeFirstMovementIds = new Set(
+        resolveMovementIdsForMemoryIds(
+          negativeFirstMemoryIds,
+          negativeMemories
+        )
+      );
+
+      const negativeSecondMovementIds =
+        resolveMovementIdsForMemoryIds(
+          negativeSecondMemoryIds,
+          negativeMemories
+        );
+
+      if (
+        negativeSecondMovementIds.some((movementId) =>
+          negativeFirstMovementIds.has(movementId)
+        )
+      ) {
+        throw new Error(
+          'FASE 23.39 construyó incorrectamente el escenario negativo con una entidad movement compartida entre genealogías.'
+        );
+      }
+
+      /*
+       * Comprobación interna de la única continuidad pallet del
+       * escenario positivo.
+       *
+       * La identidad compartida se usa sólo para preparar y
+       * validar el experimento; no se materializa en el resultado.
+       */
+      const positiveFirstPalletIds = new Set(
+        positiveMovements
+          .filter((movement) =>
+            positiveFirstMovementIds.has(movement.id)
+          )
+          .map((movement) => movement.pallet_id)
+          .filter(
+            (palletId): palletId is string =>
+              typeof palletId === 'string'
+          )
+      );
+
+      const internallySharedPositivePalletIds =
+        positiveMovements
+          .filter((movement) =>
+            positiveSecondMovementIds.includes(movement.id)
+          )
+          .map((movement) => movement.pallet_id)
+          .filter(
+            (palletId): palletId is string =>
+              typeof palletId === 'string' &&
+              positiveFirstPalletIds.has(palletId)
+          );
+
+      if (
+        internallySharedPositivePalletIds.length !== 1 ||
+        internallySharedPositivePalletIds[0] !==
+          'pallet-controlled-continuity-shared'
+      ) {
+        throw new Error(
+          'FASE 23.39 no construyó correctamente el escenario controlado de continuidad por una misma entidad pallet entre movimientos distintos.'
+        );
+      }
+
+      const negativeFirstPalletIds = new Set(
+        negativeMovements
+          .filter((movement) =>
+            negativeFirstMovementIds.has(movement.id)
+          )
+          .map((movement) => movement.pallet_id)
+          .filter(
+            (palletId): palletId is string =>
+              typeof palletId === 'string'
+          )
+      );
+
+      const internallySharedNegativePalletIds =
+        negativeMovements
+          .filter((movement) =>
+            negativeSecondMovementIds.includes(movement.id)
+          )
+          .map((movement) => movement.pallet_id)
+          .filter(
+            (palletId): palletId is string =>
+              typeof palletId === 'string' &&
+              negativeFirstPalletIds.has(palletId)
+          );
+
+      if (internallySharedNegativePalletIds.length !== 0) {
+        throw new Error(
+          'FASE 23.39 construyó incorrectamente el escenario negativo con una entidad pallet compartida.'
+        );
+      }
+
+      const positiveEvaluation =
+        evaluateControlledDerivedPrecedencePalletContinuity(
+          positiveOperationalProvenance,
+          positiveKnowledge,
+          positiveMemories,
+          positiveMovements
+        );
+
+      const negativeEvaluation =
+        evaluateControlledDerivedPrecedencePalletContinuity(
+          negativeOperationalProvenance,
+          negativeKnowledge,
+          negativeMemories,
+          negativeMovements
+        );
+
+      const nonEvaluableEvaluation =
+        evaluateControlledDerivedPrecedencePalletContinuity(
+          nonEvaluableOperationalProvenance,
+          positiveKnowledge,
+          positiveMemories,
+          positiveMovements
+        );
+
+      if (
+        positiveEvaluation.relation !==
+          'contextual_derived_precedence_shared_pallet_continuity' ||
+        positiveEvaluation.sharedPalletContinuity !== true ||
+        positiveEvaluation.firstDerivedPrecedence === null ||
+        positiveEvaluation.secondDerivedPrecedence === null
+      ) {
+        throw new Error(
+          'FASE 23.39 no reconoció la continuidad operacional esperada de una misma entidad pallet entre movimientos distintos.'
+        );
+      }
+
+      if (
+        negativeEvaluation.relation !==
+          'contextual_derived_precedence_no_shared_pallet_continuity' ||
+        negativeEvaluation.sharedPalletContinuity !== false ||
+        negativeEvaluation.firstDerivedPrecedence === null ||
+        negativeEvaluation.secondDerivedPrecedence === null
+      ) {
+        throw new Error(
+          'FASE 23.39 no reconoció correctamente la ausencia de una misma entidad pallet entre movimientos de ambas genealogías.'
+        );
+      }
+
+      if (
+        nonEvaluableEvaluation.relation !==
+          'no_contextual_derived_precedence_pallet_continuity' ||
+        nonEvaluableEvaluation.sharedPalletContinuity !== null ||
+        nonEvaluableEvaluation.firstDerivedPrecedence !== null ||
+        nonEvaluableEvaluation.secondDerivedPrecedence !== null
+      ) {
+        throw new Error(
+          'FASE 23.39 inspeccionó indebidamente pallet_id sin ausencia previa de una misma entidad movement válida de FASE 23.38.'
+        );
+      }
+
+      /*
+       * Las genealogías heredadas deben conservarse exactamente
+       * por referencia en ambos escenarios evaluables.
+       */
+      if (
+        positiveEvaluation.firstDerivedPrecedence !==
+          positiveOperationalProvenance.firstDerivedPrecedence ||
+        positiveEvaluation.secondDerivedPrecedence !==
+          positiveOperationalProvenance.secondDerivedPrecedence ||
+        negativeEvaluation.firstDerivedPrecedence !==
+          negativeOperationalProvenance.firstDerivedPrecedence ||
+        negativeEvaluation.secondDerivedPrecedence !==
+          negativeOperationalProvenance.secondDerivedPrecedence
+      ) {
+        throw new Error(
+          'FASE 23.39 reconstruyó, fusionó o sustituyó alguna genealogía heredada de FASE 23.38.'
+        );
+      }
+
+      /*
+       * Ninguna entrada ni catálogo controlado puede mutarse.
+       */
+      if (
+        JSON.stringify(positiveOperationalProvenance) !==
+          positiveInputSnapshot ||
+        JSON.stringify(negativeOperationalProvenance) !==
+          negativeInputSnapshot ||
+        JSON.stringify(nonEvaluableOperationalProvenance) !==
+          nonEvaluableInputSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.39 modificó alguna clasificación de procedencia operacional heredada de FASE 23.38.'
+        );
+      }
+
+      if (
+        JSON.stringify(positiveKnowledge) !==
+          positiveKnowledgeSnapshot ||
+        JSON.stringify(negativeKnowledge) !==
+          negativeKnowledgeSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.39 modificó algún OperationalKnowledge durante la evaluación.'
+        );
+      }
+
+      if (
+        JSON.stringify(positiveMemories) !==
+          positiveMemorySnapshot ||
+        JSON.stringify(negativeMemories) !==
+          negativeMemorySnapshot
+      ) {
+        throw new Error(
+          'FASE 23.39 modificó alguna OperationalMemory durante la evaluación.'
+        );
+      }
+
+      if (
+        JSON.stringify(positiveMovements) !==
+          positiveMovementSnapshot ||
+        JSON.stringify(negativeMovements) !==
+          negativeMovementSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.39 modificó algún MovementRecord controlado durante la evaluación.'
+        );
+      }
+
+      /*
+       * La coincidencia de pallet_id sólo puede observarse
+       * internamente.
+       *
+       * No materializamos ids compartidos, episodios,
+       * procedencia común, independencia, soporte o fuerza.
+       */
+      const forbiddenProperties = [
+        'knowledgeId',
+        'knowledgeIds',
+        'memoryId',
+        'memoryIds',
+        'entityId',
+        'entityIds',
+        'movementId',
+        'movementIds',
+        'sharedMovementId',
+        'sharedMovementIds',
+        'palletId',
+        'palletIds',
+        'sharedPalletId',
+        'sharedPalletIds',
+        'commonPalletId',
+        'commonPalletIds',
+        'commonOperationalProvenance',
+        'operationalEpisodeId',
+        'operationalEpisodeIds',
+        'episodeId',
+        'episodeIds',
+        'recommendationId',
+        'recommendationIds',
+        'evidence',
+        'evidenceCount',
+        'provenanceCount',
+        'overlapCount',
+        'overlapRatio',
+        'independentEvidence',
+        'evidenceIndependence',
+        'operationalIndependence',
+        'provenanceIndependence',
+        'causalIndependence',
+        'independent',
+        'independence',
+        'occurrences',
+        'supportCount',
+        'support',
+        'reinforcement',
+        'strength',
+        'weight',
+        'score',
+        'confidence',
+        'priority',
+        'closure',
+        'transitiveClosure',
+        'partialOrder',
+        'orderedDecisionIds',
+        'sortedDecisionIds',
+        'order',
+        'rank',
+        'ranking',
+        'position',
+        'winner',
+        'loser',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationObjects: Record<string, unknown>[] = [
+        positiveEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+        negativeEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+        nonEvaluableEvaluation as unknown as Record<
+          string,
+          unknown
+        >,
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 23.39 introdujo indebidamente la propiedad "${detectedForbiddenProperty}" en la clasificación de continuidad pallet.`
+        );
+      }
+
+      const forbiddenStructuralProperties = [
+        'derivedPrecedence',
+        'thirdDerivedPrecedence',
+        'mergedDerivedPrecedence',
+        'deduplicatedDerivedPrecedence',
+        'canonicalDerivedPrecedence',
+        'composedDerivedPrecedence',
+        'aggregatedDerivedPrecedence',
+        'combinedDerivedPrecedence',
+        'mergedGenealogy',
+        'canonicalGenealogy',
+        'aggregatedGenealogy',
+        'combinedGenealogy',
+      ];
+
+      const detectedForbiddenStructuralProperty =
+        forbiddenStructuralProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenStructuralProperty) {
+        throw new Error(
+          `FASE 23.39 fabricó indebidamente la estructura "${detectedForbiddenStructuralProperty}".`
+        );
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * Observar continuidad de una misma entidad pallet entre
+       * movimientos distintos no puede modificar recomendaciones
+       * ni decisiones productivas.
+       */
+      const recommendationsAfterPalletContinuity =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterPalletContinuity =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterPalletContinuity
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterPalletContinuity
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.39 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterPalletContinuity) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.39 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      const firstDecisionAfter =
+        decisionsAfterPalletContinuity.find(
+          (decision) => decision.id === firstDecision.id
+        );
+
+      const secondDecisionAfter =
+        decisionsAfterPalletContinuity.find(
+          (decision) => decision.id === secondDecision.id
+        );
+
+      const thirdDecisionAfter =
+        decisionsAfterPalletContinuity.find(
+          (decision) => decision.id === thirdDecision.id
+        );
+
+      const fourthDecisionAfter =
+        decisionsAfterPalletContinuity.find(
+          (decision) => decision.id === fourthDecision.id
+        );
+
+      if (
+        !firstDecisionAfter ||
+        !secondDecisionAfter ||
+        !thirdDecisionAfter ||
+        !fourthDecisionAfter
+      ) {
+        throw new Error(
+          'FASE 23.39 perdió alguna alternativa productiva después del experimento.'
+        );
+      }
+
+      if (
+        JSON.stringify(firstDecisionAfter) !==
+          firstDecisionSnapshot ||
+        JSON.stringify(secondDecisionAfter) !==
+          secondDecisionSnapshot ||
+        JSON.stringify(thirdDecisionAfter) !==
+          thirdDecisionSnapshot ||
+        JSON.stringify(fourthDecisionAfter) !==
+          fourthDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.39 alteró indirectamente alguna alternativa decisional productiva.'
+        );
+      }
+
+      addLog(
+        `FASE 23.39 OK: partiendo exclusivamente de genealogías previamente reconocidas por FASE 23.38 como carentes de una misma entidad movement para ${firstDecision.id} -> ${fourthDecision.id}, se distinguieron controladamente una continuidad operacional de entidad pallet entre movimientos distintos mediante movement.pallet_id y una ausencia de pallet compartido; el control donde FASE 23.38 ya había identificado una misma entidad movement quedó correctamente no evaluable. Compartir pallet no fue interpretado como identidad de movimiento, memoria, evidencia, recomendación, episodio operacional, procedencia operacional o causa, y no compartir pallet no fue interpretado como independencia operacional, de procedencia, de evidencia ni causal. La observación no utilizó metadata.palletId como fallback ni produjo identificadores compartidos materializados, episodios operacionales, soporte, refuerzo, strength, weight, score, modificación de confidence o priority, fusión, deduplicación, genealogía agregada, tercera relación derivada, composición derivada-derivada, composición derivada-explícita, propagación transitiva, cierre transitivo, orden parcial, reordenamiento, ranking, selección ni ejecución, permaneciendo intactas ${recommendationsAfterPalletContinuity.length} recomendaciones y ${decisionsAfterPalletContinuity.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en continuidad operacional contextual controlada de entidad pallet entre movimientos distintos por conocimiento operativo 23.39: ${error.message}`
+          : 'Error inesperado en continuidad operacional contextual controlada de entidad pallet entre movimientos distintos por conocimiento operativo 23.39.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -21696,6 +23029,14 @@ function IntegrationLabPage() {
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Procedencia Operacional 23.38
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeControlledDerivedPrecedencePalletContinuity}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Continuidad Pallet 23.39
         </button>
 
         <button
