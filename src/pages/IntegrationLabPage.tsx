@@ -55,6 +55,10 @@ import {
 } from '../services/operationalKnowledgeExposureService';
 
 import {
+  accessProductiveKnowledge,
+} from '../services/operationalKnowledgeAccessService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -28670,6 +28674,477 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+  async function testOperationalKnowledgeProductiveAccessContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeAccess =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeAccess =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeAccess
+        );
+
+      /*
+      * FASE 24.5 — Acceso productivo explícito
+      * del consumidor al conocimiento expuesto.
+      *
+      * FASE 24.4 estableció:
+      *
+      * ProductiveKnowledgeAvailability
+      *        +
+      * ProductiveKnowledgeConsumerRef
+      *        ↓
+      * exposeProductiveKnowledge()
+      *        ↓
+      * ProductiveKnowledgeExposure
+      *
+      * FASE 24.5 introduce:
+      *
+      * ProductiveKnowledgeExposure
+      *        ↓
+      * accessProductiveKnowledge()
+      *        ↓
+      * ProductiveKnowledgeAccess
+      *
+      * El acceso NO constituye:
+      *
+      * - lectura;
+      * - consumo;
+      * - utilización;
+      * - interpretación;
+      * - influencia;
+      * - ponderación;
+      * - ranking;
+      * - selección;
+      * - ejecución;
+      * - modificación de recomendaciones;
+      * - modificación de decisiones.
+      */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeAccess
+      );
+
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeAccess
+      );
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-access-24-5',
+          title:
+            'Patrón controlado de acceso productivo',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.5.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-access-24-5',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-access-24-5-1',
+              'memory-controlled-productive-access-24-5-2',
+              'memory-controlled-productive-access-24-5-3',
+              'memory-controlled-productive-access-24-5-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.5 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.5 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.5 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.5 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.5 no pudo obtener ProductiveKnowledgeInput previo al acceso.'
+        );
+      }
+
+      const reception =
+        receiveProductiveKnowledge(productiveInput);
+
+      const availability =
+        makeProductiveKnowledgeAvailable(reception);
+
+      const consumerA: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-a-24-5',
+      };
+
+      const consumerB: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-b-24-5',
+      };
+
+      const exposureA =
+        exposeProductiveKnowledge(
+          availability,
+          consumerA
+        );
+
+      const exposureB =
+        exposeProductiveKnowledge(
+          availability,
+          consumerB
+        );
+
+      /*
+      * exposed != accessed
+      *
+      * La existencia de ProductiveKnowledgeExposure
+      * no crea automáticamente ProductiveKnowledgeAccess.
+      *
+      * El acceso requiere un acto explícito:
+      * accessProductiveKnowledge().
+      */
+      const exposureASnapshot =
+        JSON.stringify(exposureA);
+
+      const exposureBSnapshot =
+        JSON.stringify(exposureB);
+
+      /*
+      * Acto explícito de acceso únicamente
+      * sobre Exposure A.
+      */
+      const accessA =
+        accessProductiveKnowledge(exposureA);
+
+      /*
+      * El acceso debe conservar exactamente
+      * la misma exposición.
+      */
+      if (accessA.exposure !== exposureA) {
+        throw new Error(
+          'FASE 24.5 no conservó la misma ProductiveKnowledgeExposure durante el acceso.'
+        );
+      }
+
+      /*
+      * Transitivamente debe conservar exactamente
+      * consumidor, disponibilidad, recepción e input.
+      */
+      if (accessA.exposure.consumer !== consumerA) {
+        throw new Error(
+          'FASE 24.5 perdió la referencia del consumidor durante el acceso.'
+        );
+      }
+
+      if (
+        accessA.exposure.availability !== availability
+      ) {
+        throw new Error(
+          'FASE 24.5 perdió ProductiveKnowledgeAvailability durante el acceso.'
+        );
+      }
+
+      if (
+        accessA.exposure.availability.reception !==
+        reception
+      ) {
+        throw new Error(
+          'FASE 24.5 perdió ProductiveKnowledgeReception durante el acceso.'
+        );
+      }
+
+      if (
+        accessA.exposure.availability.reception.input !==
+        productiveInput
+      ) {
+        throw new Error(
+          'FASE 24.5 perdió ProductiveKnowledgeInput durante el acceso.'
+        );
+      }
+
+      /*
+      * El acceso no puede mutar Exposure A
+      * ni afectar Exposure B.
+      */
+      if (
+        JSON.stringify(exposureA) !==
+        exposureASnapshot
+      ) {
+        throw new Error(
+          'FASE 24.5 modificó ProductiveKnowledgeExposure durante el acceso.'
+        );
+      }
+
+      if (
+        JSON.stringify(exposureB) !==
+        exposureBSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.5 propagó o modificó indebidamente una exposición independiente.'
+        );
+      }
+
+      /*
+      * Control A/B:
+      *
+      * acceder a Exposure A no constituye
+      * acceso automático a Exposure B.
+      *
+      * El segundo acceso sólo aparece mediante
+      * un segundo acto explícito independiente.
+      */
+      const accessB =
+        accessProductiveKnowledge(exposureB);
+
+      if (accessB.exposure !== exposureB) {
+        throw new Error(
+          'FASE 24.5 no conservó la segunda exposición durante su acceso independiente.'
+        );
+      }
+
+      if (accessA === accessB) {
+        throw new Error(
+          'FASE 24.5 colapsó dos actos explícitos de acceso independientes.'
+        );
+      }
+
+      if (
+        accessA.exposure === accessB.exposure
+      ) {
+        throw new Error(
+          'FASE 24.5 perdió la distinción entre exposiciones productivas independientes.'
+        );
+      }
+
+      /*
+      * ProductiveKnowledgeAccess debe ser un
+      * contenedor mínimo.
+      *
+      * No puede duplicar datos de Exposure ni
+      * adquirir semántica de lectura, consumo,
+      * utilización o influencia.
+      */
+      const forbiddenAccessProperties = [
+        'availability',
+        'consumer',
+        'consumerId',
+        'consumerType',
+        'input',
+        'reception',
+        'knowledgeId',
+        'sourcePatternId',
+        'knowledgeType',
+        'context',
+        'evidence',
+        'score',
+        'occurrences',
+        'memoryIds',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'priority',
+        'purpose',
+        'accessed',
+        'accessCount',
+        'accessedAt',
+        'read',
+        'readAt',
+        'consumed',
+        'consumption',
+        'used',
+        'utilized',
+        'influence',
+        'influential',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decisionId',
+        'recommendationId',
+        'executed',
+        'execution',
+      ];
+
+      const accessRecord =
+        accessA as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenAccessProperty =
+        forbiddenAccessProperties.find(
+          (property) => property in accessRecord
+        );
+
+      if (detectedForbiddenAccessProperty) {
+        throw new Error(
+          `FASE 24.5 introdujo indebidamente la propiedad "${detectedForbiddenAccessProperty}" dentro de ProductiveKnowledgeAccess.`
+        );
+      }
+
+      /*
+      * El acceso tampoco puede recuperar
+      * evidencia o atributos descartados por
+      * las fronteras productivas anteriores.
+      */
+      const accessedInputRecord =
+        accessA.exposure.availability.reception.input as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const forbiddenInputProperties = [
+        'evidence',
+        'score',
+        'occurrences',
+        'memoryIds',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'priority',
+        'consumerId',
+        'consumerType',
+        'purpose',
+        'accessed',
+        'accessCount',
+        'accessedAt',
+        'read',
+        'readAt',
+        'consumed',
+        'consumption',
+        'used',
+        'utilized',
+        'influence',
+        'influential',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decisionId',
+        'recommendationId',
+        'executed',
+        'execution',
+      ];
+
+      const detectedForbiddenInputProperty =
+        forbiddenInputProperties.find(
+          (property) => property in accessedInputRecord
+        );
+
+      if (detectedForbiddenInputProperty) {
+        throw new Error(
+          `FASE 24.5 recuperó o introdujo indebidamente la propiedad "${detectedForbiddenInputProperty}" dentro del conocimiento accedido.`
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      *
+      * Existe ProductiveKnowledgeAccess, pero
+      * el consumidor todavía no lee, consume,
+      * utiliza ni permite que el conocimiento
+      * influya sobre resultados productivos.
+      */
+      const recommendationsAfterAccess =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterAccess =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterAccess
+        );
+
+      if (
+        JSON.stringify(recommendationsAfterAccess) !==
+        recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.5 detectó modificación de recomendaciones productivas después del acceso al conocimiento.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterAccess) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.5 detectó modificación, reordenamiento o ranking distinto de decisiones después del acceso al conocimiento.'
+        );
+      }
+
+      addLog(
+        `FASE 24.5 OK: las exposiciones del conocimiento ${productiveInput.knowledgeId} a ${consumerA.id} y ${consumerB.id} fueron accedidas mediante actos explícitos e independientes de ProductiveKnowledgeAccess, conservando exactamente exposición, consumidor, disponibilidad, recepción y ProductiveKnowledgeInput.
+        La exposición no produjo acceso automático; el acceso requirió accessProductiveKnowledge() y no introdujo lectura, consumo, utilización, influencia, propósito, ponderación, ranking, selección ni ejecución.
+        Permanecieron intactas ${recommendationsAfterAccess.length} recomendaciones y ${decisionsAfterAccess.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en acceso productivo explícito del conocimiento operativo 24.5: ${error.message}`
+          : 'Error inesperado en acceso productivo explícito del conocimiento operativo 24.5.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -29539,6 +30014,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Exposición Productiva 24.4
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveAccessContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Acceso Productivo 24.5
         </button>
 
         <button
