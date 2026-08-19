@@ -67,6 +67,10 @@ import {
 } from '../services/operationalKnowledgeUtilizationService';
 
 import {
+  influenceProductiveKnowledge,
+} from '../services/operationalKnowledgeInfluenceService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -30127,6 +30131,500 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+  async function testOperationalKnowledgeProductiveInfluenceContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeInfluence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeInfluence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeInfluence
+        );
+
+      /*
+      * FASE 24.8 — Influencia productiva explícita
+      * del conocimiento utilizado por el consumidor.
+      *
+      * FASE 24.7 estableció:
+      *
+      * ProductiveKnowledgeConsumption
+      *        ↓
+      * useProductiveKnowledge()
+      *        ↓
+      * ProductiveKnowledgeUtilization
+      *
+      * FASE 24.8 introduce:
+      *
+      * ProductiveKnowledgeUtilization
+      *        ↓
+      * influenceProductiveKnowledge()
+      *        ↓
+      * ProductiveKnowledgeInfluence
+      *
+      * La influencia NO constituye todavía:
+      *
+      * - efecto observable;
+      * - cambio de recomendación;
+      * - cambio de decisión;
+      * - ponderación;
+      * - ranking;
+      * - selección;
+      * - ejecución.
+      */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeInfluence
+      );
+
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeInfluence
+      );
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-influence-24-8',
+          title:
+            'Patrón controlado de influencia productiva',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.8.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-influence-24-8',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-influence-24-8-1',
+              'memory-controlled-productive-influence-24-8-2',
+              'memory-controlled-productive-influence-24-8-3',
+              'memory-controlled-productive-influence-24-8-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.8 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.8 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.8 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.8 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.8 no pudo obtener ProductiveKnowledgeInput previo a la influencia.'
+        );
+      }
+
+      const reception =
+        receiveProductiveKnowledge(productiveInput);
+
+      const availability =
+        makeProductiveKnowledgeAvailable(reception);
+
+      const consumerA: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-a-24-8',
+      };
+
+      const consumerB: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-b-24-8',
+      };
+
+      const exposureA =
+        exposeProductiveKnowledge(
+          availability,
+          consumerA
+        );
+
+      const exposureB =
+        exposeProductiveKnowledge(
+          availability,
+          consumerB
+        );
+
+      const accessA =
+        accessProductiveKnowledge(exposureA);
+
+      const accessB =
+        accessProductiveKnowledge(exposureB);
+
+      const consumptionA =
+        consumeProductiveKnowledge(accessA);
+
+      const consumptionB =
+        consumeProductiveKnowledge(accessB);
+
+      const utilizationA =
+        useProductiveKnowledge(consumptionA);
+
+      const utilizationB =
+        useProductiveKnowledge(consumptionB);
+
+      /*
+      * utilized != influential
+      *
+      * ProductiveKnowledgeUtilization no crea
+      * automáticamente ProductiveKnowledgeInfluence.
+      *
+      * La influencia requiere un acto explícito:
+      * influenceProductiveKnowledge().
+      */
+      const utilizationASnapshot =
+        JSON.stringify(utilizationA);
+
+      const utilizationBSnapshot =
+        JSON.stringify(utilizationB);
+
+      /*
+      * Influencia explícita únicamente sobre A.
+      */
+      const influenceA =
+        influenceProductiveKnowledge(utilizationA);
+
+      if (influenceA.utilization !== utilizationA) {
+        throw new Error(
+          'FASE 24.8 no conservó la misma ProductiveKnowledgeUtilization durante la influencia.'
+        );
+      }
+
+      /*
+      * Conservación transitiva exacta.
+      */
+      if (
+        influenceA.utilization.consumption !==
+        consumptionA
+      ) {
+        throw new Error(
+          'FASE 24.8 perdió ProductiveKnowledgeConsumption durante la influencia.'
+        );
+      }
+
+      if (
+        influenceA.utilization.consumption.access !==
+        accessA
+      ) {
+        throw new Error(
+          'FASE 24.8 perdió ProductiveKnowledgeAccess durante la influencia.'
+        );
+      }
+
+      if (
+        influenceA.utilization.consumption.access.exposure !==
+        exposureA
+      ) {
+        throw new Error(
+          'FASE 24.8 perdió ProductiveKnowledgeExposure durante la influencia.'
+        );
+      }
+
+      if (
+        influenceA.utilization.consumption.access.exposure
+          .consumer !== consumerA
+      ) {
+        throw new Error(
+          'FASE 24.8 perdió la referencia del consumidor durante la influencia.'
+        );
+      }
+
+      if (
+        influenceA.utilization.consumption.access.exposure
+          .availability !== availability
+      ) {
+        throw new Error(
+          'FASE 24.8 perdió ProductiveKnowledgeAvailability durante la influencia.'
+        );
+      }
+
+      if (
+        influenceA.utilization.consumption.access.exposure
+          .availability.reception !== reception
+      ) {
+        throw new Error(
+          'FASE 24.8 perdió ProductiveKnowledgeReception durante la influencia.'
+        );
+      }
+
+      if (
+        influenceA.utilization.consumption.access.exposure
+          .availability.reception.input !== productiveInput
+      ) {
+        throw new Error(
+          'FASE 24.8 perdió ProductiveKnowledgeInput durante la influencia.'
+        );
+      }
+
+      /*
+      * Influence A no puede mutar Utilization A
+      * ni afectar Utilization B.
+      */
+      if (
+        JSON.stringify(utilizationA) !==
+        utilizationASnapshot
+      ) {
+        throw new Error(
+          'FASE 24.8 modificó ProductiveKnowledgeUtilization durante la influencia.'
+        );
+      }
+
+      if (
+        JSON.stringify(utilizationB) !==
+        utilizationBSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.8 propagó o modificó indebidamente una utilización independiente.'
+        );
+      }
+
+      /*
+      * Control A/B:
+      *
+      * influir sobre Utilization A no produce
+      * influencia automática sobre Utilization B.
+      */
+      const influenceB =
+        influenceProductiveKnowledge(utilizationB);
+
+      if (influenceB.utilization !== utilizationB) {
+        throw new Error(
+          'FASE 24.8 no conservó la segunda utilización durante su influencia independiente.'
+        );
+      }
+
+      if (influenceA === influenceB) {
+        throw new Error(
+          'FASE 24.8 colapsó dos actos explícitos de influencia independientes.'
+        );
+      }
+
+      if (
+        influenceA.utilization === influenceB.utilization
+      ) {
+        throw new Error(
+          'FASE 24.8 perdió la distinción entre utilizaciones productivas independientes.'
+        );
+      }
+
+      /*
+      * ProductiveKnowledgeInfluence debe ser un
+      * contenedor mínimo.
+      *
+      * No puede adquirir semántica de efecto
+      * observable ni de modificación productiva.
+      */
+      const forbiddenInfluenceProperties = [
+        'consumption',
+        'access',
+        'exposure',
+        'availability',
+        'consumer',
+        'consumerId',
+        'consumerType',
+        'input',
+        'reception',
+        'knowledgeId',
+        'sourcePatternId',
+        'knowledgeType',
+        'context',
+        'evidence',
+        'score',
+        'occurrences',
+        'memoryIds',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'priority',
+        'purpose',
+        'influential',
+        'effect',
+        'effectSize',
+        'impact',
+        'changed',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decisionId',
+        'recommendationId',
+        'executed',
+        'execution',
+      ];
+
+      const influenceRecord =
+        influenceA as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenInfluenceProperty =
+        forbiddenInfluenceProperties.find(
+          (property) => property in influenceRecord
+        );
+
+      if (detectedForbiddenInfluenceProperty) {
+        throw new Error(
+          `FASE 24.8 introdujo indebidamente la propiedad "${detectedForbiddenInfluenceProperty}" dentro de ProductiveKnowledgeInfluence.`
+        );
+      }
+
+      /*
+      * La influencia tampoco puede recuperar
+      * evidencia ni atributos descartados antes.
+      */
+      const influencedInputRecord =
+        influenceA.utilization.consumption.access.exposure.availability.reception.input as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const forbiddenInputProperties = [
+        'evidence',
+        'score',
+        'occurrences',
+        'memoryIds',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'priority',
+        'consumerId',
+        'consumerType',
+        'purpose',
+        'influential',
+        'effect',
+        'effectSize',
+        'impact',
+        'changed',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decisionId',
+        'recommendationId',
+        'executed',
+        'execution',
+      ];
+
+      const detectedForbiddenInputProperty =
+        forbiddenInputProperties.find(
+          (property) => property in influencedInputRecord
+        );
+
+      if (detectedForbiddenInputProperty) {
+        throw new Error(
+          `FASE 24.8 recuperó o introdujo indebidamente la propiedad "${detectedForbiddenInputProperty}" dentro del conocimiento influyente.`
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      *
+      * Existe ProductiveKnowledgeInfluence,
+      * pero todavía no existe efecto observable
+      * sobre recomendaciones ni decisiones.
+      */
+      const recommendationsAfterInfluence =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterInfluence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterInfluence
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterInfluence
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.8 detectó modificación de recomendaciones productivas después de la influencia del conocimiento.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterInfluence) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.8 detectó modificación, reordenamiento o ranking distinto de decisiones después de la influencia del conocimiento.'
+        );
+      }
+
+      addLog(
+        `FASE 24.8 OK: las utilizaciones del conocimiento ${productiveInput.knowledgeId} asociadas a ${consumerA.id} y ${consumerB.id} adquirieron influencia productiva mediante actos explícitos e independientes de ProductiveKnowledgeInfluence, conservando exactamente utilización, consumo, acceso, exposición, consumidor, disponibilidad, recepción y ProductiveKnowledgeInput.
+        La utilización no produjo influencia automática; la influencia requirió influenceProductiveKnowledge() y no introdujo efecto observable, impacto, fuerza, ponderación, ranking, selección ni ejecución.
+        Permanecieron intactas ${recommendationsAfterInfluence.length} recomendaciones y ${decisionsAfterInfluence.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en influencia productiva explícita del conocimiento operativo 24.8: ${error.message}`
+          : 'Error inesperado en influencia productiva explícita del conocimiento operativo 24.8.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -31020,6 +31518,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Utilización Productiva 24.7
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveInfluenceContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Influencia Productiva 24.8
         </button>
 
         <button
