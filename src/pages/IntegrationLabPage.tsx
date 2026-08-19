@@ -23425,6 +23425,466 @@ No se introdujeron indicadores de independencia, nuevos identificadores, soporte
     }
   }
 
+  async function testOperationalKnowledgeControlledEligiblePluralityWithoutGenealogicalReinforcement() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforePlurality =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforePlurality =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforePlurality
+        );
+
+      /*
+       * FASE 23.42 — Pluralidad contextual controlada de
+       * conocimientos elegibles sin refuerzo inferido por
+       * diversidad genealógica.
+       *
+       * PRECONDICIONES HEREDADAS:
+       * - fases previas establecieron diversidad genealógica;
+       * - FASE 23.41 estableció que la frontera estructural no
+       *   determina Eligibility.
+       *
+       * Dos conocimientos elegibles siguen siendo dos
+       * conocimientos evaluados individualmente.
+       */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforePlurality
+      );
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforePlurality
+      );
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-eligible-plurality-23-42-a',
+          title: 'Patrón controlado A de pluralidad elegible',
+          description:
+            'Patrón controlado A utilizado exclusivamente por FASE 23.42.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-eligible-plurality-23-42-a',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-eligible-plurality-23-42-a-1',
+              'memory-controlled-eligible-plurality-23-42-a-2',
+              'memory-controlled-eligible-plurality-23-42-a-3',
+              'memory-controlled-eligible-plurality-23-42-a-4',
+            ],
+          },
+        },
+        {
+          id: 'pattern-controlled-eligible-plurality-23-42-b',
+          title: 'Patrón controlado B de pluralidad elegible',
+          description:
+            'Patrón controlado B utilizado exclusivamente por FASE 23.42.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-eligible-plurality-23-42-b',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-eligible-plurality-23-42-b-1',
+              'memory-controlled-eligible-plurality-23-42-b-2',
+              'memory-controlled-eligible-plurality-23-42-b-3',
+              'memory-controlled-eligible-plurality-23-42-b-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 2) {
+        throw new Error(
+          `FASE 23.42 esperaba exactamente 2 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledgeA = controlledKnowledge[0];
+      const knowledgeB = controlledKnowledge[1];
+
+      if (!knowledgeA || !knowledgeB) {
+        throw new Error(
+          'FASE 23.42 no pudo resolver ambos conocimientos controlados.'
+        );
+      }
+
+      if (
+        knowledgeA.id === knowledgeB.id ||
+        knowledgeA.sourcePatternId === knowledgeB.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.42 esperaba conocimientos y patrones fuente distintos.'
+        );
+      }
+
+      const memoryIdsA = new Set(knowledgeA.evidence.memoryIds);
+      const sharedMemoryId =
+        knowledgeB.evidence.memoryIds.find((memoryId) =>
+          memoryIdsA.has(memoryId)
+        );
+
+      if (sharedMemoryId) {
+        throw new Error(
+          `FASE 23.42 esperaba memoryIds diferenciados y encontró ${sharedMemoryId} compartido.`
+        );
+      }
+
+      type ControlledInheritedGenealogicalDiversity = {
+        relation:
+          | 'no_controlled_genealogical_diversity'
+          | 'controlled_genealogical_diversity_established';
+        diversityEstablished: boolean | null;
+        knowledgeIds: string[] | null;
+        sourcePatternIds: string[] | null;
+        rationale: string;
+      };
+
+      type ControlledEligibleKnowledgePlurality = {
+        relation:
+          | 'no_contextual_eligible_knowledge_plurality'
+          | 'contextual_eligible_knowledge_plurality';
+        diversityEstablished: boolean | null;
+        eligibilities:
+          | Array<
+              ReturnType<
+                typeof evaluateOperationalKnowledgeEligibility
+              >
+            >
+          | null;
+        rationale: string;
+      };
+
+      const inheritedGenealogicalDiversity:
+        ControlledInheritedGenealogicalDiversity = {
+          relation:
+            'controlled_genealogical_diversity_established',
+          diversityEstablished: true,
+          knowledgeIds: [knowledgeA.id, knowledgeB.id],
+          sourcePatternIds: [
+            knowledgeA.sourcePatternId,
+            knowledgeB.sourcePatternId,
+          ],
+          rationale:
+            'La diversidad genealógica se toma como precondición previamente establecida y no se interpreta como independencia evidencial o causal.',
+        };
+
+      const inheritedNotEvaluableDiversity:
+        ControlledInheritedGenealogicalDiversity = {
+          relation: 'no_controlled_genealogical_diversity',
+          diversityEstablished: null,
+          knowledgeIds: null,
+          sourcePatternIds: null,
+          rationale:
+            'Control no evaluable: la diversidad genealógica no fue establecida previamente.',
+        };
+
+      const evaluateControlledEligibleKnowledgePlurality =
+        (
+          inheritedDiversity:
+            ControlledInheritedGenealogicalDiversity,
+          movementType:
+            Parameters<
+              typeof evaluateOperationalKnowledgeEligibility
+            >[1]['movementType']
+        ): ControlledEligibleKnowledgePlurality => {
+          if (
+            inheritedDiversity.relation !==
+              'controlled_genealogical_diversity_established' ||
+            inheritedDiversity.diversityEstablished !== true
+          ) {
+            return {
+              relation:
+                'no_contextual_eligible_knowledge_plurality',
+              diversityEstablished: null,
+              eligibilities: null,
+              rationale:
+                'FASE 23.42 no caracteriza pluralidad elegible mientras la diversidad genealógica no haya sido establecida previamente.',
+            };
+          }
+
+          const eligibilities = [
+            evaluateOperationalKnowledgeEligibility(
+              knowledgeA,
+              { movementType }
+            ),
+            evaluateOperationalKnowledgeEligibility(
+              knowledgeB,
+              { movementType }
+            ),
+          ];
+
+          const allEligible = eligibilities.every(
+            (eligibility) => eligibility.eligible
+          );
+
+          return {
+            relation: allEligible
+              ? 'contextual_eligible_knowledge_plurality'
+              : 'no_contextual_eligible_knowledge_plurality',
+            diversityEstablished: true,
+            eligibilities,
+            rationale: allEligible
+              ? 'Ambos conocimientos satisfacen individualmente Eligibility para el mismo contexto; su coexistencia permanece como pluralidad descriptiva sin agregación semántica.'
+              : 'La misma diversidad genealógica permanece, pero el contexto no produce una pluralidad de conocimientos elegibles.',
+          };
+        };
+
+      const compatibleMovementType =
+        knowledgeA.context.movementType as Parameters<
+          typeof evaluateOperationalKnowledgeEligibility
+        >[1]['movementType'];
+
+      if (
+        knowledgeB.context.movementType !== compatibleMovementType
+      ) {
+        throw new Error(
+          'FASE 23.42 esperaba que ambos conocimientos compartieran el mismo movementType para el caso compatible.'
+        );
+      }
+
+      const incompatibleMovementType =
+        compatibleMovementType === 'entrada'
+          ? 'salida'
+          : 'entrada';
+
+      const inheritedDiversitySnapshot =
+        JSON.stringify(inheritedGenealogicalDiversity);
+      const inheritedNotEvaluableSnapshot =
+        JSON.stringify(inheritedNotEvaluableDiversity);
+      const controlledKnowledgeSnapshot =
+        JSON.stringify(controlledKnowledge);
+
+      const compatibleEvaluation =
+        evaluateControlledEligibleKnowledgePlurality(
+          inheritedGenealogicalDiversity,
+          compatibleMovementType
+        );
+
+      const incompatibleEvaluation =
+        evaluateControlledEligibleKnowledgePlurality(
+          inheritedGenealogicalDiversity,
+          incompatibleMovementType
+        );
+
+      const notEvaluableControl =
+        evaluateControlledEligibleKnowledgePlurality(
+          inheritedNotEvaluableDiversity,
+          compatibleMovementType
+        );
+
+      if (
+        compatibleEvaluation.relation !==
+          'contextual_eligible_knowledge_plurality' ||
+        compatibleEvaluation.diversityEstablished !== true ||
+        compatibleEvaluation.eligibilities === null ||
+        compatibleEvaluation.eligibilities.length !== 2 ||
+        !compatibleEvaluation.eligibilities.every(
+          (eligibility) =>
+            eligibility.eligible === true &&
+            eligibility.reason === 'context-compatible'
+        )
+      ) {
+        throw new Error(
+          'FASE 23.42 no reconoció la pluralidad esperada de dos conocimientos contextualmente elegibles.'
+        );
+      }
+
+      const compatibleKnowledgeIds =
+        compatibleEvaluation.eligibilities.map(
+          (eligibility) => eligibility.knowledgeId
+        );
+
+      const compatibleSourcePatternIds =
+        compatibleEvaluation.eligibilities.map(
+          (eligibility) => eligibility.sourcePatternId
+        );
+
+      if (
+        !compatibleKnowledgeIds.includes(knowledgeA.id) ||
+        !compatibleKnowledgeIds.includes(knowledgeB.id) ||
+        compatibleKnowledgeIds[0] === compatibleKnowledgeIds[1] ||
+        !compatibleSourcePatternIds.includes(
+          knowledgeA.sourcePatternId
+        ) ||
+        !compatibleSourcePatternIds.includes(
+          knowledgeB.sourcePatternId
+        ) ||
+        compatibleSourcePatternIds[0] ===
+          compatibleSourcePatternIds[1]
+      ) {
+        throw new Error(
+          'FASE 23.42 perdió la identidad o trazabilidad separada de los conocimientos elegibles.'
+        );
+      }
+
+      if (
+        incompatibleEvaluation.relation !==
+          'no_contextual_eligible_knowledge_plurality' ||
+        incompatibleEvaluation.diversityEstablished !== true ||
+        incompatibleEvaluation.eligibilities === null ||
+        incompatibleEvaluation.eligibilities.length !== 2 ||
+        !incompatibleEvaluation.eligibilities.every(
+          (eligibility) =>
+            eligibility.eligible === false &&
+            eligibility.reason === 'context-incompatible'
+        )
+      ) {
+        throw new Error(
+          'FASE 23.42 no mantuvo correctamente la diversidad genealógica frente a un contexto incompatible.'
+        );
+      }
+
+      if (
+        compatibleEvaluation.diversityEstablished !==
+        incompatibleEvaluation.diversityEstablished
+      ) {
+        throw new Error(
+          'FASE 23.42 dejó que el cambio de movementType alterara indebidamente la diversidad genealógica heredada.'
+        );
+      }
+
+      if (
+        notEvaluableControl.relation !==
+          'no_contextual_eligible_knowledge_plurality' ||
+        notEvaluableControl.diversityEstablished !== null ||
+        notEvaluableControl.eligibilities !== null
+      ) {
+        throw new Error(
+          'FASE 23.42 avanzó indebidamente sin diversidad genealógica previamente evaluable.'
+        );
+      }
+
+      if (
+        JSON.stringify(inheritedGenealogicalDiversity) !==
+          inheritedDiversitySnapshot ||
+        JSON.stringify(inheritedNotEvaluableDiversity) !==
+          inheritedNotEvaluableSnapshot ||
+        JSON.stringify(controlledKnowledge) !==
+          controlledKnowledgeSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.42 modificó alguna entrada controlada durante la evaluación.'
+        );
+      }
+
+      const forbiddenProperties = [
+        'operationalEpisodeId',
+        'episodeId',
+        'parentMovementId',
+        'correlationId',
+        'requestId',
+        'batchId',
+        'groupId',
+        'support',
+        'supportCount',
+        'evidenceCount',
+        'provenanceCount',
+        'strength',
+        'weight',
+        'reinforcement',
+        'reinforced',
+        'corroboration',
+        'corroborated',
+        'consensus',
+        'independentEvidence',
+        'evidenceIndependence',
+        'operationalIndependence',
+        'provenanceIndependence',
+        'causalIndependence',
+        'independent',
+        'confidence',
+        'priority',
+        'score',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationObjects: Array<Record<string, unknown>> = [
+        inheritedGenealogicalDiversity,
+        inheritedNotEvaluableDiversity,
+        compatibleEvaluation,
+        incompatibleEvaluation,
+        notEvaluableControl,
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 23.42 introdujo indebidamente la propiedad "${detectedForbiddenProperty}".`
+        );
+      }
+
+      const recommendationsAfterPlurality =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterPlurality =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterPlurality
+        );
+
+      if (
+        JSON.stringify(recommendationsAfterPlurality) !==
+          recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.42 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterPlurality) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.42 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 23.42 OK: dos conocimientos de genealogías diferenciadas coexistieron como conocimientos contextualmente elegibles distintos para el mismo movementType (${compatibleMovementType}) sin convertir su pluralidad en soporte acumulado, corroboración, refuerzo, independencia evidencial, strength, confidence o priority.
+Al cambiar únicamente el contexto a movementType incompatible (${incompatibleMovementType}), ambos resultaron context-incompatible sin alterar la diversidad genealógica heredada ni reinterpretarla como soporte cero.
+El control sin diversidad genealógica previamente establecida permaneció correctamente no evaluable.
+No se introdujeron nuevos identificadores, soporte, conteos, strength, weight, reinforcement, corroboration, consensus, indicadores de independencia, score, modificación de confidence o priority, fusión, deduplicación, propagación transitiva, cierre transitivo, orden parcial, reordenamiento, ranking, selección ni ejecución, permaneciendo intactas ${recommendationsAfterPlurality.length} recomendaciones y ${decisionsAfterPlurality.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+      addLog(
+        error instanceof Error
+          ? `Error en pluralidad contextual controlada de conocimientos elegibles sin refuerzo inferido por diversidad genealógica 23.42: ${error.message}`
+          : 'Error inesperado en pluralidad contextual controlada de conocimientos elegibles sin refuerzo inferido por diversidad genealógica 23.42.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -24215,6 +24675,13 @@ No se introdujeron indicadores de independencia, nuevos identificadores, soporte
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Ortogonalidad Estructural-Contextual 23.41
+        </button>
+        <button
+          onClick={testOperationalKnowledgeControlledEligiblePluralityWithoutGenealogicalReinforcement}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Pluralidad Elegible sin Refuerzo 23.42
         </button>
         <button
           onClick={testMandatoryPhysicalPlacement}
