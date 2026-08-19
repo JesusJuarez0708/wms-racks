@@ -23885,6 +23885,530 @@ No se introdujeron nuevos identificadores, soporte, conteos, strength, weight, r
     }
   }
 
+  async function testOperationalKnowledgeControlledIndividualConsiderationPlurality() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeConsideration =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeConsideration =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeConsideration
+        );
+
+      /*
+       * FASE 23.43 — Preservación contextual controlada de
+       * individualidad en consideración plural del conocimiento
+       * operativo.
+       *
+       * PRECONDICIÓN HEREDADA:
+       *
+       * FASE 23.42 estableció una pluralidad de conocimientos
+       * diferenciados y contextualmente elegibles sin refuerzo
+       * inferido por diversidad genealógica.
+       *
+       * FASE 23.43 verifica únicamente que esa pluralidad avance
+       * a consideraciones individuales trazables, sin crear:
+       *
+       * - consideración conjunta;
+       * - conocimiento combinado;
+       * - soporte colectivo;
+       * - corroboración;
+       * - consenso;
+       * - refuerzo.
+       */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeConsideration
+      );
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeConsideration
+      );
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-individual-consideration-23-43-a',
+          title:
+            'Patrón controlado A de consideración individual plural',
+          description:
+            'Patrón controlado A utilizado exclusivamente por FASE 23.43.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-individual-consideration-23-43-a',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-individual-consideration-23-43-a-1',
+              'memory-controlled-individual-consideration-23-43-a-2',
+              'memory-controlled-individual-consideration-23-43-a-3',
+              'memory-controlled-individual-consideration-23-43-a-4',
+            ],
+          },
+        },
+        {
+          id: 'pattern-controlled-individual-consideration-23-43-b',
+          title:
+            'Patrón controlado B de consideración individual plural',
+          description:
+            'Patrón controlado B utilizado exclusivamente por FASE 23.43.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-individual-consideration-23-43-b',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-individual-consideration-23-43-b-1',
+              'memory-controlled-individual-consideration-23-43-b-2',
+              'memory-controlled-individual-consideration-23-43-b-3',
+              'memory-controlled-individual-consideration-23-43-b-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 2) {
+        throw new Error(
+          `FASE 23.43 esperaba exactamente 2 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledgeA = controlledKnowledge[0];
+      const knowledgeB = controlledKnowledge[1];
+
+      if (!knowledgeA || !knowledgeB) {
+        throw new Error(
+          'FASE 23.43 no pudo resolver ambos conocimientos controlados.'
+        );
+      }
+
+      if (
+        knowledgeA.id === knowledgeB.id ||
+        knowledgeA.sourcePatternId === knowledgeB.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.43 esperaba conocimientos y patrones fuente distintos.'
+        );
+      }
+
+      const memoryIdsA = new Set(knowledgeA.evidence.memoryIds);
+      const sharedMemoryId =
+        knowledgeB.evidence.memoryIds.find((memoryId) =>
+          memoryIdsA.has(memoryId)
+        );
+
+      if (sharedMemoryId) {
+        throw new Error(
+          `FASE 23.43 esperaba memoryIds diferenciados y encontró ${sharedMemoryId} compartido.`
+        );
+      }
+
+      type ControlledInheritedEligiblePlurality = {
+        relation:
+          | 'no_contextual_eligible_knowledge_plurality'
+          | 'contextual_eligible_knowledge_plurality';
+        pluralityEstablished: boolean | null;
+        knowledgeIds: string[] | null;
+        sourcePatternIds: string[] | null;
+        rationale: string;
+      };
+
+      type ControlledIndividualConsiderationPlurality = {
+        relation:
+          | 'no_contextual_individual_consideration_plurality'
+          | 'contextual_individual_consideration_plurality';
+        pluralityEstablished: boolean | null;
+        eligibilities:
+          | Array<
+              ReturnType<
+                typeof evaluateOperationalKnowledgeEligibility
+              >
+            >
+          | null;
+        considerations:
+          | Array<
+              NonNullable<
+                ReturnType<
+                  typeof considerOperationalKnowledge
+                >
+              >
+            >
+          | null;
+        rationale: string;
+      };
+
+      const inheritedEligiblePlurality:
+        ControlledInheritedEligiblePlurality = {
+          relation:
+            'contextual_eligible_knowledge_plurality',
+          pluralityEstablished: true,
+          knowledgeIds: [knowledgeA.id, knowledgeB.id],
+          sourcePatternIds: [
+            knowledgeA.sourcePatternId,
+            knowledgeB.sourcePatternId,
+          ],
+          rationale:
+            'FASE 23.42 estableció previamente pluralidad elegible sin refuerzo inferido.',
+        };
+
+      const inheritedNotEvaluablePlurality:
+        ControlledInheritedEligiblePlurality = {
+          relation:
+            'no_contextual_eligible_knowledge_plurality',
+          pluralityEstablished: null,
+          knowledgeIds: null,
+          sourcePatternIds: null,
+          rationale:
+            'Control no evaluable: la pluralidad elegible no fue establecida previamente.',
+        };
+
+      const evaluateControlledIndividualConsiderationPlurality =
+        (
+          inheritedPlurality:
+            ControlledInheritedEligiblePlurality,
+          movementType:
+            Parameters<
+              typeof evaluateOperationalKnowledgeEligibility
+            >[1]['movementType']
+        ): ControlledIndividualConsiderationPlurality => {
+          if (
+            inheritedPlurality.relation !==
+              'contextual_eligible_knowledge_plurality' ||
+            inheritedPlurality.pluralityEstablished !== true
+          ) {
+            return {
+              relation:
+                'no_contextual_individual_consideration_plurality',
+              pluralityEstablished: null,
+              eligibilities: null,
+              considerations: null,
+              rationale:
+                'FASE 23.43 no caracteriza consideración plural mientras FASE 23.42 no haya establecido previamente pluralidad elegible.',
+            };
+          }
+
+          const eligibilities = [
+            evaluateOperationalKnowledgeEligibility(
+              knowledgeA,
+              { movementType }
+            ),
+            evaluateOperationalKnowledgeEligibility(
+              knowledgeB,
+              { movementType }
+            ),
+          ];
+
+          const considerationA =
+            considerOperationalKnowledge(eligibilities[0]);
+          const considerationB =
+            considerOperationalKnowledge(eligibilities[1]);
+
+          if (!considerationA || !considerationB) {
+            return {
+              relation:
+                'no_contextual_individual_consideration_plurality',
+              pluralityEstablished: true,
+              eligibilities,
+              considerations: null,
+              rationale:
+                'La pluralidad elegible heredada permanece diferenciada, pero el contexto actual no produjo dos consideraciones individuales.',
+            };
+          }
+
+          return {
+            relation:
+              'contextual_individual_consideration_plurality',
+            pluralityEstablished: true,
+            eligibilities,
+            considerations: [
+              considerationA,
+              considerationB,
+            ],
+            rationale:
+              'Cada conocimiento elegible avanzó individualmente a consideración preservando su propia trazabilidad, sin agregación colectiva.',
+          };
+        };
+
+      const compatibleMovementType =
+        knowledgeA.context.movementType as Parameters<
+          typeof evaluateOperationalKnowledgeEligibility
+        >[1]['movementType'];
+
+      if (
+        knowledgeB.context.movementType !== compatibleMovementType
+      ) {
+        throw new Error(
+          'FASE 23.43 esperaba que ambos conocimientos compartieran el mismo movementType para el caso compatible.'
+        );
+      }
+
+      const incompatibleMovementType =
+        compatibleMovementType === 'entrada'
+          ? 'salida'
+          : 'entrada';
+
+      const inheritedPluralitySnapshot =
+        JSON.stringify(inheritedEligiblePlurality);
+      const inheritedNotEvaluableSnapshot =
+        JSON.stringify(inheritedNotEvaluablePlurality);
+      const controlledKnowledgeSnapshot =
+        JSON.stringify(controlledKnowledge);
+
+      const compatibleEvaluation =
+        evaluateControlledIndividualConsiderationPlurality(
+          inheritedEligiblePlurality,
+          compatibleMovementType
+        );
+
+      const incompatibleEvaluation =
+        evaluateControlledIndividualConsiderationPlurality(
+          inheritedEligiblePlurality,
+          incompatibleMovementType
+        );
+
+      const notEvaluableControl =
+        evaluateControlledIndividualConsiderationPlurality(
+          inheritedNotEvaluablePlurality,
+          compatibleMovementType
+        );
+
+      if (
+        compatibleEvaluation.relation !==
+          'contextual_individual_consideration_plurality' ||
+        compatibleEvaluation.pluralityEstablished !== true ||
+        compatibleEvaluation.eligibilities === null ||
+        compatibleEvaluation.considerations === null ||
+        compatibleEvaluation.eligibilities.length !== 2 ||
+        compatibleEvaluation.considerations.length !== 2 ||
+        !compatibleEvaluation.eligibilities.every(
+          (eligibility) =>
+            eligibility.eligible === true &&
+            eligibility.reason === 'context-compatible'
+        ) ||
+        !compatibleEvaluation.considerations.every(
+          (consideration) =>
+            consideration.considered === true
+        )
+      ) {
+        throw new Error(
+          'FASE 23.43 no reconoció dos consideraciones individuales para la pluralidad elegible compatible.'
+        );
+      }
+
+      const considerationA =
+        compatibleEvaluation.considerations[0];
+      const considerationB =
+        compatibleEvaluation.considerations[1];
+
+      if (
+        !considerationA ||
+        !considerationB ||
+        considerationA.knowledgeId !== knowledgeA.id ||
+        considerationB.knowledgeId !== knowledgeB.id ||
+        considerationA.sourcePatternId !==
+          knowledgeA.sourcePatternId ||
+        considerationB.sourcePatternId !==
+          knowledgeB.sourcePatternId ||
+        considerationA.knowledgeId ===
+          considerationB.knowledgeId ||
+        considerationA.sourcePatternId ===
+          considerationB.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.43 no preservó la identidad y trazabilidad individual de ambas consideraciones.'
+        );
+      }
+
+      if (
+        incompatibleEvaluation.relation !==
+          'no_contextual_individual_consideration_plurality' ||
+        incompatibleEvaluation.pluralityEstablished !== true ||
+        incompatibleEvaluation.eligibilities === null ||
+        incompatibleEvaluation.eligibilities.length !== 2 ||
+        !incompatibleEvaluation.eligibilities.every(
+          (eligibility) =>
+            eligibility.eligible === false &&
+            eligibility.reason === 'context-incompatible'
+        ) ||
+        incompatibleEvaluation.considerations !== null
+      ) {
+        throw new Error(
+          'FASE 23.43 no mantuvo correctamente la ausencia de consideración individual frente a un contexto incompatible.'
+        );
+      }
+
+      const incompatibleConsiderationA =
+        considerOperationalKnowledge(
+          incompatibleEvaluation.eligibilities[0]
+        );
+      const incompatibleConsiderationB =
+        considerOperationalKnowledge(
+          incompatibleEvaluation.eligibilities[1]
+        );
+
+      if (
+        incompatibleConsiderationA !== null ||
+        incompatibleConsiderationB !== null
+      ) {
+        throw new Error(
+          'FASE 23.43 esperaba dos resultados null al considerar conocimientos individualmente inelegibles.'
+        );
+      }
+
+      if (
+        compatibleEvaluation.pluralityEstablished !==
+        incompatibleEvaluation.pluralityEstablished
+      ) {
+        throw new Error(
+          'FASE 23.43 dejó que el cambio de movementType alterara indebidamente la precondición heredada.'
+        );
+      }
+
+      if (
+        notEvaluableControl.relation !==
+          'no_contextual_individual_consideration_plurality' ||
+        notEvaluableControl.pluralityEstablished !== null ||
+        notEvaluableControl.eligibilities !== null ||
+        notEvaluableControl.considerations !== null
+      ) {
+        throw new Error(
+          'FASE 23.43 avanzó indebidamente sin pluralidad elegible previamente establecida.'
+        );
+      }
+
+      if (
+        JSON.stringify(inheritedEligiblePlurality) !==
+          inheritedPluralitySnapshot ||
+        JSON.stringify(inheritedNotEvaluablePlurality) !==
+          inheritedNotEvaluableSnapshot ||
+        JSON.stringify(controlledKnowledge) !==
+          controlledKnowledgeSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.43 modificó alguna entrada controlada durante la evaluación.'
+        );
+      }
+
+      const forbiddenProperties = [
+        'operationalEpisodeId',
+        'episodeId',
+        'parentMovementId',
+        'correlationId',
+        'requestId',
+        'batchId',
+        'groupId',
+        'jointConsideration',
+        'combinedConsideration',
+        'considerationCount',
+        'collectiveConsideration',
+        'collectiveSupport',
+        'support',
+        'supportCount',
+        'evidenceCount',
+        'provenanceCount',
+        'strength',
+        'weight',
+        'reinforcement',
+        'reinforced',
+        'corroboration',
+        'corroborated',
+        'consensus',
+        'independentEvidence',
+        'evidenceIndependence',
+        'operationalIndependence',
+        'provenanceIndependence',
+        'causalIndependence',
+        'independent',
+        'confidence',
+        'priority',
+        'score',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationObjects: Array<Record<string, unknown>> = [
+        inheritedEligiblePlurality,
+        inheritedNotEvaluablePlurality,
+        compatibleEvaluation,
+        incompatibleEvaluation,
+        notEvaluableControl,
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 23.43 introdujo indebidamente la propiedad "${detectedForbiddenProperty}".`
+        );
+      }
+
+      const recommendationsAfterConsideration =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterConsideration =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterConsideration
+        );
+
+      if (
+        JSON.stringify(recommendationsAfterConsideration) !==
+          recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.43 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterConsideration) !==
+          decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.43 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 23.43 OK: dos conocimientos diferenciados y contextualmente elegibles avanzaron a dos consideraciones individuales trazables para el mismo movementType (${compatibleMovementType}), preservando knowledgeId y sourcePatternId separados sin crear consideración conjunta, agregación colectiva, soporte, corroboración, consenso o refuerzo.
+Al cambiar únicamente el contexto a movementType incompatible (${incompatibleMovementType}), ambas elegibilidades resultaron context-incompatible y considerOperationalKnowledge devolvió null individualmente para cada una, sin producir una consideración colectiva alternativa.
+El control sin pluralidad elegible previamente establecida permaneció correctamente no evaluable.
+No se introdujeron nuevos identificadores, jointConsideration, combinedConsideration, considerationCount, soporte, strength, weight, reinforcement, corroboration, consensus, indicadores de independencia, score, modificación de confidence o priority, fusión, deduplicación, reordenamiento, ranking, selección ni ejecución, permaneciendo intactas ${recommendationsAfterConsideration.length} recomendaciones y ${decisionsAfterConsideration.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+      addLog(
+        error instanceof Error
+          ? `Error en preservación contextual controlada de individualidad en consideración plural del conocimiento operativo 23.43: ${error.message}`
+          : 'Error inesperado en preservación contextual controlada de individualidad en consideración plural del conocimiento operativo 23.43.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -24682,6 +25206,13 @@ No se introdujeron nuevos identificadores, soporte, conteos, strength, weight, r
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Pluralidad Elegible sin Refuerzo 23.42
+        </button>
+        <button
+          onClick={testOperationalKnowledgeControlledIndividualConsiderationPlurality}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Individualidad Consideración Plural 23.43
         </button>
         <button
           onClick={testMandatoryPhysicalPlacement}
