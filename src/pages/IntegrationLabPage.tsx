@@ -71,6 +71,10 @@ import {
 } from '../services/operationalKnowledgeInfluenceService';
 
 import {
+  reachProductiveRecommendation,
+} from '../services/operationalKnowledgeRecommendationReachService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -30625,6 +30629,483 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+  async function testOperationalKnowledgeProductiveRecommendationReachContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeReach =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeReach =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeReach
+        );
+
+      /*
+      * FASE 24.9 — Alcance productivo explícito
+      * de la influencia del conocimiento operativo
+      * sobre una recomendación productiva concreta.
+      *
+      * FASE 24.8 estableció:
+      *
+      * ProductiveKnowledgeUtilization
+      *        ↓
+      * influenceProductiveKnowledge()
+      *        ↓
+      * ProductiveKnowledgeInfluence
+      *
+      * FASE 24.9 introduce:
+      *
+      * ProductiveKnowledgeInfluence
+      *        +
+      * IntelligenceRecommendation
+      *        ↓
+      * reachProductiveRecommendation()
+      *        ↓
+      * ProductiveKnowledgeRecommendationReach
+      *
+      * El alcance NO constituye:
+      *
+      * - efecto observable sobre contenido;
+      * - cambio de recomendación;
+      * - cambio de prioridad;
+      * - cambio de score;
+      * - ranking;
+      * - selección;
+      * - ejecución;
+      * - cambio de decisiones.
+      */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeReach
+      );
+
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeReach
+      );
+
+      if (recommendationsBeforeReach.length < 1) {
+        throw new Error(
+          'FASE 24.9 esperaba al menos 1 recomendación productiva existente.'
+        );
+      }
+
+      const recommendation = recommendationsBeforeReach[0];
+
+      if (!recommendation) {
+        throw new Error(
+          'FASE 24.9 no pudo resolver una recomendación productiva concreta.'
+        );
+      }
+
+      const recommendationSnapshot =
+        JSON.stringify(recommendation);
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-recommendation-reach-24-9',
+          title:
+            'Patrón controlado de alcance productivo sobre recomendación',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.9.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-recommendation-reach-24-9',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-recommendation-reach-24-9-1',
+              'memory-controlled-productive-recommendation-reach-24-9-2',
+              'memory-controlled-productive-recommendation-reach-24-9-3',
+              'memory-controlled-productive-recommendation-reach-24-9-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.9 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.9 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.9 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.9 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.9 no pudo obtener ProductiveKnowledgeInput previo al alcance.'
+        );
+      }
+
+      const reception =
+        receiveProductiveKnowledge(productiveInput);
+
+      const availability =
+        makeProductiveKnowledgeAvailable(reception);
+
+      const consumerA: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-a-24-9',
+      };
+
+      const consumerB: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-b-24-9',
+      };
+
+      const exposureA =
+        exposeProductiveKnowledge(
+          availability,
+          consumerA
+        );
+
+      const exposureB =
+        exposeProductiveKnowledge(
+          availability,
+          consumerB
+        );
+
+      const accessA =
+        accessProductiveKnowledge(exposureA);
+
+      const accessB =
+        accessProductiveKnowledge(exposureB);
+
+      const consumptionA =
+        consumeProductiveKnowledge(accessA);
+
+      const consumptionB =
+        consumeProductiveKnowledge(accessB);
+
+      const utilizationA =
+        useProductiveKnowledge(consumptionA);
+
+      const utilizationB =
+        useProductiveKnowledge(consumptionB);
+
+      const influenceA =
+        influenceProductiveKnowledge(utilizationA);
+
+      const influenceB =
+        influenceProductiveKnowledge(utilizationB);
+
+      /*
+      * influence exists != influence reaches recommendation
+      *
+      * ProductiveKnowledgeInfluence no crea
+      * automáticamente ningún
+      * ProductiveKnowledgeRecommendationReach.
+      *
+      * El alcance requiere un acto explícito:
+      * reachProductiveRecommendation().
+      */
+      const influenceASnapshot =
+        JSON.stringify(influenceA);
+
+      const influenceBSnapshot =
+        JSON.stringify(influenceB);
+
+      /*
+      * Alcance explícito de Influence A
+      * sobre la recomendación concreta.
+      */
+      const reachA =
+        reachProductiveRecommendation(
+          influenceA,
+          recommendation
+        );
+
+      if (reachA.influence !== influenceA) {
+        throw new Error(
+          'FASE 24.9 no conservó la misma ProductiveKnowledgeInfluence durante el alcance.'
+        );
+      }
+
+      if (reachA.recommendation !== recommendation) {
+        throw new Error(
+          'FASE 24.9 no conservó la misma IntelligenceRecommendation durante el alcance.'
+        );
+      }
+
+      /*
+      * La recomendación debe conservar identidad
+      * y contenido exactos.
+      */
+      if (
+        JSON.stringify(recommendation) !==
+        recommendationSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.9 modificó la recomendación productiva durante el alcance.'
+        );
+      }
+
+      /*
+      * La influencia tampoco puede mutarse.
+      */
+      if (
+        JSON.stringify(influenceA) !==
+        influenceASnapshot
+      ) {
+        throw new Error(
+          'FASE 24.9 modificó ProductiveKnowledgeInfluence durante el alcance.'
+        );
+      }
+
+      /*
+      * Influence B permanece independiente.
+      */
+      if (
+        JSON.stringify(influenceB) !==
+        influenceBSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.9 propagó o modificó indebidamente una influencia independiente.'
+        );
+      }
+
+      /*
+      * Control A/B:
+      *
+      * que Influence A alcance Recommendation R
+      * no significa que Influence B la alcance
+      * automáticamente.
+      *
+      * El segundo alcance requiere otro acto
+      * explícito independiente.
+      */
+      const reachB =
+        reachProductiveRecommendation(
+          influenceB,
+          recommendation
+        );
+
+      if (reachB.influence !== influenceB) {
+        throw new Error(
+          'FASE 24.9 no conservó la segunda influencia durante su alcance independiente.'
+        );
+      }
+
+      if (reachB.recommendation !== recommendation) {
+        throw new Error(
+          'FASE 24.9 no conservó la misma recomendación durante el segundo alcance.'
+        );
+      }
+
+      if (reachA === reachB) {
+        throw new Error(
+          'FASE 24.9 colapsó dos actos explícitos de alcance independientes.'
+        );
+      }
+
+      if (reachA.influence === reachB.influence) {
+        throw new Error(
+          'FASE 24.9 perdió la distinción entre influencias productivas independientes.'
+        );
+      }
+
+      if (reachA.recommendation !== reachB.recommendation) {
+        throw new Error(
+          'FASE 24.9 esperaba que ambas influencias alcanzaran exactamente la misma recomendación.'
+        );
+      }
+
+      /*
+      * ProductiveKnowledgeRecommendationReach debe
+      * ser una relación mínima.
+      *
+      * No puede duplicar datos de Recommendation
+      * ni adquirir semántica de efecto, cambio,
+      * prioridad, ranking o selección.
+      */
+      const forbiddenReachProperties = [
+        'recommendationId',
+        'target',
+        'targetId',
+        'targetType',
+        'purpose',
+        'effect',
+        'effectSize',
+        'impact',
+        'changed',
+        'score',
+        'priority',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decision',
+        'decisionId',
+        'executed',
+        'execution',
+      ];
+
+      const reachRecord =
+        reachA as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenReachProperty =
+        forbiddenReachProperties.find(
+          (property) => property in reachRecord
+        );
+
+      if (detectedForbiddenReachProperty) {
+        throw new Error(
+          `FASE 24.9 introdujo indebidamente la propiedad "${detectedForbiddenReachProperty}" dentro de ProductiveKnowledgeRecommendationReach.`
+        );
+      }
+
+      /*
+      * La recomendación original sí puede contener
+      * score y priority porque pertenecen a su
+      * contrato previo.
+      *
+      * 24.9 únicamente verifica que esos valores
+      * no hayan sido alterados ni duplicados en Reach.
+      */
+      if (
+        reachA.recommendation.score !==
+          recommendation.score ||
+        reachA.recommendation.priority !==
+          recommendation.priority
+      ) {
+        throw new Error(
+          'FASE 24.9 alteró score o priority de la recomendación alcanzada.'
+        );
+      }
+
+      /*
+      * La genealogía completa del conocimiento
+      * debe seguir preservándose transitivamente.
+      */
+      if (
+        reachA.influence.utilization.consumption.access.exposure
+          .availability.reception.input !== productiveInput
+      ) {
+        throw new Error(
+          'FASE 24.9 perdió ProductiveKnowledgeInput durante el alcance sobre recomendación.'
+        );
+      }
+
+      if (
+        reachA.influence.utilization.consumption.access.exposure
+          .consumer !== consumerA
+      ) {
+        throw new Error(
+          'FASE 24.9 perdió la referencia del consumidor durante el alcance sobre recomendación.'
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      *
+      * La influencia alcanzó una recomendación
+      * concreta, pero no produjo todavía efecto
+      * ni modificación del resultado productivo.
+      */
+      const recommendationsAfterReach =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterReach =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterReach
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterReach
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.9 detectó modificación de recomendaciones productivas después del alcance de la influencia.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterReach) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.9 detectó modificación, reordenamiento o ranking distinto de decisiones después del alcance sobre recomendación.'
+        );
+      }
+
+      addLog(
+        `FASE 24.9 OK: las influencias del conocimiento ${productiveInput.knowledgeId} asociadas a ${consumerA.id} y ${consumerB.id} alcanzaron explícitamente la misma recomendación productiva ${recommendation.id} mediante actos independientes de ProductiveKnowledgeRecommendationReach, conservando exactamente influencia y recomendación.
+        La influencia no produjo alcance automático; el alcance requirió reachProductiveRecommendation() y no modificó score, priority, contenido, ranking, selección ni ejecución de la recomendación.
+        Permanecieron intactas ${recommendationsAfterReach.length} recomendaciones y ${decisionsAfterReach.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en alcance productivo explícito de la influencia sobre recomendación 24.9: ${error.message}`
+          : 'Error inesperado en alcance productivo explícito de la influencia sobre recomendación 24.9.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -31526,6 +32007,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Influencia Productiva 24.8
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveRecommendationReachContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Alcance Recomendación 24.9
         </button>
 
         <button
