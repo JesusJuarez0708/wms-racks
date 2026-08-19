@@ -83,6 +83,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectInterpretationService';
 
 import {
+  evaluateProductiveKnowledgeRecommendationEffectRelevance,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -32272,6 +32276,521 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+  async function testOperationalKnowledgeProductiveRecommendationEffectRelevanceContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeRelevance =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeRelevance =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeRelevance
+        );
+
+      /*
+      * FASE 24.12 — Relevancia productiva explícita
+      * de la interpretación del efecto observable
+      * sobre recomendación.
+      *
+      * FASE 24.11 estableció:
+      *
+      * ProductiveKnowledgeRecommendationEffect
+      *        +
+      * ProductiveKnowledgeRecommendationEffectInterpretationContext
+      *        ↓
+      * interpretProductiveKnowledgeRecommendationEffect()
+      *        ↓
+      * ProductiveKnowledgeRecommendationEffectInterpretation | null
+      *
+      * FASE 24.12 introduce:
+      *
+      * ProductiveKnowledgeRecommendationEffectInterpretation
+      *        +
+      * ProductiveKnowledgeRecommendationEffectRelevanceContext
+      *        ↓
+      * evaluateProductiveKnowledgeRecommendationEffectRelevance()
+      *        ↓
+      * ProductiveKnowledgeRecommendationEffectRelevance | null
+      *
+      * La tesis es:
+      *
+      * interpretation exists
+      *   != relevance exists
+      *   != recommendation changes
+      *
+      * Además:
+      *
+      * relevant
+      *   != stronger
+      *   != higher priority
+      *   != preferred
+      *   != selected
+      *   != executed
+      */
+
+      const recommendationsSnapshot =
+        JSON.stringify(recommendationsBeforeRelevance);
+
+      const decisionsSnapshot =
+        JSON.stringify(decisionsBeforeRelevance);
+
+      if (recommendationsBeforeRelevance.length < 1) {
+        throw new Error(
+          'FASE 24.12 esperaba al menos 1 recomendación productiva existente.'
+        );
+      }
+
+      const recommendation =
+        recommendationsBeforeRelevance[0];
+
+      if (!recommendation) {
+        throw new Error(
+          'FASE 24.12 no pudo resolver una recomendación productiva concreta.'
+        );
+      }
+
+      const recommendationSnapshot =
+        JSON.stringify(recommendation);
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-recommendation-effect-relevance-24-12',
+          title:
+            'Patrón controlado de relevancia productiva del efecto sobre recomendación',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.12.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-recommendation-effect-relevance-24-12',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-recommendation-effect-relevance-24-12-1',
+              'memory-controlled-productive-recommendation-effect-relevance-24-12-2',
+              'memory-controlled-productive-recommendation-effect-relevance-24-12-3',
+              'memory-controlled-productive-recommendation-effect-relevance-24-12-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.12 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.12 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.12 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.12 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.12 no pudo obtener ProductiveKnowledgeInput previo a la relevancia.'
+        );
+      }
+
+      const reception =
+        receiveProductiveKnowledge(productiveInput);
+
+      const availability =
+        makeProductiveKnowledgeAvailable(reception);
+
+      const consumer: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-effect-relevance-24-12',
+      };
+
+      const exposure =
+        exposeProductiveKnowledge(
+          availability,
+          consumer
+        );
+
+      const access =
+        accessProductiveKnowledge(exposure);
+
+      const consumption =
+        consumeProductiveKnowledge(access);
+
+      const utilization =
+        useProductiveKnowledge(consumption);
+
+      const influence =
+        influenceProductiveKnowledge(utilization);
+
+      const reach =
+        reachProductiveRecommendation(
+          influence,
+          recommendation
+        );
+
+      const effect =
+        observeProductiveKnowledgeRecommendationEffect(
+          reach,
+          {
+            observableRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!effect) {
+        throw new Error(
+          'FASE 24.12 no pudo establecer ProductiveKnowledgeRecommendationEffect previo.'
+        );
+      }
+
+      const interpretation =
+        interpretProductiveKnowledgeRecommendationEffect(
+          effect,
+          {
+            interpretableRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!interpretation) {
+        throw new Error(
+          'FASE 24.12 no pudo establecer ProductiveKnowledgeRecommendationEffectInterpretation previa.'
+        );
+      }
+
+      const influenceSnapshot =
+        JSON.stringify(influence);
+
+      const reachSnapshot =
+        JSON.stringify(reach);
+
+      const effectSnapshot =
+        JSON.stringify(effect);
+
+      const interpretationSnapshot =
+        JSON.stringify(interpretation);
+
+      /*
+      * CONTROL NEGATIVO
+      *
+      * Interpretation existe != Relevance existe.
+      */
+      const relevanceOutsideScope =
+        evaluateProductiveKnowledgeRecommendationEffectRelevance(
+          interpretation,
+          {
+            relevantRecommendationId:
+              `${recommendation.id}-outside-relevance-scope-24-12`,
+          }
+        );
+
+      if (relevanceOutsideScope !== null) {
+        throw new Error(
+          'FASE 24.12 materializó indebidamente relevancia fuera del ámbito explícito.'
+        );
+      }
+
+      if (
+        JSON.stringify(interpretation) !==
+        interpretationSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.12 modificó la interpretación durante el control negativo.'
+        );
+      }
+
+      if (
+        JSON.stringify(effect) !==
+        effectSnapshot ||
+        JSON.stringify(reach) !==
+        reachSnapshot ||
+        JSON.stringify(influence) !==
+        influenceSnapshot ||
+        JSON.stringify(recommendation) !==
+        recommendationSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.12 modificó antecedentes durante el control negativo.'
+        );
+      }
+
+      /*
+      * CASO POSITIVO
+      *
+      * Se utiliza exactamente la misma Interpretation.
+      */
+      const relevance =
+        evaluateProductiveKnowledgeRecommendationEffectRelevance(
+          interpretation,
+          {
+            relevantRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!relevance) {
+        throw new Error(
+          'FASE 24.12 no materializó la relevancia esperada dentro del ámbito explícito.'
+        );
+      }
+
+      if (
+        relevance.interpretation !==
+        interpretation
+      ) {
+        throw new Error(
+          'FASE 24.12 no conservó exactamente la misma ProductiveKnowledgeRecommendationEffectInterpretation.'
+        );
+      }
+
+      if (
+        relevance.interpretation.effect !== effect ||
+        relevance.interpretation.effect.reach !== reach ||
+        relevance.interpretation.effect.reach.influence !==
+          influence ||
+        relevance.interpretation.effect.reach.recommendation !==
+          recommendation
+      ) {
+        throw new Error(
+          'FASE 24.12 perdió identidad dentro de la genealogía previa.'
+        );
+      }
+
+      if (
+        relevance.relevanceType !==
+        'knowledge-effect-contextually-relevant'
+      ) {
+        throw new Error(
+          'FASE 24.12 produjo un tipo de relevancia distinto del contrato esperado.'
+        );
+      }
+
+      /*
+      * Relevance debe seguir siendo un contrato mínimo.
+      */
+      const forbiddenRelevanceProperties = [
+        'recommendationId',
+        'influenceId',
+        'effectId',
+        'interpretationId',
+        'target',
+        'targetId',
+        'targetType',
+        'purpose',
+        'message',
+        'description',
+        'rationale',
+        'effectSize',
+        'impact',
+        'changed',
+        'transformed',
+        'score',
+        'priority',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decision',
+        'decisionId',
+        'executed',
+        'execution',
+        'accepted',
+        'rejected',
+        'preferred',
+        'promoted',
+      ];
+
+      const relevanceRecord =
+        relevance as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenRelevanceProperty =
+        forbiddenRelevanceProperties.find(
+          (property) =>
+            property in relevanceRecord
+        );
+
+      if (detectedForbiddenRelevanceProperty) {
+        throw new Error(
+          `FASE 24.12 introdujo indebidamente la propiedad "${detectedForbiddenRelevanceProperty}" dentro de ProductiveKnowledgeRecommendationEffectRelevance.`
+        );
+      }
+
+      /*
+      * Ningún antecedente puede modificarse.
+      */
+      if (
+        JSON.stringify(interpretation) !==
+          interpretationSnapshot ||
+        JSON.stringify(effect) !==
+          effectSnapshot ||
+        JSON.stringify(reach) !==
+          reachSnapshot ||
+        JSON.stringify(influence) !==
+          influenceSnapshot ||
+        JSON.stringify(recommendation) !==
+          recommendationSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.12 modificó alguno de sus antecedentes al materializar relevancia.'
+        );
+      }
+
+      /*
+      * Score y priority siguen perteneciendo
+      * exclusivamente a IntelligenceRecommendation.
+      */
+      if (
+        relevance.interpretation.effect.reach.recommendation.score !==
+          recommendation.score ||
+        relevance.interpretation.effect.reach.recommendation.priority !==
+          recommendation.priority
+      ) {
+        throw new Error(
+          'FASE 24.12 alteró score o priority de la recomendación.'
+        );
+      }
+
+      /*
+      * Preservación genealógica completa.
+      */
+      if (
+        relevance.interpretation.effect.reach.influence
+          .utilization.consumption.access.exposure
+          .availability.reception.input !==
+        productiveInput
+      ) {
+        throw new Error(
+          'FASE 24.12 perdió ProductiveKnowledgeInput dentro de la genealogía.'
+        );
+      }
+
+      if (
+        relevance.interpretation.effect.reach.influence
+          .utilization.consumption.access.exposure
+          .consumer !== consumer
+      ) {
+        throw new Error(
+          'FASE 24.12 perdió la referencia del consumidor dentro de la genealogía.'
+        );
+      }
+
+      if (
+        relevance.interpretation.interpretationType !==
+          'knowledge-effect-interpreted' ||
+        relevance.interpretation.effect.effectType !==
+          'knowledge-influence-observed'
+      ) {
+        throw new Error(
+          'FASE 24.12 alteró la semántica de Interpretation o Effect previos.'
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      */
+      const recommendationsAfterRelevance =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterRelevance =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterRelevance
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterRelevance
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.12 detectó modificación de recomendaciones productivas después de materializar relevancia.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterRelevance
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.12 detectó modificación, reordenamiento o ranking distinto de decisiones después de materializar relevancia.'
+        );
+      }
+
+      addLog(
+        `FASE 24.12 OK: la misma ProductiveKnowledgeRecommendationEffectInterpretation sobre la recomendación ${recommendation.id} no produjo relevancia fuera del ámbito explícito y sí materializó ProductiveKnowledgeRecommendationEffectRelevance dentro de dicho ámbito, conservando exactamente Interpretation, Effect, Reach, Influence y Recommendation.
+        La relevancia ${relevance.relevanceType} no introdujo fuerza, score, priority, confidence, ponderación, ranking, preferencia, selección, aceptación, rechazo, promoción ni ejecución.
+        Permanecieron intactas ${recommendationsAfterRelevance.length} recomendaciones y ${decisionsAfterRelevance.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en relevancia productiva explícita del efecto sobre recomendación 24.12: ${error.message}`
+          : 'Error inesperado en relevancia productiva explícita del efecto sobre recomendación 24.12.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -33197,6 +33716,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Interpretación Efecto 24.11
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveRecommendationEffectRelevanceContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Relevancia Efecto 24.12
         </button>
 
         <button
