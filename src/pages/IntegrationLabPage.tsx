@@ -25703,6 +25703,735 @@ No se introdujeron combinedInfluence, jointInfluence, collectiveInfluence, influ
     }
   }
 
+  async function testOperationalKnowledgeControlledSelectiveDecisionContentInfluenceUnderPluralUse() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeDecisionInfluence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeDecisionInfluence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeDecisionInfluence
+        );
+
+      /*
+       * FASE 23.46 — Selectividad contextual controlada de
+       * influencia sobre contenido decisional ante utilización
+       * plural del conocimiento operativo.
+       *
+       * PRECONDICIÓN HEREDADA:
+       *
+       * FASE 23.45 dejó disponibles dos utilizaciones
+       * observacionales individuales, diferenciadas y trazables.
+       *
+       * FASE 23.46 demuestra localmente que:
+       *
+       * - una utilización puede cruzar selectivamente la frontera
+       *   decisional sin propagar influencia a la otra;
+       * - ambas pueden producir influencias decisionales separadas;
+       * - cada influencia parte directamente de la MISMA decisión
+       *   base independiente;
+       * - nunca se compone BASE -> D1 -> D2;
+       * - pluralidad decisional no implica agregación, consenso,
+       *   soporte ni refuerzo.
+       */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeDecisionInfluence
+      );
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeDecisionInfluence
+      );
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-selective-decision-influence-23-46-a',
+          title:
+            'Patrón controlado A de influencia decisional selectiva',
+          description:
+            'Patrón controlado A utilizado exclusivamente por FASE 23.46.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-selective-decision-influence-23-46-a',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-selective-decision-influence-23-46-a-1',
+              'memory-controlled-selective-decision-influence-23-46-a-2',
+              'memory-controlled-selective-decision-influence-23-46-a-3',
+              'memory-controlled-selective-decision-influence-23-46-a-4',
+            ],
+          },
+        },
+        {
+          id: 'pattern-controlled-selective-decision-influence-23-46-b',
+          title:
+            'Patrón controlado B de influencia decisional selectiva',
+          description:
+            'Patrón controlado B utilizado exclusivamente por FASE 23.46.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-selective-decision-influence-23-46-b',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-selective-decision-influence-23-46-b-1',
+              'memory-controlled-selective-decision-influence-23-46-b-2',
+              'memory-controlled-selective-decision-influence-23-46-b-3',
+              'memory-controlled-selective-decision-influence-23-46-b-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 2) {
+        throw new Error(
+          `FASE 23.46 esperaba exactamente 2 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledgeA = controlledKnowledge[0];
+      const knowledgeB = controlledKnowledge[1];
+
+      if (!knowledgeA || !knowledgeB) {
+        throw new Error(
+          'FASE 23.46 no pudo resolver ambos conocimientos controlados.'
+        );
+      }
+
+      if (
+        knowledgeA.id === knowledgeB.id ||
+        knowledgeA.sourcePatternId === knowledgeB.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.46 esperaba conocimientos y patrones fuente distintos.'
+        );
+      }
+
+      const compatibleMovementType =
+        knowledgeA.context.movementType as Parameters<
+          typeof evaluateOperationalKnowledgeEligibility
+        >[1]['movementType'];
+
+      if (
+        knowledgeB.context.movementType !== compatibleMovementType
+      ) {
+        throw new Error(
+          'FASE 23.46 esperaba que ambos conocimientos compartieran el mismo movementType para reconstruir la precondición plural.'
+        );
+      }
+
+      const eligibilityA =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeA,
+          { movementType: compatibleMovementType }
+        );
+
+      const eligibilityB =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeB,
+          { movementType: compatibleMovementType }
+        );
+
+      const considerationA =
+        considerOperationalKnowledge(eligibilityA);
+
+      const considerationB =
+        considerOperationalKnowledge(eligibilityB);
+
+      if (
+        eligibilityA.eligible !== true ||
+        eligibilityB.eligible !== true ||
+        eligibilityA.reason !== 'context-compatible' ||
+        eligibilityB.reason !== 'context-compatible' ||
+        !considerationA ||
+        !considerationB
+      ) {
+        throw new Error(
+          'FASE 23.46 no pudo reconstruir dos consideraciones válidas para la precondición heredada.'
+        );
+      }
+
+      type ControlledObservationalUse = {
+        relation: 'contextual_individual_observational_use';
+        knowledgeId: string;
+        sourcePatternId: string;
+        observed: true;
+        rationale: string;
+      };
+
+      const consumeOperationalKnowledgeObservation =
+        (
+          consideration: NonNullable<
+            ReturnType<
+              typeof considerOperationalKnowledge
+            >
+          >
+        ): ControlledObservationalUse => ({
+          relation:
+            'contextual_individual_observational_use',
+          knowledgeId: consideration.knowledgeId,
+          sourcePatternId: consideration.sourcePatternId,
+          observed: true,
+          rationale:
+            'Utilización observacional local y unaria heredada conceptualmente de FASE 23.44-23.45.',
+        });
+
+      const utilizationA =
+        consumeOperationalKnowledgeObservation(
+          considerationA
+        );
+
+      const utilizationB =
+        consumeOperationalKnowledgeObservation(
+          considerationB
+        );
+
+      if (
+        utilizationA.knowledgeId !== knowledgeA.id ||
+        utilizationB.knowledgeId !== knowledgeB.id ||
+        utilizationA.sourcePatternId !==
+          knowledgeA.sourcePatternId ||
+        utilizationB.sourcePatternId !==
+          knowledgeB.sourcePatternId ||
+        utilizationA.knowledgeId === utilizationB.knowledgeId ||
+        utilizationA.sourcePatternId ===
+          utilizationB.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.46 no preservó la trazabilidad individual de las utilizaciones observacionales.'
+        );
+      }
+
+      type ControlledInheritedObservationalUsePlurality = {
+        relation:
+          | 'no_contextual_individual_observational_use_plurality'
+          | 'contextual_individual_observational_use_plurality';
+        pluralityEstablished: boolean | null;
+        utilizations:
+          | [ControlledObservationalUse, ControlledObservationalUse]
+          | null;
+        rationale: string;
+      };
+
+      type ControlledDecisionContentInfluence = {
+        relation: 'contextual_individual_decision_content_influence';
+        knowledgeId: string;
+        sourcePatternId: string;
+        decisionId: string;
+        baseAction: string;
+        influencedAction: string;
+        rationale: string;
+      };
+
+      type ControlledSelectiveDecisionContentInfluence = {
+        relation:
+          | 'no_contextual_selective_decision_content_influence'
+          | 'contextual_selective_decision_content_influence'
+          | 'contextual_individual_decision_content_influence_plurality';
+        pluralityEstablished: boolean | null;
+        influences: ControlledDecisionContentInfluence[] | null;
+        remainingUtilization: ControlledObservationalUse | null;
+        rationale: string;
+      };
+
+      const inheritedUtilizationPlurality:
+        ControlledInheritedObservationalUsePlurality = {
+          relation:
+            'contextual_individual_observational_use_plurality',
+          pluralityEstablished: true,
+          utilizations: [
+            utilizationA,
+            utilizationB,
+          ],
+          rationale:
+            'FASE 23.45 dejó disponibles dos utilizaciones observacionales individuales y trazables.',
+        };
+
+      const inheritedNotEvaluablePlurality:
+        ControlledInheritedObservationalUsePlurality = {
+          relation:
+            'no_contextual_individual_observational_use_plurality',
+          pluralityEstablished: null,
+          utilizations: null,
+          rationale:
+            'Control no evaluable: la utilización observacional plural no fue establecida previamente.',
+        };
+
+      /*
+       * Elegimos una decisión real por identidad estable.
+       *
+       * No usamos posición de array, confidence, priority ni ranking.
+       */
+      const baseDecision =
+        decisionsBeforeDecisionInfluence.find(
+          (decision) =>
+            decision.id === 'decision-review-movements'
+        );
+
+      if (!baseDecision) {
+        throw new Error(
+          'FASE 23.46 no encontró decision-review-movements como decisión base controlada.'
+        );
+      }
+
+      const baseDecisionSnapshot =
+        JSON.stringify(baseDecision);
+
+      /*
+       * Consumidor decisional LOCAL y UNARIO.
+       *
+       * Recibe siempre:
+       * - la MISMA decisión base;
+       * - UNA sola utilización observacional.
+       *
+       * Modifica únicamente action en una copia controlada.
+       */
+      const consumeDecisionContentInfluence =
+        (
+          decision: OperationalDecision,
+          utilization: ControlledObservationalUse
+        ): ControlledDecisionContentInfluence => ({
+          relation:
+            'contextual_individual_decision_content_influence',
+          knowledgeId: utilization.knowledgeId,
+          sourcePatternId: utilization.sourcePatternId,
+          decisionId: decision.id,
+          baseAction: decision.action,
+          influencedAction:
+            `${decision.action} | influencia-decisional:${utilization.knowledgeId}`,
+          rationale:
+            'Consumidor decisional local y unario: deriva una influencia individual directamente de la decisión base sin composición con otras influencias.',
+        });
+
+      const evaluateSelectiveDecisionContentInfluence =
+        (
+          inheritedPlurality:
+            ControlledInheritedObservationalUsePlurality,
+          useBoth: boolean
+        ): ControlledSelectiveDecisionContentInfluence => {
+          if (
+            inheritedPlurality.relation !==
+              'contextual_individual_observational_use_plurality' ||
+            inheritedPlurality.pluralityEstablished !== true ||
+            inheritedPlurality.utilizations === null
+          ) {
+            return {
+              relation:
+                'no_contextual_selective_decision_content_influence',
+              pluralityEstablished: null,
+              influences: null,
+              remainingUtilization: null,
+              rationale:
+                'FASE 23.46 no evalúa influencia decisional mientras no exista utilización observacional plural previamente establecida.',
+            };
+          }
+
+          const [
+            currentUtilizationA,
+            currentUtilizationB,
+          ] = inheritedPlurality.utilizations;
+
+          const influenceA =
+            consumeDecisionContentInfluence(
+              baseDecision,
+              currentUtilizationA
+            );
+
+          if (!useBoth) {
+            return {
+              relation:
+                'contextual_selective_decision_content_influence',
+              pluralityEstablished: true,
+              influences: [influenceA],
+              remainingUtilization:
+                currentUtilizationB,
+              rationale:
+                'Sólo una utilización cruzó la frontera decisional; la otra permaneció disponible sin adquirir semántica de rechazo, irrelevancia, contradicción o menor fuerza.',
+            };
+          }
+
+          const influenceB =
+            consumeDecisionContentInfluence(
+              baseDecision,
+              currentUtilizationB
+            );
+
+          return {
+            relation:
+              'contextual_individual_decision_content_influence_plurality',
+            pluralityEstablished: true,
+            influences: [
+              influenceA,
+              influenceB,
+            ],
+            remainingUtilization: null,
+            rationale:
+              'Ambas utilizaciones produjeron influencias decisionales individuales y separadas, cada una derivada directamente de la misma decisión base.',
+          };
+        };
+
+      const controlledKnowledgeSnapshot =
+        JSON.stringify(controlledKnowledge);
+      const utilizationASnapshot =
+        JSON.stringify(utilizationA);
+      const utilizationBSnapshot =
+        JSON.stringify(utilizationB);
+      const inheritedPluralitySnapshot =
+        JSON.stringify(inheritedUtilizationPlurality);
+      const inheritedNotEvaluableSnapshot =
+        JSON.stringify(inheritedNotEvaluablePlurality);
+
+      /*
+       * Caso A:
+       * sólo U1 cruza la frontera decisional.
+       */
+      const selectiveEvaluation =
+        evaluateSelectiveDecisionContentInfluence(
+          inheritedUtilizationPlurality,
+          false
+        );
+
+      if (
+        selectiveEvaluation.relation !==
+          'contextual_selective_decision_content_influence' ||
+        selectiveEvaluation.pluralityEstablished !== true ||
+        selectiveEvaluation.influences === null ||
+        selectiveEvaluation.influences.length !== 1 ||
+        selectiveEvaluation.remainingUtilization === null
+      ) {
+        throw new Error(
+          'FASE 23.46 no reconoció correctamente la influencia decisional selectiva.'
+        );
+      }
+
+      const selectiveInfluence =
+        selectiveEvaluation.influences[0];
+
+      if (
+        !selectiveInfluence ||
+        selectiveInfluence.knowledgeId !==
+          utilizationA.knowledgeId ||
+        selectiveInfluence.sourcePatternId !==
+          utilizationA.sourcePatternId ||
+        selectiveInfluence.decisionId !==
+          baseDecision.id ||
+        selectiveInfluence.baseAction !==
+          baseDecision.action ||
+        selectiveInfluence.influencedAction ===
+          baseDecision.action ||
+        selectiveEvaluation.remainingUtilization.knowledgeId !==
+          utilizationB.knowledgeId ||
+        selectiveEvaluation.remainingUtilization.sourcePatternId !==
+          utilizationB.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.46 perdió trazabilidad o alteró indebidamente la utilización sin influencia decisional.'
+        );
+      }
+
+      /*
+       * Caso B:
+       * U1 y U2 producen D1 y D2 individualmente.
+       *
+       * Ambos deben partir DIRECTAMENTE de la misma decisión base.
+       */
+      const pluralIndividualEvaluation =
+        evaluateSelectiveDecisionContentInfluence(
+          inheritedUtilizationPlurality,
+          true
+        );
+
+      if (
+        pluralIndividualEvaluation.relation !==
+          'contextual_individual_decision_content_influence_plurality' ||
+        pluralIndividualEvaluation.pluralityEstablished !== true ||
+        pluralIndividualEvaluation.influences === null ||
+        pluralIndividualEvaluation.influences.length !== 2 ||
+        pluralIndividualEvaluation.remainingUtilization !== null
+      ) {
+        throw new Error(
+          'FASE 23.46 no reconoció correctamente dos influencias decisionales individuales.'
+        );
+      }
+
+      const influenceA =
+        pluralIndividualEvaluation.influences[0];
+      const influenceB =
+        pluralIndividualEvaluation.influences[1];
+
+      if (
+        !influenceA ||
+        !influenceB ||
+        influenceA.knowledgeId !==
+          utilizationA.knowledgeId ||
+        influenceB.knowledgeId !==
+          utilizationB.knowledgeId ||
+        influenceA.sourcePatternId !==
+          utilizationA.sourcePatternId ||
+        influenceB.sourcePatternId !==
+          utilizationB.sourcePatternId ||
+        influenceA.knowledgeId === influenceB.knowledgeId ||
+        influenceA.sourcePatternId ===
+          influenceB.sourcePatternId ||
+        influenceA.decisionId !== baseDecision.id ||
+        influenceB.decisionId !== baseDecision.id ||
+        influenceA.baseAction !== baseDecision.action ||
+        influenceB.baseAction !== baseDecision.action ||
+        influenceA.influencedAction ===
+          baseDecision.action ||
+        influenceB.influencedAction ===
+          baseDecision.action
+      ) {
+        throw new Error(
+          'FASE 23.46 no preservó identidad separada o dejó de derivar ambas influencias directamente de la misma decisión base.'
+        );
+      }
+
+      /*
+       * Guardas explícitas contra composición secuencial.
+       */
+      if (
+        influenceB.baseAction ===
+          influenceA.influencedAction ||
+        influenceA.baseAction ===
+          influenceB.influencedAction
+      ) {
+        throw new Error(
+          'FASE 23.46 detectó composición secuencial indebida BASE -> D1 -> D2.'
+        );
+      }
+
+      /*
+       * Construimos copias decisionales exclusivamente para
+       * comprobar la frontera autorizada de action.
+       */
+      const influencedDecisionA: OperationalDecision = {
+        ...baseDecision,
+        action: influenceA.influencedAction,
+      };
+
+      const influencedDecisionB: OperationalDecision = {
+        ...baseDecision,
+        action: influenceB.influencedAction,
+      };
+
+      if (
+        influencedDecisionA.id !== baseDecision.id ||
+        influencedDecisionB.id !== baseDecision.id ||
+        influencedDecisionA.title !== baseDecision.title ||
+        influencedDecisionB.title !== baseDecision.title ||
+        influencedDecisionA.description !==
+          baseDecision.description ||
+        influencedDecisionB.description !==
+          baseDecision.description ||
+        influencedDecisionA.priority !==
+          baseDecision.priority ||
+        influencedDecisionB.priority !==
+          baseDecision.priority ||
+        influencedDecisionA.confidence !==
+          baseDecision.confidence ||
+        influencedDecisionB.confidence !==
+          baseDecision.confidence ||
+        influencedDecisionA.sourcePatternId !==
+          baseDecision.sourcePatternId ||
+        influencedDecisionB.sourcePatternId !==
+          baseDecision.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.46 modificó propiedades decisionales fuera de la frontera controlada de action.'
+        );
+      }
+
+      /*
+       * Caso C:
+       * sin utilización plural previamente establecida,
+       * FASE 23.46 permanece no evaluable.
+       */
+      const notEvaluableControl =
+        evaluateSelectiveDecisionContentInfluence(
+          inheritedNotEvaluablePlurality,
+          false
+        );
+
+      if (
+        notEvaluableControl.relation !==
+          'no_contextual_selective_decision_content_influence' ||
+        notEvaluableControl.pluralityEstablished !== null ||
+        notEvaluableControl.influences !== null ||
+        notEvaluableControl.remainingUtilization !== null
+      ) {
+        throw new Error(
+          'FASE 23.46 avanzó indebidamente sin utilización observacional plural previamente establecida.'
+        );
+      }
+
+      /*
+       * Inmutabilidad de entradas y decisión base.
+       */
+      if (
+        JSON.stringify(controlledKnowledge) !==
+          controlledKnowledgeSnapshot ||
+        JSON.stringify(utilizationA) !==
+          utilizationASnapshot ||
+        JSON.stringify(utilizationB) !==
+          utilizationBSnapshot ||
+        JSON.stringify(inheritedUtilizationPlurality) !==
+          inheritedPluralitySnapshot ||
+        JSON.stringify(inheritedNotEvaluablePlurality) !==
+          inheritedNotEvaluableSnapshot ||
+        JSON.stringify(baseDecision) !==
+          baseDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.46 modificó alguna entrada controlada o la decisión base.'
+        );
+      }
+
+      /*
+       * Protección semántica:
+       * pluralidad utilizada no implica pluralidad obligatoria
+       * de influencia decisional; pluralidad de influencia no
+       * implica agregación, refuerzo, ranking ni selección.
+       */
+      const forbiddenProperties = [
+        'operationalEpisodeId',
+        'episodeId',
+        'parentMovementId',
+        'correlationId',
+        'requestId',
+        'batchId',
+        'groupId',
+        'combinedDecisionInfluence',
+        'jointDecisionInfluence',
+        'collectiveDecisionInfluence',
+        'decisionInfluenceCount',
+        'decisionInfluenceStrength',
+        'combinedDecision',
+        'mergedDecision',
+        'reinforcedDecision',
+        'consensusDecision',
+        'influenced',
+        'rejected',
+        'ignored',
+        'irrelevant',
+        'weaker',
+        'contradicted',
+        'support',
+        'supportCount',
+        'evidenceCount',
+        'provenanceCount',
+        'strength',
+        'weight',
+        'reinforcement',
+        'reinforced',
+        'corroboration',
+        'corroborated',
+        'consensus',
+        'independentEvidence',
+        'evidenceIndependence',
+        'operationalIndependence',
+        'provenanceIndependence',
+        'causalIndependence',
+        'independent',
+        'confidence',
+        'priority',
+        'score',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationObjects: Array<Record<string, unknown>> = [
+        inheritedUtilizationPlurality,
+        inheritedNotEvaluablePlurality,
+        selectiveEvaluation,
+        pluralIndividualEvaluation,
+        notEvaluableControl,
+        selectiveInfluence,
+        influenceA,
+        influenceB,
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 23.46 introdujo indebidamente la propiedad "${detectedForbiddenProperty}".`
+        );
+      }
+
+      /*
+       * Verificación productiva externa.
+       */
+      const recommendationsAfterDecisionInfluence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterDecisionInfluence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterDecisionInfluence
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterDecisionInfluence
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.46 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterDecisionInfluence) !==
+          decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.46 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 23.46 OK: ante dos utilizaciones observacionales individuales disponibles, un consumidor decisional local aplicó influencia sobre contenido decisional selectivamente a una sin propagarla a la otra ni interpretar la ausencia de participación de la segunda como rechazo, irrelevancia, contradicción o menor fuerza.
+Posteriormente ambas utilizaciones produjeron dos influencias decisionales individuales y trazables sobre action, preservando knowledgeId y sourcePatternId separados y derivándose ambas directamente de la misma decisión base ${baseDecision.id}, sin composición BASE -> D1 -> D2.
+El control sin utilización observacional plural previamente establecida permaneció correctamente no evaluable.
+No se introdujeron combinedDecisionInfluence, jointDecisionInfluence, collectiveDecisionInfluence, decisionInfluenceCount, decisionInfluenceStrength, combinedDecision, soporte, corroboración, consenso, refuerzo, indicadores de independencia, score, modificación de confidence o priority, fusión, deduplicación, reordenamiento, ranking, selección ni ejecución, permaneciendo intactas ${recommendationsAfterDecisionInfluence.length} recomendaciones y ${decisionsAfterDecisionInfluence.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+      addLog(
+        error instanceof Error
+          ? `Error en selectividad contextual controlada de influencia sobre contenido decisional ante utilización plural del conocimiento operativo 23.46: ${error.message}`
+          : 'Error inesperado en selectividad contextual controlada de influencia sobre contenido decisional ante utilización plural del conocimiento operativo 23.46.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -26521,6 +27250,13 @@ No se introdujeron combinedInfluence, jointInfluence, collectiveInfluence, influ
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Influencia Explicativa Selectiva 23.45
+        </button>
+        <button
+          onClick={testOperationalKnowledgeControlledSelectiveDecisionContentInfluenceUnderPluralUse}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Influencia Decisional Selectiva 23.46
         </button>
         <button
           onClick={testMandatoryPhysicalPlacement}
