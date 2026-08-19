@@ -59,6 +59,10 @@ import {
 } from '../services/operationalKnowledgeAccessService';
 
 import {
+  consumeProductiveKnowledge,
+} from '../services/operationalKnowledgeConsumptionService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -29145,6 +29149,490 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+  async function testOperationalKnowledgeProductiveConsumptionContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeConsumption =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeConsumption =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeConsumption
+        );
+
+      /*
+      * FASE 24.6 — Consumo productivo explícito
+      * del conocimiento accedido por el consumidor.
+      *
+      * FASE 24.5 estableció:
+      *
+      * ProductiveKnowledgeExposure
+      *        ↓
+      * accessProductiveKnowledge()
+      *        ↓
+      * ProductiveKnowledgeAccess
+      *
+      * FASE 24.6 introduce:
+      *
+      * ProductiveKnowledgeAccess
+      *        ↓
+      * consumeProductiveKnowledge()
+      *        ↓
+      * ProductiveKnowledgeConsumption
+      *
+      * El consumo NO constituye:
+      *
+      * - utilización;
+      * - influencia;
+      * - interpretación decisional;
+      * - ponderación;
+      * - ranking;
+      * - selección;
+      * - ejecución;
+      * - modificación de recomendaciones;
+      * - modificación de decisiones.
+      */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeConsumption
+      );
+
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeConsumption
+      );
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-consumption-24-6',
+          title:
+            'Patrón controlado de consumo productivo',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.6.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-consumption-24-6',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-consumption-24-6-1',
+              'memory-controlled-productive-consumption-24-6-2',
+              'memory-controlled-productive-consumption-24-6-3',
+              'memory-controlled-productive-consumption-24-6-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.6 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.6 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.6 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.6 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.6 no pudo obtener ProductiveKnowledgeInput previo al consumo.'
+        );
+      }
+
+      const reception =
+        receiveProductiveKnowledge(productiveInput);
+
+      const availability =
+        makeProductiveKnowledgeAvailable(reception);
+
+      const consumerA: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-a-24-6',
+      };
+
+      const consumerB: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-b-24-6',
+      };
+
+      const exposureA =
+        exposeProductiveKnowledge(
+          availability,
+          consumerA
+        );
+
+      const exposureB =
+        exposeProductiveKnowledge(
+          availability,
+          consumerB
+        );
+
+      const accessA =
+        accessProductiveKnowledge(exposureA);
+
+      const accessB =
+        accessProductiveKnowledge(exposureB);
+
+      /*
+      * accessed != consumed
+      *
+      * La existencia de ProductiveKnowledgeAccess
+      * no crea automáticamente ningún
+      * ProductiveKnowledgeConsumption.
+      *
+      * El consumo requiere un acto explícito:
+      * consumeProductiveKnowledge().
+      */
+      const accessASnapshot =
+        JSON.stringify(accessA);
+
+      const accessBSnapshot =
+        JSON.stringify(accessB);
+
+      /*
+      * Acto explícito de consumo únicamente
+      * sobre Access A.
+      */
+      const consumptionA =
+        consumeProductiveKnowledge(accessA);
+
+      /*
+      * El consumo debe conservar exactamente
+      * el mismo acceso.
+      */
+      if (consumptionA.access !== accessA) {
+        throw new Error(
+          'FASE 24.6 no conservó el mismo ProductiveKnowledgeAccess durante el consumo.'
+        );
+      }
+
+      /*
+      * Transitivamente debe conservar exactamente
+      * exposición, consumidor, disponibilidad,
+      * recepción e input productivo.
+      */
+      if (
+        consumptionA.access.exposure !== exposureA
+      ) {
+        throw new Error(
+          'FASE 24.6 perdió ProductiveKnowledgeExposure durante el consumo.'
+        );
+      }
+
+      if (
+        consumptionA.access.exposure.consumer !==
+        consumerA
+      ) {
+        throw new Error(
+          'FASE 24.6 perdió la referencia del consumidor durante el consumo.'
+        );
+      }
+
+      if (
+        consumptionA.access.exposure.availability !==
+        availability
+      ) {
+        throw new Error(
+          'FASE 24.6 perdió ProductiveKnowledgeAvailability durante el consumo.'
+        );
+      }
+
+      if (
+        consumptionA.access.exposure.availability
+          .reception !== reception
+      ) {
+        throw new Error(
+          'FASE 24.6 perdió ProductiveKnowledgeReception durante el consumo.'
+        );
+      }
+
+      if (
+        consumptionA.access.exposure.availability
+          .reception.input !== productiveInput
+      ) {
+        throw new Error(
+          'FASE 24.6 perdió ProductiveKnowledgeInput durante el consumo.'
+        );
+      }
+
+      /*
+      * El consumo no puede mutar Access A
+      * ni afectar Access B.
+      */
+      if (
+        JSON.stringify(accessA) !==
+        accessASnapshot
+      ) {
+        throw new Error(
+          'FASE 24.6 modificó ProductiveKnowledgeAccess durante el consumo.'
+        );
+      }
+
+      if (
+        JSON.stringify(accessB) !==
+        accessBSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.6 propagó o modificó indebidamente un acceso independiente.'
+        );
+      }
+
+      /*
+      * Control A/B:
+      *
+      * consumir Access A no constituye
+      * consumo automático de Access B.
+      *
+      * El segundo consumo aparece únicamente
+      * mediante un segundo acto explícito.
+      */
+      const consumptionB =
+        consumeProductiveKnowledge(accessB);
+
+      if (consumptionB.access !== accessB) {
+        throw new Error(
+          'FASE 24.6 no conservó el segundo acceso durante su consumo independiente.'
+        );
+      }
+
+      if (consumptionA === consumptionB) {
+        throw new Error(
+          'FASE 24.6 colapsó dos actos explícitos de consumo independientes.'
+        );
+      }
+
+      if (
+        consumptionA.access === consumptionB.access
+      ) {
+        throw new Error(
+          'FASE 24.6 perdió la distinción entre accesos productivos independientes.'
+        );
+      }
+
+      /*
+      * ProductiveKnowledgeConsumption debe ser
+      * un contenedor mínimo.
+      *
+      * No puede duplicar datos de Access ni
+      * adquirir semántica de utilización,
+      * influencia o decisión.
+      */
+      const forbiddenConsumptionProperties = [
+        'exposure',
+        'availability',
+        'consumer',
+        'consumerId',
+        'consumerType',
+        'input',
+        'reception',
+        'knowledgeId',
+        'sourcePatternId',
+        'knowledgeType',
+        'context',
+        'evidence',
+        'score',
+        'occurrences',
+        'memoryIds',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'priority',
+        'purpose',
+        'consumed',
+        'consumptionCount',
+        'consumedAt',
+        'read',
+        'readAt',
+        'used',
+        'utilized',
+        'influence',
+        'influential',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decisionId',
+        'recommendationId',
+        'executed',
+        'execution',
+      ];
+
+      const consumptionRecord =
+        consumptionA as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenConsumptionProperty =
+        forbiddenConsumptionProperties.find(
+          (property) => property in consumptionRecord
+        );
+
+      if (detectedForbiddenConsumptionProperty) {
+        throw new Error(
+          `FASE 24.6 introdujo indebidamente la propiedad "${detectedForbiddenConsumptionProperty}" dentro de ProductiveKnowledgeConsumption.`
+        );
+      }
+
+      /*
+      * El consumo tampoco puede recuperar
+      * evidencia ni atributos descartados
+      * por las fronteras productivas anteriores.
+      */
+      const consumedInputRecord =
+        consumptionA.access.exposure.availability.reception.input as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const forbiddenInputProperties = [
+        'evidence',
+        'score',
+        'occurrences',
+        'memoryIds',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'priority',
+        'consumerId',
+        'consumerType',
+        'purpose',
+        'consumed',
+        'consumptionCount',
+        'consumedAt',
+        'read',
+        'readAt',
+        'used',
+        'utilized',
+        'influence',
+        'influential',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decisionId',
+        'recommendationId',
+        'executed',
+        'execution',
+      ];
+
+      const detectedForbiddenInputProperty =
+        forbiddenInputProperties.find(
+          (property) => property in consumedInputRecord
+        );
+
+      if (detectedForbiddenInputProperty) {
+        throw new Error(
+          `FASE 24.6 recuperó o introdujo indebidamente la propiedad "${detectedForbiddenInputProperty}" dentro del conocimiento consumido.`
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      *
+      * Existe ProductiveKnowledgeConsumption,
+      * pero el conocimiento todavía no se utiliza
+      * ni influye sobre resultados productivos.
+      */
+      const recommendationsAfterConsumption =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterConsumption =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterConsumption
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterConsumption
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.6 detectó modificación de recomendaciones productivas después del consumo del conocimiento.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterConsumption) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.6 detectó modificación, reordenamiento o ranking distinto de decisiones después del consumo del conocimiento.'
+        );
+      }
+
+      addLog(
+        `FASE 24.6 OK: los accesos del conocimiento ${productiveInput.knowledgeId} asociados a ${consumerA.id} y ${consumerB.id} fueron consumidos mediante actos explícitos e independientes de ProductiveKnowledgeConsumption, conservando exactamente acceso, exposición, consumidor, disponibilidad, recepción y ProductiveKnowledgeInput.
+        El acceso no produjo consumo automático; el consumo requirió consumeProductiveKnowledge() y no introdujo utilización, influencia, propósito, ponderación, ranking, selección ni ejecución.
+        Permanecieron intactas ${recommendationsAfterConsumption.length} recomendaciones y ${decisionsAfterConsumption.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en consumo productivo explícito del conocimiento operativo 24.6: ${error.message}`
+          : 'Error inesperado en consumo productivo explícito del conocimiento operativo 24.6.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -30022,6 +30510,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Acceso Productivo 24.5
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveConsumptionContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Consumo Productivo 24.6
         </button>
 
         <button
