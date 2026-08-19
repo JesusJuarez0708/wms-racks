@@ -25038,6 +25038,671 @@ No se introdujeron nuevos identificadores, useCount, usageStrength, estados arti
     }
   }
 
+  async function testOperationalKnowledgeControlledSelectiveExplanatoryInfluenceUnderPluralUse() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeExplanatoryInfluence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeExplanatoryInfluence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeExplanatoryInfluence
+        );
+
+      /*
+       * FASE 23.45 — Selectividad contextual controlada de
+       * influencia explicativa ante utilización plural del
+       * conocimiento operativo.
+       *
+       * PRECONDICIÓN HEREDADA:
+       *
+       * FASE 23.44 estableció previamente dos utilizaciones
+       * observacionales individuales, diferenciadas y trazables.
+       *
+       * FASE 23.45 demuestra localmente que:
+       *
+       * - una utilización puede cruzar selectivamente la frontera
+       *   explicativa sin propagar influencia a la otra;
+       * - ambas pueden producir influencias explicativas separadas;
+       * - cada influencia parte directamente del mismo resultado
+       *   base independiente;
+       * - nunca se compone BASE -> E1 -> E2;
+       * - pluralidad de influencia no implica agregación,
+       *   consenso, soporte ni refuerzo.
+       */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeExplanatoryInfluence
+      );
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeExplanatoryInfluence
+      );
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-selective-explanatory-influence-23-45-a',
+          title:
+            'Patrón controlado A de influencia explicativa selectiva',
+          description:
+            'Patrón controlado A utilizado exclusivamente por FASE 23.45.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-selective-explanatory-influence-23-45-a',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-selective-explanatory-influence-23-45-a-1',
+              'memory-controlled-selective-explanatory-influence-23-45-a-2',
+              'memory-controlled-selective-explanatory-influence-23-45-a-3',
+              'memory-controlled-selective-explanatory-influence-23-45-a-4',
+            ],
+          },
+        },
+        {
+          id: 'pattern-controlled-selective-explanatory-influence-23-45-b',
+          title:
+            'Patrón controlado B de influencia explicativa selectiva',
+          description:
+            'Patrón controlado B utilizado exclusivamente por FASE 23.45.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-selective-explanatory-influence-23-45-b',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-selective-explanatory-influence-23-45-b-1',
+              'memory-controlled-selective-explanatory-influence-23-45-b-2',
+              'memory-controlled-selective-explanatory-influence-23-45-b-3',
+              'memory-controlled-selective-explanatory-influence-23-45-b-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 2) {
+        throw new Error(
+          `FASE 23.45 esperaba exactamente 2 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledgeA = controlledKnowledge[0];
+      const knowledgeB = controlledKnowledge[1];
+
+      if (!knowledgeA || !knowledgeB) {
+        throw new Error(
+          'FASE 23.45 no pudo resolver ambos conocimientos controlados.'
+        );
+      }
+
+      if (
+        knowledgeA.id === knowledgeB.id ||
+        knowledgeA.sourcePatternId === knowledgeB.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.45 esperaba conocimientos y patrones fuente distintos.'
+        );
+      }
+
+      const compatibleMovementType =
+        knowledgeA.context.movementType as Parameters<
+          typeof evaluateOperationalKnowledgeEligibility
+        >[1]['movementType'];
+
+      if (
+        knowledgeB.context.movementType !== compatibleMovementType
+      ) {
+        throw new Error(
+          'FASE 23.45 esperaba que ambos conocimientos compartieran el mismo movementType para establecer la precondición heredada.'
+        );
+      }
+
+      const eligibilityA =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeA,
+          { movementType: compatibleMovementType }
+        );
+
+      const eligibilityB =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeB,
+          { movementType: compatibleMovementType }
+        );
+
+      const considerationA =
+        considerOperationalKnowledge(eligibilityA);
+
+      const considerationB =
+        considerOperationalKnowledge(eligibilityB);
+
+      if (
+        eligibilityA.eligible !== true ||
+        eligibilityB.eligible !== true ||
+        eligibilityA.reason !== 'context-compatible' ||
+        eligibilityB.reason !== 'context-compatible' ||
+        !considerationA ||
+        !considerationB
+      ) {
+        throw new Error(
+          'FASE 23.45 no pudo establecer dos consideraciones válidas para reconstruir la precondición de utilización plural.'
+        );
+      }
+
+      type ControlledObservationalUse = {
+        relation: 'contextual_individual_observational_use';
+        knowledgeId: string;
+        sourcePatternId: string;
+        observed: true;
+        rationale: string;
+      };
+
+      const consumeOperationalKnowledgeObservation =
+        (
+          consideration: NonNullable<
+            ReturnType<
+              typeof considerOperationalKnowledge
+            >
+          >
+        ): ControlledObservationalUse => ({
+          relation:
+            'contextual_individual_observational_use',
+          knowledgeId: consideration.knowledgeId,
+          sourcePatternId: consideration.sourcePatternId,
+          observed: true,
+          rationale:
+            'Consumidor observacional local y unario heredado conceptualmente de FASE 23.44.',
+        });
+
+      const utilizationA =
+        consumeOperationalKnowledgeObservation(
+          considerationA
+        );
+
+      const utilizationB =
+        consumeOperationalKnowledgeObservation(
+          considerationB
+        );
+
+      if (
+        utilizationA.knowledgeId !== knowledgeA.id ||
+        utilizationB.knowledgeId !== knowledgeB.id ||
+        utilizationA.sourcePatternId !==
+          knowledgeA.sourcePatternId ||
+        utilizationB.sourcePatternId !==
+          knowledgeB.sourcePatternId ||
+        utilizationA.knowledgeId ===
+          utilizationB.knowledgeId
+      ) {
+        throw new Error(
+          'FASE 23.45 no preservó la trazabilidad individual de las utilizaciones observacionales heredadas.'
+        );
+      }
+
+      type ControlledInheritedObservationalUsePlurality = {
+        relation:
+          | 'no_contextual_individual_observational_use_plurality'
+          | 'contextual_individual_observational_use_plurality';
+        pluralityEstablished: boolean | null;
+        utilizations:
+          | [ControlledObservationalUse, ControlledObservationalUse]
+          | null;
+        rationale: string;
+      };
+
+      type ControlledExplanatoryBase = {
+        status: 'stable';
+        explanation: string;
+      };
+
+      type ControlledExplanatoryInfluence = {
+        relation: 'contextual_individual_explanatory_influence';
+        knowledgeId: string;
+        sourcePatternId: string;
+        baseStatus: ControlledExplanatoryBase['status'];
+        baseExplanation: string;
+        influencedExplanation: string;
+        rationale: string;
+      };
+
+      type ControlledSelectiveExplanatoryInfluence = {
+        relation:
+          | 'no_contextual_selective_explanatory_influence'
+          | 'contextual_selective_explanatory_influence'
+          | 'contextual_individual_explanatory_influence_plurality';
+        pluralityEstablished: boolean | null;
+        influences: ControlledExplanatoryInfluence[] | null;
+        remainingUtilization: ControlledObservationalUse | null;
+        rationale: string;
+      };
+
+      const inheritedUtilizationPlurality:
+        ControlledInheritedObservationalUsePlurality = {
+          relation:
+            'contextual_individual_observational_use_plurality',
+          pluralityEstablished: true,
+          utilizations: [
+            utilizationA,
+            utilizationB,
+          ],
+          rationale:
+            'FASE 23.44 estableció previamente dos utilizaciones observacionales individuales y trazables.',
+        };
+
+      const inheritedNotEvaluablePlurality:
+        ControlledInheritedObservationalUsePlurality = {
+          relation:
+            'no_contextual_individual_observational_use_plurality',
+          pluralityEstablished: null,
+          utilizations: null,
+          rationale:
+            'Control no evaluable: la utilización observacional plural no fue establecida previamente.',
+        };
+
+      const explanatoryBase: ControlledExplanatoryBase = {
+        status: 'stable',
+        explanation:
+          'resultado-base-explicativo-controlado-23-45',
+      };
+
+      const consumeExplanatoryInfluence =
+        (
+          base: ControlledExplanatoryBase,
+          utilization: ControlledObservationalUse
+        ): ControlledExplanatoryInfluence => ({
+          relation:
+            'contextual_individual_explanatory_influence',
+          knowledgeId: utilization.knowledgeId,
+          sourcePatternId: utilization.sourcePatternId,
+          baseStatus: base.status,
+          baseExplanation: base.explanation,
+          influencedExplanation:
+            `${base.explanation} | influencia-explicativa:${utilization.knowledgeId}`,
+          rationale:
+            'Consumidor explicativo local y unario: parte directamente del mismo resultado base independiente y atribuye una sola influencia a una sola utilización.',
+        });
+
+      const evaluateSelectiveExplanatoryInfluence =
+        (
+          inheritedPlurality:
+            ControlledInheritedObservationalUsePlurality,
+          useBoth: boolean
+        ): ControlledSelectiveExplanatoryInfluence => {
+          if (
+            inheritedPlurality.relation !==
+              'contextual_individual_observational_use_plurality' ||
+            inheritedPlurality.pluralityEstablished !== true ||
+            inheritedPlurality.utilizations === null
+          ) {
+            return {
+              relation:
+                'no_contextual_selective_explanatory_influence',
+              pluralityEstablished: null,
+              influences: null,
+              remainingUtilization: null,
+              rationale:
+                'FASE 23.45 no evalúa influencia explicativa mientras FASE 23.44 no haya establecido previamente utilización observacional plural.',
+            };
+          }
+
+          const [
+            currentUtilizationA,
+            currentUtilizationB,
+          ] = inheritedPlurality.utilizations;
+
+          const influenceA =
+            consumeExplanatoryInfluence(
+              explanatoryBase,
+              currentUtilizationA
+            );
+
+          if (!useBoth) {
+            return {
+              relation:
+                'contextual_selective_explanatory_influence',
+              pluralityEstablished: true,
+              influences: [influenceA],
+              remainingUtilization:
+                currentUtilizationB,
+              rationale:
+                'Sólo una utilización cruzó la frontera explicativa; la otra permaneció utilizada observacionalmente sin adquirir semántica de rechazo, irrelevancia o menor fuerza.',
+            };
+          }
+
+          const influenceB =
+            consumeExplanatoryInfluence(
+              explanatoryBase,
+              currentUtilizationB
+            );
+
+          return {
+            relation:
+              'contextual_individual_explanatory_influence_plurality',
+            pluralityEstablished: true,
+            influences: [
+              influenceA,
+              influenceB,
+            ],
+            remainingUtilization: null,
+            rationale:
+              'Ambas utilizaciones produjeron influencias explicativas individuales y separadas, cada una derivada directamente del mismo resultado base independiente.',
+          };
+        };
+
+      const controlledKnowledgeSnapshot =
+        JSON.stringify(controlledKnowledge);
+      const utilizationASnapshot =
+        JSON.stringify(utilizationA);
+      const utilizationBSnapshot =
+        JSON.stringify(utilizationB);
+      const inheritedPluralitySnapshot =
+        JSON.stringify(inheritedUtilizationPlurality);
+      const inheritedNotEvaluableSnapshot =
+        JSON.stringify(inheritedNotEvaluablePlurality);
+      const explanatoryBaseSnapshot =
+        JSON.stringify(explanatoryBase);
+
+      /*
+       * Caso A:
+       * sólo U1 cruza la frontera explicativa.
+       */
+      const selectiveEvaluation =
+        evaluateSelectiveExplanatoryInfluence(
+          inheritedUtilizationPlurality,
+          false
+        );
+
+      if (
+        selectiveEvaluation.relation !==
+          'contextual_selective_explanatory_influence' ||
+        selectiveEvaluation.pluralityEstablished !== true ||
+        selectiveEvaluation.influences === null ||
+        selectiveEvaluation.influences.length !== 1 ||
+        selectiveEvaluation.remainingUtilization === null
+      ) {
+        throw new Error(
+          'FASE 23.45 no reconoció correctamente la influencia explicativa selectiva de una sola utilización.'
+        );
+      }
+
+      const selectiveInfluence =
+        selectiveEvaluation.influences[0];
+
+      if (
+        !selectiveInfluence ||
+        selectiveInfluence.knowledgeId !==
+          utilizationA.knowledgeId ||
+        selectiveInfluence.sourcePatternId !==
+          utilizationA.sourcePatternId ||
+        selectiveInfluence.baseStatus !==
+          explanatoryBase.status ||
+        selectiveInfluence.baseExplanation !==
+          explanatoryBase.explanation ||
+        selectiveEvaluation.remainingUtilization.knowledgeId !==
+          utilizationB.knowledgeId ||
+        selectiveEvaluation.remainingUtilization.sourcePatternId !==
+          utilizationB.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.45 perdió trazabilidad individual o alteró indebidamente la utilización sin influencia explicativa.'
+        );
+      }
+
+      /*
+       * Caso B:
+       * U1 y U2 producen E1 y E2 por separado.
+       *
+       * Ambas influencias deben partir DIRECTAMENTE de BASE.
+       */
+      const pluralIndividualEvaluation =
+        evaluateSelectiveExplanatoryInfluence(
+          inheritedUtilizationPlurality,
+          true
+        );
+
+      if (
+        pluralIndividualEvaluation.relation !==
+          'contextual_individual_explanatory_influence_plurality' ||
+        pluralIndividualEvaluation.pluralityEstablished !== true ||
+        pluralIndividualEvaluation.influences === null ||
+        pluralIndividualEvaluation.influences.length !== 2 ||
+        pluralIndividualEvaluation.remainingUtilization !== null
+      ) {
+        throw new Error(
+          'FASE 23.45 no reconoció correctamente dos influencias explicativas individuales.'
+        );
+      }
+
+      const influenceA =
+        pluralIndividualEvaluation.influences[0];
+      const influenceB =
+        pluralIndividualEvaluation.influences[1];
+
+      if (
+        !influenceA ||
+        !influenceB ||
+        influenceA.knowledgeId !==
+          utilizationA.knowledgeId ||
+        influenceB.knowledgeId !==
+          utilizationB.knowledgeId ||
+        influenceA.sourcePatternId !==
+          utilizationA.sourcePatternId ||
+        influenceB.sourcePatternId !==
+          utilizationB.sourcePatternId ||
+        influenceA.knowledgeId === influenceB.knowledgeId ||
+        influenceA.sourcePatternId ===
+          influenceB.sourcePatternId ||
+        influenceA.baseStatus !== explanatoryBase.status ||
+        influenceB.baseStatus !== explanatoryBase.status ||
+        influenceA.baseExplanation !==
+          explanatoryBase.explanation ||
+        influenceB.baseExplanation !==
+          explanatoryBase.explanation
+      ) {
+        throw new Error(
+          'FASE 23.45 no preservó identidad separada o dejó de derivar ambas influencias directamente del mismo resultado base.'
+        );
+      }
+
+      if (
+        influenceB.baseExplanation ===
+          influenceA.influencedExplanation ||
+        influenceA.baseExplanation ===
+          influenceB.influencedExplanation
+      ) {
+        throw new Error(
+          'FASE 23.45 detectó composición secuencial indebida entre influencias explicativas.'
+        );
+      }
+
+      /*
+       * Caso C:
+       * sin pluralidad utilizada previamente establecida,
+       * FASE 23.45 permanece no evaluable.
+       */
+      const notEvaluableControl =
+        evaluateSelectiveExplanatoryInfluence(
+          inheritedNotEvaluablePlurality,
+          false
+        );
+
+      if (
+        notEvaluableControl.relation !==
+          'no_contextual_selective_explanatory_influence' ||
+        notEvaluableControl.pluralityEstablished !== null ||
+        notEvaluableControl.influences !== null ||
+        notEvaluableControl.remainingUtilization !== null
+      ) {
+        throw new Error(
+          'FASE 23.45 avanzó indebidamente sin utilización observacional plural previamente establecida.'
+        );
+      }
+
+      /*
+       * Inmutabilidad de entradas y del resultado base.
+       */
+      if (
+        JSON.stringify(controlledKnowledge) !==
+          controlledKnowledgeSnapshot ||
+        JSON.stringify(utilizationA) !==
+          utilizationASnapshot ||
+        JSON.stringify(utilizationB) !==
+          utilizationBSnapshot ||
+        JSON.stringify(inheritedUtilizationPlurality) !==
+          inheritedPluralitySnapshot ||
+        JSON.stringify(inheritedNotEvaluablePlurality) !==
+          inheritedNotEvaluableSnapshot ||
+        JSON.stringify(explanatoryBase) !==
+          explanatoryBaseSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.45 modificó alguna entrada controlada o el resultado base durante la influencia explicativa.'
+        );
+      }
+
+      /*
+       * Protección semántica:
+       * pluralidad utilizada no implica pluralidad obligatoria
+       * de influencia; pluralidad de influencia no implica
+       * agregación, composición, consenso, soporte o refuerzo.
+       */
+      const forbiddenProperties = [
+        'operationalEpisodeId',
+        'episodeId',
+        'parentMovementId',
+        'correlationId',
+        'requestId',
+        'batchId',
+        'groupId',
+        'combinedInfluence',
+        'jointInfluence',
+        'collectiveInfluence',
+        'influenceCount',
+        'influenceStrength',
+        'aggregatedExplanation',
+        'mergedExplanation',
+        'strongerExplanation',
+        'influenced',
+        'rejected',
+        'ignored',
+        'irrelevant',
+        'weaker',
+        'contradicted',
+        'support',
+        'supportCount',
+        'evidenceCount',
+        'provenanceCount',
+        'strength',
+        'weight',
+        'reinforcement',
+        'reinforced',
+        'corroboration',
+        'corroborated',
+        'consensus',
+        'independentEvidence',
+        'evidenceIndependence',
+        'operationalIndependence',
+        'provenanceIndependence',
+        'causalIndependence',
+        'independent',
+        'confidence',
+        'priority',
+        'score',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationObjects: Array<Record<string, unknown>> = [
+        inheritedUtilizationPlurality,
+        inheritedNotEvaluablePlurality,
+        explanatoryBase,
+        selectiveEvaluation,
+        pluralIndividualEvaluation,
+        notEvaluableControl,
+        selectiveInfluence,
+        influenceA,
+        influenceB,
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 23.45 introdujo indebidamente la propiedad "${detectedForbiddenProperty}".`
+        );
+      }
+
+      /*
+       * La influencia explicativa controlada no puede modificar
+       * recomendaciones ni decisiones productivas.
+       */
+      const recommendationsAfterExplanatoryInfluence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterExplanatoryInfluence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterExplanatoryInfluence
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterExplanatoryInfluence
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.45 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterExplanatoryInfluence) !==
+          decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.45 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 23.45 OK: ante dos utilizaciones observacionales individuales disponibles, un consumidor explicativo local aplicó influencia selectivamente a una sin propagarla a la otra ni interpretar la ausencia de influencia de la segunda como rechazo, irrelevancia, contradicción o menor fuerza.
+Posteriormente ambas utilizaciones produjeron dos influencias explicativas individuales y trazables, preservando knowledgeId y sourcePatternId separados y derivándose ambas directamente del mismo resultado base independiente, sin composición BASE -> E1 -> E2.
+El control sin utilización observacional plural previamente establecida permaneció correctamente no evaluable.
+No se introdujeron combinedInfluence, jointInfluence, collectiveInfluence, influenceCount, influenceStrength, aggregatedExplanation, mergedExplanation, soporte, corroboración, consenso, refuerzo, indicadores de independencia, score, modificación de confidence o priority, fusión, deduplicación, reordenamiento, ranking, selección ni ejecución, permaneciendo intactas ${recommendationsAfterExplanatoryInfluence.length} recomendaciones y ${decisionsAfterExplanatoryInfluence.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+      addLog(
+        error instanceof Error
+          ? `Error en selectividad contextual controlada de influencia explicativa ante utilización plural del conocimiento operativo 23.45: ${error.message}`
+          : 'Error inesperado en selectividad contextual controlada de influencia explicativa ante utilización plural del conocimiento operativo 23.45.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -25849,6 +26514,13 @@ No se introdujeron nuevos identificadores, useCount, usageStrength, estados arti
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Utilización Observacional Selectiva 23.44
+        </button>
+        <button
+          onClick={testOperationalKnowledgeControlledSelectiveExplanatoryInfluenceUnderPluralUse}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Influencia Explicativa Selectiva 23.45
         </button>
         <button
           onClick={testMandatoryPhysicalPlacement}
