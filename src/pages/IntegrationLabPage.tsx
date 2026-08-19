@@ -24409,6 +24409,635 @@ No se introdujeron nuevos identificadores, jointConsideration, combinedConsidera
     }
   }
 
+  async function testOperationalKnowledgeControlledSelectiveObservationalUseUnderPluralConsideration() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeObservationalUse =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeObservationalUse =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeObservationalUse
+        );
+
+      /*
+       * FASE 23.44 — Selectividad contextual controlada de
+       * utilización observacional ante consideración plural del
+       * conocimiento operativo.
+       *
+       * PRECONDICIÓN HEREDADA:
+       *
+       * FASE 23.43 estableció previamente dos consideraciones
+       * individuales, diferenciadas y trazables.
+       *
+       * FASE 23.44 no modifica el consumidor productivo ni crea
+       * utilización colectiva. Sólo demuestra localmente que:
+       *
+       * - una consideración puede ser utilizada sin propagar
+       *   automáticamente utilización a otra consideración;
+       * - la no utilización no significa rechazo, irrelevancia,
+       *   contradicción ni menor fuerza;
+       * - si ambas son utilizadas, siguen siendo dos actos
+       *   observacionales individuales y trazables.
+       */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeObservationalUse
+      );
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeObservationalUse
+      );
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-selective-observational-use-23-44-a',
+          title:
+            'Patrón controlado A de utilización observacional selectiva',
+          description:
+            'Patrón controlado A utilizado exclusivamente por FASE 23.44.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-selective-observational-use-23-44-a',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-selective-observational-use-23-44-a-1',
+              'memory-controlled-selective-observational-use-23-44-a-2',
+              'memory-controlled-selective-observational-use-23-44-a-3',
+              'memory-controlled-selective-observational-use-23-44-a-4',
+            ],
+          },
+        },
+        {
+          id: 'pattern-controlled-selective-observational-use-23-44-b',
+          title:
+            'Patrón controlado B de utilización observacional selectiva',
+          description:
+            'Patrón controlado B utilizado exclusivamente por FASE 23.44.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-selective-observational-use-23-44-b',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-selective-observational-use-23-44-b-1',
+              'memory-controlled-selective-observational-use-23-44-b-2',
+              'memory-controlled-selective-observational-use-23-44-b-3',
+              'memory-controlled-selective-observational-use-23-44-b-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 2) {
+        throw new Error(
+          `FASE 23.44 esperaba exactamente 2 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledgeA = controlledKnowledge[0];
+      const knowledgeB = controlledKnowledge[1];
+
+      if (!knowledgeA || !knowledgeB) {
+        throw new Error(
+          'FASE 23.44 no pudo resolver ambos conocimientos controlados.'
+        );
+      }
+
+      if (
+        knowledgeA.id === knowledgeB.id ||
+        knowledgeA.sourcePatternId === knowledgeB.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.44 esperaba conocimientos y patrones fuente distintos.'
+        );
+      }
+
+      const memoryIdsA = new Set(knowledgeA.evidence.memoryIds);
+      const sharedMemoryId =
+        knowledgeB.evidence.memoryIds.find((memoryId) =>
+          memoryIdsA.has(memoryId)
+        );
+
+      if (sharedMemoryId) {
+        throw new Error(
+          `FASE 23.44 esperaba memoryIds diferenciados y encontró ${sharedMemoryId} compartido.`
+        );
+      }
+
+      const compatibleMovementType =
+        knowledgeA.context.movementType as Parameters<
+          typeof evaluateOperationalKnowledgeEligibility
+        >[1]['movementType'];
+
+      if (
+        knowledgeB.context.movementType !== compatibleMovementType
+      ) {
+        throw new Error(
+          'FASE 23.44 esperaba que ambos conocimientos compartieran el mismo movementType para establecer la precondición considerada.'
+        );
+      }
+
+      const eligibilityA =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeA,
+          { movementType: compatibleMovementType }
+        );
+
+      const eligibilityB =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeB,
+          { movementType: compatibleMovementType }
+        );
+
+      if (
+        eligibilityA.eligible !== true ||
+        eligibilityA.reason !== 'context-compatible' ||
+        eligibilityB.eligible !== true ||
+        eligibilityB.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 23.44 no pudo establecer dos elegibilidades compatibles para construir la precondición heredada de consideración plural.'
+        );
+      }
+
+      const considerationA =
+        considerOperationalKnowledge(eligibilityA);
+
+      const considerationB =
+        considerOperationalKnowledge(eligibilityB);
+
+      if (
+        !considerationA ||
+        !considerationB ||
+        considerationA.considered !== true ||
+        considerationB.considered !== true
+      ) {
+        throw new Error(
+          'FASE 23.44 no pudo establecer dos consideraciones individuales válidas.'
+        );
+      }
+
+      if (
+        considerationA.knowledgeId !== knowledgeA.id ||
+        considerationB.knowledgeId !== knowledgeB.id ||
+        considerationA.sourcePatternId !==
+          knowledgeA.sourcePatternId ||
+        considerationB.sourcePatternId !==
+          knowledgeB.sourcePatternId ||
+        considerationA.knowledgeId ===
+          considerationB.knowledgeId ||
+        considerationA.sourcePatternId ===
+          considerationB.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.44 no preservó la identidad diferenciada de ambas consideraciones heredadas.'
+        );
+      }
+
+      type ControlledInheritedIndividualConsiderationPlurality = {
+        relation:
+          | 'no_contextual_individual_consideration_plurality'
+          | 'contextual_individual_consideration_plurality';
+        pluralityEstablished: boolean | null;
+        considerations:
+          | [
+              NonNullable<
+                ReturnType<
+                  typeof considerOperationalKnowledge
+                >
+              >,
+              NonNullable<
+                ReturnType<
+                  typeof considerOperationalKnowledge
+                >
+              >,
+            ]
+          | null;
+        rationale: string;
+      };
+
+      type ControlledObservationalUse = {
+        relation: 'contextual_individual_observational_use';
+        knowledgeId: string;
+        sourcePatternId: string;
+        observed: true;
+        rationale: string;
+      };
+
+      type ControlledSelectiveObservationalUse = {
+        relation:
+          | 'no_contextual_selective_observational_use'
+          | 'contextual_selective_observational_use'
+          | 'contextual_individual_observational_use_plurality';
+        pluralityEstablished: boolean | null;
+        observations: ControlledObservationalUse[] | null;
+        remainingConsideration:
+          | NonNullable<
+              ReturnType<
+                typeof considerOperationalKnowledge
+              >
+            >
+          | null;
+        rationale: string;
+      };
+
+      const inheritedConsiderationPlurality:
+        ControlledInheritedIndividualConsiderationPlurality = {
+          relation:
+            'contextual_individual_consideration_plurality',
+          pluralityEstablished: true,
+          considerations: [
+            considerationA,
+            considerationB,
+          ],
+          rationale:
+            'FASE 23.43 estableció previamente dos consideraciones individuales y trazables.',
+        };
+
+      const inheritedNotEvaluablePlurality:
+        ControlledInheritedIndividualConsiderationPlurality = {
+          relation:
+            'no_contextual_individual_consideration_plurality',
+          pluralityEstablished: null,
+          considerations: null,
+          rationale:
+            'Control no evaluable: la pluralidad considerada no fue establecida previamente.',
+        };
+
+      const consumeOperationalKnowledgeObservation =
+        (
+          consideration: NonNullable<
+            ReturnType<
+              typeof considerOperationalKnowledge
+            >
+          >
+        ): ControlledObservationalUse => ({
+          relation:
+            'contextual_individual_observational_use',
+          knowledgeId: consideration.knowledgeId,
+          sourcePatternId: consideration.sourcePatternId,
+          observed: true,
+          rationale:
+            'Consumidor observacional local y unario: utiliza una consideración individual sin modificarla ni propagar utilización a otras consideraciones.',
+        });
+
+      const evaluateSelectiveObservationalUse =
+        (
+          inheritedPlurality:
+            ControlledInheritedIndividualConsiderationPlurality,
+          useBoth: boolean
+        ): ControlledSelectiveObservationalUse => {
+          if (
+            inheritedPlurality.relation !==
+              'contextual_individual_consideration_plurality' ||
+            inheritedPlurality.pluralityEstablished !== true ||
+            inheritedPlurality.considerations === null
+          ) {
+            return {
+              relation:
+                'no_contextual_selective_observational_use',
+              pluralityEstablished: null,
+              observations: null,
+              remainingConsideration: null,
+              rationale:
+                'FASE 23.44 no evalúa utilización observacional mientras FASE 23.43 no haya establecido previamente una pluralidad considerada.',
+            };
+          }
+
+          const [
+            currentConsiderationA,
+            currentConsiderationB,
+          ] = inheritedPlurality.considerations;
+
+          const observationA =
+            consumeOperationalKnowledgeObservation(
+              currentConsiderationA
+            );
+
+          if (!useBoth) {
+            return {
+              relation:
+                'contextual_selective_observational_use',
+              pluralityEstablished: true,
+              observations: [observationA],
+              remainingConsideration:
+                currentConsiderationB,
+              rationale:
+                'El consumidor utilizó selectivamente una sola consideración; la segunda permaneció considerada e intacta sin adquirir semántica de rechazo o menor valor.',
+            };
+          }
+
+          const observationB =
+            consumeOperationalKnowledgeObservation(
+              currentConsiderationB
+            );
+
+          return {
+            relation:
+              'contextual_individual_observational_use_plurality',
+            pluralityEstablished: true,
+            observations: [
+              observationA,
+              observationB,
+            ],
+            remainingConsideration: null,
+            rationale:
+              'Ambas consideraciones fueron utilizadas mediante actos observacionales individuales y separados, sin crear una utilización conjunta o agregada.',
+          };
+        };
+
+      const inheritedPluralitySnapshot =
+        JSON.stringify(inheritedConsiderationPlurality);
+      const inheritedNotEvaluableSnapshot =
+        JSON.stringify(inheritedNotEvaluablePlurality);
+      const controlledKnowledgeSnapshot =
+        JSON.stringify(controlledKnowledge);
+      const considerationASnapshot =
+        JSON.stringify(considerationA);
+      const considerationBSnapshot =
+        JSON.stringify(considerationB);
+
+      /*
+       * Caso A:
+       * utilización selectiva de C1 manteniendo C2 únicamente
+       * considerada, sin propagar utilización.
+       */
+      const selectiveEvaluation =
+        evaluateSelectiveObservationalUse(
+          inheritedConsiderationPlurality,
+          false
+        );
+
+      if (
+        selectiveEvaluation.relation !==
+          'contextual_selective_observational_use' ||
+        selectiveEvaluation.pluralityEstablished !== true ||
+        selectiveEvaluation.observations === null ||
+        selectiveEvaluation.observations.length !== 1 ||
+        selectiveEvaluation.remainingConsideration === null
+      ) {
+        throw new Error(
+          'FASE 23.44 no reconoció correctamente la utilización observacional selectiva de una consideración dentro de una pluralidad considerada.'
+        );
+      }
+
+      const selectiveObservation =
+        selectiveEvaluation.observations[0];
+
+      if (
+        !selectiveObservation ||
+        selectiveObservation.knowledgeId !==
+          considerationA.knowledgeId ||
+        selectiveObservation.sourcePatternId !==
+          considerationA.sourcePatternId ||
+        selectiveObservation.observed !== true ||
+        selectiveEvaluation.remainingConsideration.knowledgeId !==
+          considerationB.knowledgeId ||
+        selectiveEvaluation.remainingConsideration.sourcePatternId !==
+          considerationB.sourcePatternId ||
+        selectiveEvaluation.remainingConsideration.considered !== true
+      ) {
+        throw new Error(
+          'FASE 23.44 perdió trazabilidad individual o alteró indebidamente la consideración no utilizada.'
+        );
+      }
+
+      /*
+       * Caso B:
+       * utilización individual de ambas consideraciones sin
+       * construir una utilización conjunta.
+       */
+      const pluralIndividualEvaluation =
+        evaluateSelectiveObservationalUse(
+          inheritedConsiderationPlurality,
+          true
+        );
+
+      if (
+        pluralIndividualEvaluation.relation !==
+          'contextual_individual_observational_use_plurality' ||
+        pluralIndividualEvaluation.pluralityEstablished !== true ||
+        pluralIndividualEvaluation.observations === null ||
+        pluralIndividualEvaluation.observations.length !== 2 ||
+        pluralIndividualEvaluation.remainingConsideration !== null
+      ) {
+        throw new Error(
+          'FASE 23.44 no reconoció correctamente dos utilizaciones observacionales individuales.'
+        );
+      }
+
+      const observationA =
+        pluralIndividualEvaluation.observations[0];
+      const observationB =
+        pluralIndividualEvaluation.observations[1];
+
+      if (
+        !observationA ||
+        !observationB ||
+        observationA.knowledgeId !==
+          considerationA.knowledgeId ||
+        observationB.knowledgeId !==
+          considerationB.knowledgeId ||
+        observationA.sourcePatternId !==
+          considerationA.sourcePatternId ||
+        observationB.sourcePatternId !==
+          considerationB.sourcePatternId ||
+        observationA.knowledgeId ===
+          observationB.knowledgeId ||
+        observationA.sourcePatternId ===
+          observationB.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.44 no preservó la identidad individual de ambas utilizaciones observacionales.'
+        );
+      }
+
+      /*
+       * Caso C:
+       * sin pluralidad considerada previamente establecida,
+       * FASE 23.44 permanece no evaluable.
+       */
+      const notEvaluableControl =
+        evaluateSelectiveObservationalUse(
+          inheritedNotEvaluablePlurality,
+          false
+        );
+
+      if (
+        notEvaluableControl.relation !==
+          'no_contextual_selective_observational_use' ||
+        notEvaluableControl.pluralityEstablished !== null ||
+        notEvaluableControl.observations !== null ||
+        notEvaluableControl.remainingConsideration !== null
+      ) {
+        throw new Error(
+          'FASE 23.44 avanzó indebidamente sin pluralidad considerada previamente establecida.'
+        );
+      }
+
+      /*
+       * Ningún acto observacional puede modificar las entradas.
+       */
+      if (
+        JSON.stringify(inheritedConsiderationPlurality) !==
+          inheritedPluralitySnapshot ||
+        JSON.stringify(inheritedNotEvaluablePlurality) !==
+          inheritedNotEvaluableSnapshot ||
+        JSON.stringify(controlledKnowledge) !==
+          controlledKnowledgeSnapshot ||
+        JSON.stringify(considerationA) !==
+          considerationASnapshot ||
+        JSON.stringify(considerationB) !==
+          considerationBSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.44 modificó alguna entrada controlada durante la utilización observacional.'
+        );
+      }
+
+      /*
+       * Protección semántica:
+       * no utilización no implica rechazo, irrelevancia,
+       * incompatibilidad, contradicción ni menor fuerza.
+       *
+       * Dos usos individuales tampoco implican utilización
+       * conjunta, soporte, consenso o refuerzo.
+       */
+      const forbiddenProperties = [
+        'operationalEpisodeId',
+        'episodeId',
+        'parentMovementId',
+        'correlationId',
+        'requestId',
+        'batchId',
+        'groupId',
+        'jointUse',
+        'combinedUse',
+        'collectiveUse',
+        'useCount',
+        'usageStrength',
+        'used',
+        'rejected',
+        'ignored',
+        'irrelevant',
+        'weaker',
+        'contradicted',
+        'support',
+        'supportCount',
+        'evidenceCount',
+        'provenanceCount',
+        'strength',
+        'weight',
+        'reinforcement',
+        'reinforced',
+        'corroboration',
+        'corroborated',
+        'consensus',
+        'independentEvidence',
+        'evidenceIndependence',
+        'operationalIndependence',
+        'provenanceIndependence',
+        'causalIndependence',
+        'independent',
+        'confidence',
+        'priority',
+        'score',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationObjects: Array<Record<string, unknown>> = [
+        inheritedConsiderationPlurality,
+        inheritedNotEvaluablePlurality,
+        selectiveEvaluation,
+        pluralIndividualEvaluation,
+        notEvaluableControl,
+        selectiveObservation,
+        observationA,
+        observationB,
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 23.44 introdujo indebidamente la propiedad "${detectedForbiddenProperty}".`
+        );
+      }
+
+      /*
+       * La utilización observacional local no puede modificar
+       * recomendaciones ni decisiones productivas.
+       */
+      const recommendationsAfterObservationalUse =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterObservationalUse =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterObservationalUse
+        );
+
+      if (
+        JSON.stringify(recommendationsAfterObservationalUse) !==
+          recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.44 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterObservationalUse) !==
+          decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.44 detectó modificación, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 23.44 OK: ante dos conocimientos simultáneamente considerados, un consumidor observacional local utilizó selectivamente uno sin propagar utilización al otro ni interpretar su no utilización como rechazo, irrelevancia, contradicción o menor fuerza.
+Posteriormente ambas consideraciones fueron utilizadas mediante dos actos observacionales individuales y trazables, preservando knowledgeId y sourcePatternId separados sin crear jointUse, combinedUse, collectiveUse, soporte, corroboración, consenso o refuerzo.
+El control sin pluralidad considerada previamente establecida permaneció correctamente no evaluable.
+No se introdujeron nuevos identificadores, useCount, usageStrength, estados artificiales de rechazo o irrelevancia, indicadores de independencia, score, modificación de confidence o priority, fusión, deduplicación, reordenamiento, ranking, selección ni ejecución, permaneciendo intactas ${recommendationsAfterObservationalUse.length} recomendaciones y ${decisionsAfterObservationalUse.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+      addLog(
+        error instanceof Error
+          ? `Error en selectividad contextual controlada de utilización observacional ante consideración plural del conocimiento operativo 23.44: ${error.message}`
+          : 'Error inesperado en selectividad contextual controlada de utilización observacional ante consideración plural del conocimiento operativo 23.44.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -25213,6 +25842,13 @@ No se introdujeron nuevos identificadores, jointConsideration, combinedConsidera
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Individualidad Consideración Plural 23.43
+        </button>
+        <button
+          onClick={testOperationalKnowledgeControlledSelectiveObservationalUseUnderPluralConsideration}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Utilización Observacional Selectiva 23.44
         </button>
         <button
           onClick={testMandatoryPhysicalPlacement}
