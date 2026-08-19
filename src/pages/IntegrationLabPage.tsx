@@ -50,6 +50,11 @@ import {
 } from '../services/operationalKnowledgeAvailabilityService';
 
 import {
+  exposeProductiveKnowledge,
+  type ProductiveKnowledgeConsumerRef,
+} from '../services/operationalKnowledgeExposureService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -28169,6 +28174,502 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+  async function testOperationalKnowledgeProductiveExposureContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeExposure =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeExposure =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeExposure
+        );
+
+      /*
+      * FASE 24.4 — Exposición productiva explícita
+      * del conocimiento disponible a un consumidor productivo.
+      *
+      * FASE 24.3 estableció:
+      *
+      * ProductiveKnowledgeReception
+      *        ↓
+      * makeProductiveKnowledgeAvailable()
+      *        ↓
+      * ProductiveKnowledgeAvailability
+      *
+      * FASE 24.4 introduce:
+      *
+      * ProductiveKnowledgeAvailability
+      *        +
+      * ProductiveKnowledgeConsumerRef
+      *        ↓
+      * exposeProductiveKnowledge()
+      *        ↓
+      * ProductiveKnowledgeExposure
+      *
+      * La exposición NO constituye:
+      *
+      * - acceso;
+      * - lectura;
+      * - consumo;
+      * - utilización;
+      * - interpretación;
+      * - influencia;
+      * - ponderación;
+      * - ranking;
+      * - selección;
+      * - ejecución;
+      * - modificación de recomendaciones;
+      * - modificación de decisiones.
+      */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeExposure
+      );
+
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeExposure
+      );
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-exposure-24-4',
+          title:
+            'Patrón controlado de exposición productiva',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.4.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-exposure-24-4',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-exposure-24-4-1',
+              'memory-controlled-productive-exposure-24-4-2',
+              'memory-controlled-productive-exposure-24-4-3',
+              'memory-controlled-productive-exposure-24-4-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.4 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.4 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.4 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.4 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.4 no pudo obtener ProductiveKnowledgeInput previo a la exposición.'
+        );
+      }
+
+      const reception =
+        receiveProductiveKnowledge(productiveInput);
+
+      if (reception.input !== productiveInput) {
+        throw new Error(
+          'FASE 24.4 no pudo conservar ProductiveKnowledgeInput durante la recepción previa.'
+        );
+      }
+
+      const availability =
+        makeProductiveKnowledgeAvailable(reception);
+
+      if (availability.reception !== reception) {
+        throw new Error(
+          'FASE 24.4 no pudo conservar ProductiveKnowledgeReception durante la disponibilidad previa.'
+        );
+      }
+
+      /*
+      * available != exposed
+      *
+      * La existencia de ProductiveKnowledgeAvailability
+      * no crea automáticamente ninguna exposición a consumidor.
+      *
+      * La exposición requiere un acto explícito separado:
+      * exposeProductiveKnowledge().
+      */
+      const availabilitySnapshot =
+        JSON.stringify(availability);
+
+      const consumerA: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-a-24-4',
+      };
+
+      const consumerB: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-b-24-4',
+      };
+
+      /*
+      * Acto explícito de exposición productiva.
+      */
+      const exposureA =
+        exposeProductiveKnowledge(
+          availability,
+          consumerA
+        );
+
+      /*
+      * La exposición debe conservar exactamente
+      * la misma disponibilidad y la misma referencia
+      * del consumidor.
+      */
+      if (exposureA.availability !== availability) {
+        throw new Error(
+          'FASE 24.4 no conservó la misma ProductiveKnowledgeAvailability durante la exposición.'
+        );
+      }
+
+      if (exposureA.consumer !== consumerA) {
+        throw new Error(
+          'FASE 24.4 no conservó la misma referencia del consumidor durante la exposición.'
+        );
+      }
+
+      /*
+      * Transitivamente debe conservar exactamente
+      * la recepción y el input productivo previos.
+      */
+      if (
+        exposureA.availability.reception !== reception
+      ) {
+        throw new Error(
+          'FASE 24.4 perdió ProductiveKnowledgeReception durante la exposición.'
+        );
+      }
+
+      if (
+        exposureA.availability.reception.input !==
+        productiveInput
+      ) {
+        throw new Error(
+          'FASE 24.4 perdió ProductiveKnowledgeInput durante la exposición.'
+        );
+      }
+
+      /*
+      * La exposición no puede mutar
+      * ProductiveKnowledgeAvailability.
+      */
+      if (
+        JSON.stringify(availability) !==
+        availabilitySnapshot
+      ) {
+        throw new Error(
+          'FASE 24.4 modificó ProductiveKnowledgeAvailability durante la exposición.'
+        );
+      }
+
+      /*
+      * La misma disponibilidad puede exponerse
+      * explícitamente a otro consumidor mediante
+      * un segundo acto independiente.
+      */
+      const exposureB =
+        exposeProductiveKnowledge(
+          availability,
+          consumerB
+        );
+
+      if (exposureB.availability !== availability) {
+        throw new Error(
+          'FASE 24.4 no conservó la misma disponibilidad al exponerla a un segundo consumidor.'
+        );
+      }
+
+      if (exposureB.consumer !== consumerB) {
+        throw new Error(
+          'FASE 24.4 no conservó la referencia del segundo consumidor.'
+        );
+      }
+
+      if (exposureA === exposureB) {
+        throw new Error(
+          'FASE 24.4 colapsó dos actos explícitos de exposición independientes.'
+        );
+      }
+
+      if (exposureA.consumer === exposureB.consumer) {
+        throw new Error(
+          'FASE 24.4 perdió la distinción entre consumidores productivos diferentes.'
+        );
+      }
+
+      /*
+      * ProductiveKnowledgeExposure debe ser un
+      * contenedor relacional mínimo.
+      *
+      * La existencia de consumidor no puede
+      * adquirir semántica de acceso, lectura,
+      * consumo, utilización o influencia.
+      */
+      const forbiddenExposureProperties = [
+        'input',
+        'reception',
+        'knowledgeId',
+        'sourcePatternId',
+        'knowledgeType',
+        'context',
+        'evidence',
+        'score',
+        'occurrences',
+        'memoryIds',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'priority',
+        'consumerId',
+        'consumerType',
+        'purpose',
+        'accessed',
+        'access',
+        'accessCount',
+        'read',
+        'consumed',
+        'consumption',
+        'used',
+        'utilized',
+        'influence',
+        'influential',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decisionId',
+        'recommendationId',
+        'executed',
+        'execution',
+      ];
+
+      const exposureRecord =
+        exposureA as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenExposureProperty =
+        forbiddenExposureProperties.find(
+          (property) => property in exposureRecord
+        );
+
+      if (detectedForbiddenExposureProperty) {
+        throw new Error(
+          `FASE 24.4 introdujo indebidamente la propiedad "${detectedForbiddenExposureProperty}" dentro de ProductiveKnowledgeExposure.`
+        );
+      }
+
+      /*
+      * La referencia mínima del consumidor tampoco
+      * puede adquirir todavía tipo, propósito,
+      * capacidades ni estado conductual.
+      */
+      const consumerRecord =
+        exposureA.consumer as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const forbiddenConsumerProperties = [
+        'consumerType',
+        'type',
+        'purpose',
+        'capabilities',
+        'accessed',
+        'access',
+        'accessCount',
+        'read',
+        'consumed',
+        'consumption',
+        'used',
+        'utilized',
+        'influence',
+        'influential',
+        'priority',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const detectedForbiddenConsumerProperty =
+        forbiddenConsumerProperties.find(
+          (property) => property in consumerRecord
+        );
+
+      if (detectedForbiddenConsumerProperty) {
+        throw new Error(
+          `FASE 24.4 introdujo indebidamente la propiedad "${detectedForbiddenConsumerProperty}" dentro de ProductiveKnowledgeConsumerRef.`
+        );
+      }
+
+      /*
+      * La exposición tampoco puede recuperar
+      * evidencia o atributos descartados en
+      * las fronteras productivas anteriores.
+      */
+      const exposedInputRecord =
+        exposureA.availability.reception.input as unknown as Record<string, unknown>;
+
+      const forbiddenInputProperties = [
+        'evidence',
+        'score',
+        'occurrences',
+        'memoryIds',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'priority',
+        'consumerId',
+        'consumerType',
+        'purpose',
+        'accessed',
+        'access',
+        'accessCount',
+        'read',
+        'consumed',
+        'consumption',
+        'used',
+        'utilized',
+        'influence',
+        'influential',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decisionId',
+        'recommendationId',
+        'executed',
+        'execution',
+      ];
+
+      const detectedForbiddenInputProperty =
+        forbiddenInputProperties.find(
+          (property) => property in exposedInputRecord
+        );
+
+      if (detectedForbiddenInputProperty) {
+        throw new Error(
+          `FASE 24.4 recuperó o introdujo indebidamente la propiedad "${detectedForbiddenInputProperty}" dentro del conocimiento expuesto.`
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      *
+      * Existe ProductiveKnowledgeExposure y existe
+      * un consumidor explícito, pero ese consumidor
+      * todavía no accede, lee, consume, utiliza ni
+      * permite que el conocimiento influya.
+      */
+      const recommendationsAfterExposure =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterExposure =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterExposure
+        );
+
+      if (
+        JSON.stringify(recommendationsAfterExposure) !==
+        recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.4 detectó modificación de recomendaciones productivas después de exponer conocimiento a un consumidor.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterExposure) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.4 detectó modificación, reordenamiento o ranking distinto de decisiones después de exponer conocimiento a un consumidor.'
+        );
+      }
+
+      addLog(
+        `FASE 24.4 OK: ProductiveKnowledgeAvailability con conocimiento ${productiveInput.knowledgeId} fue expuesta explícitamente a los consumidores ${consumerA.id} y ${consumerB.id} mediante actos independientes de ProductiveKnowledgeExposure, conservando exactamente disponibilidad, recepción, ProductiveKnowledgeInput y referencias de consumidor.
+        La disponibilidad no produjo exposición automática; la exposición requirió exposeProductiveKnowledge() y no introdujo acceso, lectura, consumo, utilización, influencia, propósito, ponderación, ranking, selección ni ejecución.
+        Permanecieron intactas ${recommendationsAfterExposure.length} recomendaciones y ${decisionsAfterExposure.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en exposición productiva explícita del conocimiento operativo 24.4: ${error.message}`
+          : 'Error inesperado en exposición productiva explícita del conocimiento operativo 24.4.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -29030,6 +29531,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Disponibilidad Productiva 24.3
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveExposureContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Exposición Productiva 24.4
         </button>
 
         <button
