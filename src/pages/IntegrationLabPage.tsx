@@ -38,6 +38,10 @@ import {
 } from '../services/operationalKnowledgeService';
 
 import {
+  presentOperationalKnowledge,
+} from '../services/operationalKnowledgeIntegrationService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -27089,6 +27093,378 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+  async function testOperationalKnowledgeProductivePresentationContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforePresentation =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforePresentation =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforePresentation
+        );
+
+      /*
+       * FASE 24.1 — Contrato mínimo de presentación productiva
+       * del conocimiento operativo.
+       *
+       * FASE 23.47 estableció:
+       *
+       * capacidad demostrada en laboratorio
+       *   != promoción productiva automática
+       *
+       * FASE 24.1 introduce por primera vez una frontera
+       * productiva explícita y trazable:
+       *
+       * OperationalKnowledge
+       *   + Consideration
+       *   + ProductiveKnowledgeContext
+       *        ↓
+       * ProductiveKnowledgeInput
+       *
+       * Esta presentación NO constituye:
+       *
+       * - utilización productiva;
+       * - influencia productiva;
+       * - modificación de recomendaciones;
+       * - modificación de decisiones;
+       * - strength;
+       * - weight;
+       * - ranking;
+       * - selección;
+       * - ejecución.
+       */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforePresentation
+      );
+
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforePresentation
+      );
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-presentation-24-1',
+          title:
+            'Patrón controlado de presentación productiva',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.1.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-presentation-24-1',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-presentation-24-1-1',
+              'memory-controlled-productive-presentation-24-1-2',
+              'memory-controlled-productive-presentation-24-1-3',
+              'memory-controlled-productive-presentation-24-1-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.1 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.1 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      if (
+        knowledge.context.movementType !==
+        productiveContext.movementType
+      ) {
+        throw new Error(
+          'FASE 24.1 esperaba que el conocimiento controlado perteneciera al contexto productivo reubicacion.'
+        );
+      }
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.1 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.1 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      /*
+       * Caso positivo:
+       *
+       * un conocimiento considerado y contextualmente compatible
+       * puede ser presentado explícitamente a la frontera
+       * productiva.
+       */
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.1 no produjo ProductiveKnowledgeInput para un conocimiento considerado y compatible.'
+        );
+      }
+
+      if (
+        productiveInput.knowledgeId !== knowledge.id ||
+        productiveInput.sourcePatternId !==
+          knowledge.sourcePatternId ||
+        productiveInput.knowledgeType !== knowledge.type
+      ) {
+        throw new Error(
+          'FASE 24.1 perdió identidad, procedencia o tipo durante la presentación productiva.'
+        );
+      }
+
+      if (
+        productiveInput.context.movementType !==
+          productiveContext.movementType ||
+        productiveInput.context.deviationReason !==
+          knowledge.context.deviationReason
+      ) {
+        throw new Error(
+          'FASE 24.1 no conservó correctamente el contexto mínimo de presentación productiva.'
+        );
+      }
+
+      /*
+       * considered != productively presented
+       *
+       * La consideración por sí sola no crea ningún input.
+       * La presentación requiere invocar explícitamente
+       * presentOperationalKnowledge().
+       *
+       * Sin consideración, la frontera debe permanecer cerrada.
+       */
+      const presentationWithoutConsideration =
+        presentOperationalKnowledge(
+          knowledge,
+          null,
+          productiveContext
+        );
+
+      if (presentationWithoutConsideration !== null) {
+        throw new Error(
+          'FASE 24.1 permitió presentación productiva sin consideración previa.'
+        );
+      }
+
+      /*
+       * La consideración debe pertenecer exactamente al mismo
+       * conocimiento.
+       */
+      const mismatchedKnowledgeConsideration = {
+        ...consideration,
+        knowledgeId:
+          `${consideration.knowledgeId}-mismatch`,
+      };
+
+      const presentationWithWrongKnowledge =
+        presentOperationalKnowledge(
+          knowledge,
+          mismatchedKnowledgeConsideration,
+          productiveContext
+        );
+
+      if (presentationWithWrongKnowledge !== null) {
+        throw new Error(
+          'FASE 24.1 permitió presentar conocimiento con una consideración perteneciente a otro knowledgeId.'
+        );
+      }
+
+      /*
+       * También debe conservarse la identidad del patrón fuente.
+       */
+      const mismatchedPatternConsideration = {
+        ...consideration,
+        sourcePatternId:
+          `${consideration.sourcePatternId}-mismatch`,
+      };
+
+      const presentationWithWrongPattern =
+        presentOperationalKnowledge(
+          knowledge,
+          mismatchedPatternConsideration,
+          productiveContext
+        );
+
+      if (presentationWithWrongPattern !== null) {
+        throw new Error(
+          'FASE 24.1 permitió presentar conocimiento con una consideración perteneciente a otro sourcePatternId.'
+        );
+      }
+
+      /*
+       * La presentación pertenece a un contexto productivo
+       * concreto.
+       *
+       * Una consideración compatible con reubicacion no puede
+       * reutilizarse para presentar el mismo conocimiento dentro
+       * de un contexto productivo diferente.
+       */
+      const incompatiblePresentation =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          {
+            movementType: 'entrada',
+          }
+        );
+
+      if (incompatiblePresentation !== null) {
+        throw new Error(
+          'FASE 24.1 permitió presentar conocimiento dentro de un contexto productivo incompatible.'
+        );
+      }
+
+      /*
+       * Guardas contractuales.
+       *
+       * ProductiveKnowledgeInput no puede transportar evidencia
+       * cuantitativa ni conceptos capaces de reinterpretarse
+       * como fuerza, soporte, ponderación, selección o uso.
+       */
+      const forbiddenProperties = [
+        'evidence',
+        'score',
+        'occurrences',
+        'memoryIds',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'priority',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'used',
+        'utilized',
+        'influence',
+        'influential',
+        'decisionId',
+        'recommendationId',
+        'executed',
+        'execution',
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find(
+          (property) => property in productiveInput
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 24.1 introdujo indebidamente la propiedad "${detectedForbiddenProperty}" dentro de ProductiveKnowledgeInput.`
+        );
+      }
+
+      /*
+       * Presentar conocimiento tampoco debe mutar sus entradas.
+       */
+      if (
+        consideration.knowledgeId !== knowledge.id ||
+        consideration.sourcePatternId !==
+          knowledge.sourcePatternId ||
+        consideration.considered !== true
+      ) {
+        throw new Error(
+          'FASE 24.1 modificó la consideración durante la presentación productiva.'
+        );
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * ProductiveKnowledgeInput existe, pero todavía ningún
+       * motor productivo lo consume.
+       */
+      const recommendationsAfterPresentation =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterPresentation =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterPresentation
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterPresentation
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.1 detectó modificación de recomendaciones productivas después de presentar conocimiento.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterPresentation) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.1 detectó modificación, reordenamiento o ranking distinto de decisiones después de presentar conocimiento.'
+        );
+      }
+
+      addLog(
+        `FASE 24.1 OK: el conocimiento ${productiveInput.knowledgeId} considerado y compatible fue presentado explícitamente mediante ProductiveKnowledgeInput conservando sourcePatternId ${productiveInput.sourcePatternId}, tipo y contexto mínimo. Sin consideración, con identidad o patrón fuente desalineados y bajo contexto productivo incompatible no se produjo presentación. El contrato no transportó score, occurrences, memoryIds, evidence, strength, weight, ranking, selección, utilización ni influencia, y permanecieron intactas ${recommendationsAfterPresentation.length} recomendaciones y ${decisionsAfterPresentation.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en contrato mínimo de presentación productiva del conocimiento operativo 24.1: ${error.message}`
+          : 'Error inesperado en contrato mínimo de presentación productiva del conocimiento operativo 24.1.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -27872,7 +28248,6 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           Test Frontera Estructural 23.40
         </button>
 
-
         <button
           onClick={testOperationalKnowledgeControlledStructuralBoundaryEligibilityOrthogonality}
           disabled={loading}
@@ -27880,6 +28255,7 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
         >
           Test Ortogonalidad Estructural-Contextual 23.41
         </button>
+
         <button
           onClick={testOperationalKnowledgeControlledEligiblePluralityWithoutGenealogicalReinforcement}
           disabled={loading}
@@ -27887,6 +28263,7 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
         >
           Test Pluralidad Elegible sin Refuerzo 23.42
         </button>
+
         <button
           onClick={testOperationalKnowledgeControlledIndividualConsiderationPlurality}
           disabled={loading}
@@ -27894,6 +28271,7 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
         >
           Test Individualidad Consideración Plural 23.43
         </button>
+
         <button
           onClick={testOperationalKnowledgeControlledSelectiveObservationalUseUnderPluralConsideration}
           disabled={loading}
@@ -27901,6 +28279,7 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
         >
           Test Utilización Observacional Selectiva 23.44
         </button>
+
         <button
           onClick={testOperationalKnowledgeControlledSelectiveExplanatoryInfluenceUnderPluralUse}
           disabled={loading}
@@ -27908,6 +28287,7 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
         >
           Test Influencia Explicativa Selectiva 23.45
         </button>
+
         <button
           onClick={testOperationalKnowledgeControlledSelectiveDecisionContentInfluenceUnderPluralUse}
           disabled={loading}
@@ -27915,6 +28295,7 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
         >
           Test Influencia Decisional Selectiva 23.46
         </button>
+
         <button
           onClick={testOperationalKnowledgeControlledProductivePromotionBoundary}
           disabled={loading}
@@ -27922,6 +28303,15 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
         >
           Test Frontera Promoción Productiva 23.47
         </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductivePresentationContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Presentación Productiva 24.1
+        </button>
+
         <button
           onClick={testMandatoryPhysicalPlacement}
           disabled={loading}
