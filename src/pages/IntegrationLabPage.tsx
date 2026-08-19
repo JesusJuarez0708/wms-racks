@@ -75,6 +75,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationReachService';
 
 import {
+  observeProductiveKnowledgeRecommendationEffect,
+} from '../services/operationalKnowledgeRecommendationEffectService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -31106,6 +31110,546 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+  async function testOperationalKnowledgeProductiveRecommendationEffectContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeEffect =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeEffect =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeEffect
+        );
+
+      /*
+      * FASE 24.10 — Efecto productivo observable
+      * controlado sobre recomendación alcanzada
+      * por conocimiento operativo.
+      *
+      * FASE 24.9 estableció:
+      *
+      * ProductiveKnowledgeInfluence
+      *        +
+      * IntelligenceRecommendation
+      *        ↓
+      * reachProductiveRecommendation()
+      *        ↓
+      * ProductiveKnowledgeRecommendationReach
+      *
+      * FASE 24.10 introduce:
+      *
+      * ProductiveKnowledgeRecommendationReach
+      *        +
+      * ProductiveKnowledgeRecommendationEffectContext
+      *        ↓
+      * observeProductiveKnowledgeRecommendationEffect()
+      *        ↓
+      * ProductiveKnowledgeRecommendationEffect | null
+      *
+      * La tesis es:
+      *
+      * influence exists
+      *   != recommendation reach exists
+      *   != observable effect exists
+      *   != recommendation changes
+      *
+      * Un Reach válido no materializa automáticamente
+      * un efecto observable.
+      *
+      * La existencia de un Effect tampoco constituye:
+      *
+      * - modificación de recomendación;
+      * - cambio de contenido;
+      * - cambio de score;
+      * - cambio de priority;
+      * - ranking;
+      * - selección;
+      * - ejecución;
+      * - cambio de decisiones.
+      */
+
+      const recommendationsSnapshot =
+        JSON.stringify(recommendationsBeforeEffect);
+
+      const decisionsSnapshot =
+        JSON.stringify(decisionsBeforeEffect);
+
+      if (recommendationsBeforeEffect.length < 1) {
+        throw new Error(
+          'FASE 24.10 esperaba al menos 1 recomendación productiva existente.'
+        );
+      }
+
+      const recommendation =
+        recommendationsBeforeEffect[0];
+
+      if (!recommendation) {
+        throw new Error(
+          'FASE 24.10 no pudo resolver una recomendación productiva concreta.'
+        );
+      }
+
+      const recommendationSnapshot =
+        JSON.stringify(recommendation);
+
+      /*
+      * Conocimiento controlado exclusivo de 24.10.
+      */
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-recommendation-effect-24-10',
+          title:
+            'Patrón controlado de efecto productivo observable sobre recomendación',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.10.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-recommendation-effect-24-10',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-recommendation-effect-24-10-1',
+              'memory-controlled-productive-recommendation-effect-24-10-2',
+              'memory-controlled-productive-recommendation-effect-24-10-3',
+              'memory-controlled-productive-recommendation-effect-24-10-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.10 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.10 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.10 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.10 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.10 no pudo obtener ProductiveKnowledgeInput previo al efecto observable.'
+        );
+      }
+
+      const reception =
+        receiveProductiveKnowledge(productiveInput);
+
+      const availability =
+        makeProductiveKnowledgeAvailable(reception);
+
+      const consumer: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-effect-24-10',
+      };
+
+      const exposure =
+        exposeProductiveKnowledge(
+          availability,
+          consumer
+        );
+
+      const access =
+        accessProductiveKnowledge(exposure);
+
+      const consumption =
+        consumeProductiveKnowledge(access);
+
+      const utilization =
+        useProductiveKnowledge(consumption);
+
+      const influence =
+        influenceProductiveKnowledge(utilization);
+
+      const reach =
+        reachProductiveRecommendation(
+          influence,
+          recommendation
+        );
+
+      /*
+      * Snapshots inmediatamente anteriores
+      * a la nueva frontera de 24.10.
+      */
+      const influenceSnapshot =
+        JSON.stringify(influence);
+
+      const reachSnapshot =
+        JSON.stringify(reach);
+
+      /*
+      * CONTROL NEGATIVO
+      *
+      * El Reach es válido, pero la recomendación
+      * alcanzada está fuera del ámbito explícito
+      * de observación.
+      *
+      * Reach existe != Effect existe.
+      */
+      const effectOutsideObservationScope =
+        observeProductiveKnowledgeRecommendationEffect(
+          reach,
+          {
+            observableRecommendationId:
+              `${recommendation.id}-outside-observation-scope-24-10`,
+          }
+        );
+
+      if (effectOutsideObservationScope !== null) {
+        throw new Error(
+          'FASE 24.10 materializó indebidamente un efecto observable fuera del ámbito explícito de observación.'
+        );
+      }
+
+      /*
+      * El control negativo no puede modificar
+      * Reach, Influence ni Recommendation.
+      */
+      if (
+        JSON.stringify(reach) !==
+        reachSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.10 modificó ProductiveKnowledgeRecommendationReach durante el control negativo.'
+        );
+      }
+
+      if (
+        JSON.stringify(influence) !==
+        influenceSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.10 modificó ProductiveKnowledgeInfluence durante el control negativo.'
+        );
+      }
+
+      if (
+        JSON.stringify(recommendation) !==
+        recommendationSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.10 modificó la recomendación durante el control negativo.'
+        );
+      }
+
+      /*
+      * CASO POSITIVO
+      *
+      * Se utiliza exactamente el mismo Reach.
+      *
+      * Sólo cambia el contexto explícito
+      * de observación.
+      */
+      const observableEffect =
+        observeProductiveKnowledgeRecommendationEffect(
+          reach,
+          {
+            observableRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!observableEffect) {
+        throw new Error(
+          'FASE 24.10 no materializó el efecto observable esperado dentro del ámbito explícito de observación.'
+        );
+      }
+
+      /*
+      * Effect debe conservar exactamente
+      * el mismo Reach.
+      */
+      if (observableEffect.reach !== reach) {
+        throw new Error(
+          'FASE 24.10 no conservó exactamente el mismo ProductiveKnowledgeRecommendationReach dentro del efecto observable.'
+        );
+      }
+
+      /*
+      * Y, transitivamente, la misma Influence.
+      */
+      if (
+        observableEffect.reach.influence !==
+        influence
+      ) {
+        throw new Error(
+          'FASE 24.10 no conservó exactamente la misma ProductiveKnowledgeInfluence dentro del efecto observable.'
+        );
+      }
+
+      /*
+      * Y exactamente la misma Recommendation.
+      */
+      if (
+        observableEffect.reach.recommendation !==
+        recommendation
+      ) {
+        throw new Error(
+          'FASE 24.10 no conservó exactamente la misma IntelligenceRecommendation dentro del efecto observable.'
+        );
+      }
+
+      if (
+        observableEffect.effectType !==
+        'knowledge-influence-observed'
+      ) {
+        throw new Error(
+          'FASE 24.10 produjo un tipo de efecto observable distinto del contrato esperado.'
+        );
+      }
+
+      /*
+      * ProductiveKnowledgeRecommendationEffect debe
+      * permanecer como resultado mínimo observacional.
+      *
+      * No puede adquirir semántica de valoración,
+      * transformación, ranking, selección o ejecución.
+      */
+      const forbiddenEffectProperties = [
+        'recommendationId',
+        'influenceId',
+        'target',
+        'targetId',
+        'targetType',
+        'purpose',
+        'effectSize',
+        'impact',
+        'changed',
+        'transformed',
+        'score',
+        'priority',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decision',
+        'decisionId',
+        'executed',
+        'execution',
+        'accepted',
+        'rejected',
+        'preferred',
+        'promoted',
+      ];
+
+      const effectRecord =
+        observableEffect as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenEffectProperty =
+        forbiddenEffectProperties.find(
+          (property) => property in effectRecord
+        );
+
+      if (detectedForbiddenEffectProperty) {
+        throw new Error(
+          `FASE 24.10 introdujo indebidamente la propiedad "${detectedForbiddenEffectProperty}" dentro de ProductiveKnowledgeRecommendationEffect.`
+        );
+      }
+
+      /*
+      * El nuevo efecto no puede modificar
+      * ninguno de sus antecedentes causales.
+      */
+      if (
+        JSON.stringify(reach) !==
+        reachSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.10 modificó ProductiveKnowledgeRecommendationReach al materializar el efecto observable.'
+        );
+      }
+
+      if (
+        JSON.stringify(influence) !==
+        influenceSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.10 modificó ProductiveKnowledgeInfluence al materializar el efecto observable.'
+        );
+      }
+
+      if (
+        JSON.stringify(recommendation) !==
+        recommendationSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.10 modificó la recomendación productiva al materializar el efecto observable.'
+        );
+      }
+
+      /*
+      * Score y priority pertenecen al contrato
+      * preexistente de IntelligenceRecommendation.
+      *
+      * El Effect puede alcanzarlos sólo
+      * transitivamente mediante Reach, pero
+      * no duplicarlos ni modificarlos.
+      */
+      if (
+        observableEffect.reach.recommendation.score !==
+          recommendation.score ||
+        observableEffect.reach.recommendation.priority !==
+          recommendation.priority
+      ) {
+        throw new Error(
+          'FASE 24.10 alteró score o priority de la recomendación asociada al efecto observable.'
+        );
+      }
+
+      /*
+      * Preservación genealógica completa.
+      *
+      * Effect
+      *   ↓
+      * Reach
+      *   ↓
+      * Influence
+      *   ↓
+      * Utilization
+      *   ↓
+      * Consumption
+      *   ↓
+      * Access
+      *   ↓
+      * Exposure
+      *   ↓
+      * Availability
+      *   ↓
+      * Reception
+      *   ↓
+      * ProductiveKnowledgeInput
+      */
+      if (
+        observableEffect.reach.influence.utilization
+          .consumption.access.exposure.availability
+          .reception.input !== productiveInput
+      ) {
+        throw new Error(
+          'FASE 24.10 perdió ProductiveKnowledgeInput dentro de la genealogía del efecto observable.'
+        );
+      }
+
+      if (
+        observableEffect.reach.influence.utilization
+          .consumption.access.exposure.consumer !==
+        consumer
+      ) {
+        throw new Error(
+          'FASE 24.10 perdió la referencia del consumidor dentro de la genealogía del efecto observable.'
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      *
+      * Un efecto observable existe, pero la
+      * recomendación productiva permanece intacta.
+      */
+      const recommendationsAfterEffect =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterEffect =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterEffect
+        );
+
+      if (
+        JSON.stringify(recommendationsAfterEffect) !==
+        recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.10 detectó modificación de recomendaciones productivas después de materializar el efecto observable.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterEffect) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.10 detectó modificación, reordenamiento o ranking distinto de decisiones después de materializar el efecto observable.'
+        );
+      }
+
+      addLog(
+        `FASE 24.10 OK: el mismo ProductiveKnowledgeRecommendationReach sobre la recomendación ${recommendation.id} no materializó efecto fuera del ámbito explícito de observación y sí materializó ProductiveKnowledgeRecommendationEffect dentro de dicho ámbito, conservando exactamente Reach, Influence y Recommendation.
+        El efecto observable ${observableEffect.effectType} no modificó contenido, score, priority, ranking, selección ni ejecución de la recomendación.
+        Permanecieron intactas ${recommendationsAfterEffect.length} recomendaciones y ${decisionsAfterEffect.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en efecto productivo observable sobre recomendación 24.10: ${error.message}`
+          : 'Error inesperado en efecto productivo observable sobre recomendación 24.10.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -32015,6 +32559,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Alcance Recomendación 24.9
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveRecommendationEffectContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Efecto Recomendación 24.10
         </button>
 
         <button
