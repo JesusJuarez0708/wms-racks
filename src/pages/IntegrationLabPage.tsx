@@ -79,6 +79,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectService';
 
 import {
+  interpretProductiveKnowledgeRecommendationEffect,
+} from '../services/operationalKnowledgeRecommendationEffectInterpretationService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -31650,6 +31654,624 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+  async function testOperationalKnowledgeProductiveRecommendationEffectInterpretationContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeInterpretation =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeInterpretation =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeInterpretation
+        );
+
+      /*
+      * FASE 24.11 — Interpretación productiva explícita
+      * del efecto observable del conocimiento operativo
+      * sobre una recomendación.
+      *
+      * FASE 24.10 estableció:
+      *
+      * ProductiveKnowledgeRecommendationReach
+      *        +
+      * ProductiveKnowledgeRecommendationEffectContext
+      *        ↓
+      * observeProductiveKnowledgeRecommendationEffect()
+      *        ↓
+      * ProductiveKnowledgeRecommendationEffect | null
+      *
+      * FASE 24.11 introduce:
+      *
+      * ProductiveKnowledgeRecommendationEffect
+      *        +
+      * ProductiveKnowledgeRecommendationEffectInterpretationContext
+      *        ↓
+      * interpretProductiveKnowledgeRecommendationEffect()
+      *        ↓
+      * ProductiveKnowledgeRecommendationEffectInterpretation | null
+      *
+      * La tesis es:
+      *
+      * observable effect exists
+      *   != interpretation exists
+      *   != recommendation changes
+      *
+      * Un Effect válido no produce automáticamente
+      * una interpretación.
+      *
+      * La existencia de una Interpretation tampoco
+      * constituye:
+      *
+      * - modificación de recomendación;
+      * - cambio de contenido;
+      * - valoración del efecto;
+      * - cambio de score;
+      * - cambio de priority;
+      * - confidence;
+      * - ponderación;
+      * - ranking;
+      * - preferencia;
+      * - selección;
+      * - aceptación o rechazo;
+      * - promoción;
+      * - ejecución;
+      * - cambio de decisiones.
+      */
+
+      const recommendationsSnapshot =
+        JSON.stringify(recommendationsBeforeInterpretation);
+
+      const decisionsSnapshot =
+        JSON.stringify(decisionsBeforeInterpretation);
+
+      if (recommendationsBeforeInterpretation.length < 1) {
+        throw new Error(
+          'FASE 24.11 esperaba al menos 1 recomendación productiva existente.'
+        );
+      }
+
+      const recommendation =
+        recommendationsBeforeInterpretation[0];
+
+      if (!recommendation) {
+        throw new Error(
+          'FASE 24.11 no pudo resolver una recomendación productiva concreta.'
+        );
+      }
+
+      const recommendationSnapshot =
+        JSON.stringify(recommendation);
+
+      /*
+      * Conocimiento controlado exclusivo de 24.11.
+      */
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-recommendation-effect-interpretation-24-11',
+          title:
+            'Patrón controlado de interpretación productiva de efecto sobre recomendación',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.11.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-recommendation-effect-interpretation-24-11',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-recommendation-effect-interpretation-24-11-1',
+              'memory-controlled-productive-recommendation-effect-interpretation-24-11-2',
+              'memory-controlled-productive-recommendation-effect-interpretation-24-11-3',
+              'memory-controlled-productive-recommendation-effect-interpretation-24-11-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.11 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.11 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.11 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.11 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.11 no pudo obtener ProductiveKnowledgeInput previo a la interpretación.'
+        );
+      }
+
+      const reception =
+        receiveProductiveKnowledge(productiveInput);
+
+      const availability =
+        makeProductiveKnowledgeAvailable(reception);
+
+      const consumer: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-effect-interpretation-24-11',
+      };
+
+      const exposure =
+        exposeProductiveKnowledge(
+          availability,
+          consumer
+        );
+
+      const access =
+        accessProductiveKnowledge(exposure);
+
+      const consumption =
+        consumeProductiveKnowledge(access);
+
+      const utilization =
+        useProductiveKnowledge(consumption);
+
+      const influence =
+        influenceProductiveKnowledge(utilization);
+
+      const reach =
+        reachProductiveRecommendation(
+          influence,
+          recommendation
+        );
+
+      const effect =
+        observeProductiveKnowledgeRecommendationEffect(
+          reach,
+          {
+            observableRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!effect) {
+        throw new Error(
+          'FASE 24.11 no pudo establecer ProductiveKnowledgeRecommendationEffect previo a la interpretación.'
+        );
+      }
+
+      /*
+      * Snapshots inmediatamente anteriores
+      * a la nueva frontera de 24.11.
+      */
+      const influenceSnapshot =
+        JSON.stringify(influence);
+
+      const reachSnapshot =
+        JSON.stringify(reach);
+
+      const effectSnapshot =
+        JSON.stringify(effect);
+
+      /*
+      * CONTROL NEGATIVO
+      *
+      * El Effect existe, pero la recomendación
+      * está fuera del ámbito explícito de
+      * interpretación.
+      *
+      * Effect existe != Interpretation existe.
+      */
+      const interpretationOutsideScope =
+        interpretProductiveKnowledgeRecommendationEffect(
+          effect,
+          {
+            interpretableRecommendationId:
+              `${recommendation.id}-outside-interpretation-scope-24-11`,
+          }
+        );
+
+      if (interpretationOutsideScope !== null) {
+        throw new Error(
+          'FASE 24.11 materializó indebidamente una interpretación fuera del ámbito explícito de interpretación.'
+        );
+      }
+
+      /*
+      * El control negativo no puede modificar
+      * Effect, Reach, Influence ni Recommendation.
+      */
+      if (
+        JSON.stringify(effect) !==
+        effectSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.11 modificó ProductiveKnowledgeRecommendationEffect durante el control negativo.'
+        );
+      }
+
+      if (
+        JSON.stringify(reach) !==
+        reachSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.11 modificó ProductiveKnowledgeRecommendationReach durante el control negativo.'
+        );
+      }
+
+      if (
+        JSON.stringify(influence) !==
+        influenceSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.11 modificó ProductiveKnowledgeInfluence durante el control negativo.'
+        );
+      }
+
+      if (
+        JSON.stringify(recommendation) !==
+        recommendationSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.11 modificó la recomendación durante el control negativo.'
+        );
+      }
+
+      /*
+      * CASO POSITIVO
+      *
+      * Se utiliza exactamente el mismo Effect.
+      *
+      * Sólo cambia el contexto explícito
+      * de interpretación.
+      */
+      const interpretation =
+        interpretProductiveKnowledgeRecommendationEffect(
+          effect,
+          {
+            interpretableRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!interpretation) {
+        throw new Error(
+          'FASE 24.11 no materializó la interpretación esperada dentro del ámbito explícito.'
+        );
+      }
+
+      /*
+      * Interpretation debe conservar exactamente
+      * el mismo Effect.
+      */
+      if (interpretation.effect !== effect) {
+        throw new Error(
+          'FASE 24.11 no conservó exactamente el mismo ProductiveKnowledgeRecommendationEffect dentro de la interpretación.'
+        );
+      }
+
+      /*
+      * Y transitivamente el mismo Reach.
+      */
+      if (
+        interpretation.effect.reach !==
+        reach
+      ) {
+        throw new Error(
+          'FASE 24.11 no conservó exactamente el mismo ProductiveKnowledgeRecommendationReach dentro de la interpretación.'
+        );
+      }
+
+      /*
+      * Y la misma Influence.
+      */
+      if (
+        interpretation.effect.reach.influence !==
+        influence
+      ) {
+        throw new Error(
+          'FASE 24.11 no conservó exactamente la misma ProductiveKnowledgeInfluence dentro de la interpretación.'
+        );
+      }
+
+      /*
+      * Y exactamente la misma Recommendation.
+      */
+      if (
+        interpretation.effect.reach.recommendation !==
+        recommendation
+      ) {
+        throw new Error(
+          'FASE 24.11 no conservó exactamente la misma IntelligenceRecommendation dentro de la interpretación.'
+        );
+      }
+
+      if (
+        interpretation.interpretationType !==
+        'knowledge-effect-interpreted'
+      ) {
+        throw new Error(
+          'FASE 24.11 produjo un tipo de interpretación distinto del contrato esperado.'
+        );
+      }
+
+      /*
+      * ProductiveKnowledgeRecommendationEffectInterpretation
+      * debe permanecer como relación mínima.
+      *
+      * Todavía no describe intensidad, valoración,
+      * preferencia ni transformación del resultado.
+      */
+      const forbiddenInterpretationProperties = [
+        'recommendationId',
+        'influenceId',
+        'effectId',
+        'target',
+        'targetId',
+        'targetType',
+        'purpose',
+        'message',
+        'description',
+        'rationale',
+        'effectSize',
+        'impact',
+        'changed',
+        'transformed',
+        'score',
+        'priority',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decision',
+        'decisionId',
+        'executed',
+        'execution',
+        'accepted',
+        'rejected',
+        'preferred',
+        'promoted',
+      ];
+
+      const interpretationRecord =
+        interpretation as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenInterpretationProperty =
+        forbiddenInterpretationProperties.find(
+          (property) =>
+            property in interpretationRecord
+        );
+
+      if (
+        detectedForbiddenInterpretationProperty
+      ) {
+        throw new Error(
+          `FASE 24.11 introdujo indebidamente la propiedad "${detectedForbiddenInterpretationProperty}" dentro de ProductiveKnowledgeRecommendationEffectInterpretation.`
+        );
+      }
+
+      /*
+      * La interpretación no puede modificar
+      * ninguno de sus antecedentes.
+      */
+      if (
+        JSON.stringify(effect) !==
+        effectSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.11 modificó ProductiveKnowledgeRecommendationEffect al materializar la interpretación.'
+        );
+      }
+
+      if (
+        JSON.stringify(reach) !==
+        reachSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.11 modificó ProductiveKnowledgeRecommendationReach al materializar la interpretación.'
+        );
+      }
+
+      if (
+        JSON.stringify(influence) !==
+        influenceSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.11 modificó ProductiveKnowledgeInfluence al materializar la interpretación.'
+        );
+      }
+
+      if (
+        JSON.stringify(recommendation) !==
+        recommendationSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.11 modificó la recomendación productiva al materializar la interpretación.'
+        );
+      }
+
+      /*
+      * Score y priority pertenecen exclusivamente
+      * al contrato previo de IntelligenceRecommendation.
+      *
+      * Interpretation puede observarlos únicamente
+      * por genealogía, nunca duplicarlos ni alterarlos.
+      */
+      if (
+        interpretation.effect.reach.recommendation.score !==
+          recommendation.score ||
+        interpretation.effect.reach.recommendation.priority !==
+          recommendation.priority
+      ) {
+        throw new Error(
+          'FASE 24.11 alteró score o priority de la recomendación asociada a la interpretación.'
+        );
+      }
+
+      /*
+      * Preservación genealógica completa.
+      *
+      * Interpretation
+      *   ↓
+      * Effect
+      *   ↓
+      * Reach
+      *   ↓
+      * Influence
+      *   ↓
+      * Utilization
+      *   ↓
+      * Consumption
+      *   ↓
+      * Access
+      *   ↓
+      * Exposure
+      *   ↓
+      * Availability
+      *   ↓
+      * Reception
+      *   ↓
+      * ProductiveKnowledgeInput
+      */
+      if (
+        interpretation.effect.reach.influence.utilization
+          .consumption.access.exposure.availability
+          .reception.input !== productiveInput
+      ) {
+        throw new Error(
+          'FASE 24.11 perdió ProductiveKnowledgeInput dentro de la genealogía de la interpretación.'
+        );
+      }
+
+      if (
+        interpretation.effect.reach.influence.utilization
+          .consumption.access.exposure.consumer !==
+        consumer
+      ) {
+        throw new Error(
+          'FASE 24.11 perdió la referencia del consumidor dentro de la genealogía de la interpretación.'
+        );
+      }
+
+      /*
+      * Debe conservarse también la semántica
+      * exacta del efecto previamente observado.
+      */
+      if (
+        interpretation.effect.effectType !==
+        'knowledge-influence-observed'
+      ) {
+        throw new Error(
+          'FASE 24.11 alteró la semántica del efecto observable previo.'
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      *
+      * Existe una interpretación explícita,
+      * pero la recomendación y las decisiones
+      * productivas permanecen intactas.
+      */
+      const recommendationsAfterInterpretation =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterInterpretation =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterInterpretation
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterInterpretation
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.11 detectó modificación de recomendaciones productivas después de materializar la interpretación.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterInterpretation
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.11 detectó modificación, reordenamiento o ranking distinto de decisiones después de materializar la interpretación.'
+        );
+      }
+
+      addLog(
+        `FASE 24.11 OK: el mismo ProductiveKnowledgeRecommendationEffect sobre la recomendación ${recommendation.id} no produjo interpretación fuera del ámbito explícito y sí materializó ProductiveKnowledgeRecommendationEffectInterpretation dentro de dicho ámbito, conservando exactamente Effect, Reach, Influence y Recommendation.
+        La interpretación ${interpretation.interpretationType} no añadió valoración, impacto, score, priority, confidence, ponderación, ranking, preferencia, selección, aceptación, rechazo, promoción ni ejecución.
+        Permanecieron intactas ${recommendationsAfterInterpretation.length} recomendaciones y ${decisionsAfterInterpretation.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en interpretación productiva explícita del efecto sobre recomendación 24.11: ${error.message}`
+          : 'Error inesperado en interpretación productiva explícita del efecto sobre recomendación 24.11.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -32567,6 +33189,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Efecto Recomendación 24.10
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveRecommendationEffectInterpretationContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Interpretación Efecto 24.11
         </button>
 
         <button
