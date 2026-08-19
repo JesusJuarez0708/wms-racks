@@ -26432,6 +26432,663 @@ No se introdujeron combinedDecisionInfluence, jointDecisionInfluence, collective
     }
   }
 
+  async function testOperationalKnowledgeControlledProductivePromotionBoundary() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforePromotionBoundary =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforePromotionBoundary =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforePromotionBoundary
+        );
+
+      /*
+       * FASE 23.47 — Frontera contextual controlada de
+       * promoción productiva del conocimiento operativo.
+       *
+       * PROPÓSITO DE CIERRE:
+       *
+       * Las fases anteriores demostraron capacidades cada vez
+       * más profundas dentro de Integration Lab, hasta llegar en
+       * FASE 23.46 a influencia sobre contenido decisional bajo
+       * pluralidad controlada.
+       *
+       * FASE 23.47 NO promueve esas capacidades a producción.
+       *
+       * Sólo demuestra que:
+       *
+       * capacidad demostrada en laboratorio
+       *              !=
+       * promoción productiva automática
+       *
+       * especialmente cuando el modelo no dispone de un contrato
+       * explícito para resolver efectos plurales.
+       */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforePromotionBoundary
+      );
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforePromotionBoundary
+      );
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-promotion-boundary-23-47-a',
+          title:
+            'Patrón controlado A de frontera de promoción productiva',
+          description:
+            'Patrón controlado A utilizado exclusivamente por FASE 23.47.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-promotion-boundary-23-47-a',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-promotion-boundary-23-47-a-1',
+              'memory-controlled-productive-promotion-boundary-23-47-a-2',
+              'memory-controlled-productive-promotion-boundary-23-47-a-3',
+              'memory-controlled-productive-promotion-boundary-23-47-a-4',
+            ],
+          },
+        },
+        {
+          id: 'pattern-controlled-productive-promotion-boundary-23-47-b',
+          title:
+            'Patrón controlado B de frontera de promoción productiva',
+          description:
+            'Patrón controlado B utilizado exclusivamente por FASE 23.47.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-promotion-boundary-23-47-b',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-promotion-boundary-23-47-b-1',
+              'memory-controlled-productive-promotion-boundary-23-47-b-2',
+              'memory-controlled-productive-promotion-boundary-23-47-b-3',
+              'memory-controlled-productive-promotion-boundary-23-47-b-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 2) {
+        throw new Error(
+          `FASE 23.47 esperaba exactamente 2 conocimientos controlados y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledgeA = controlledKnowledge[0];
+      const knowledgeB = controlledKnowledge[1];
+
+      if (!knowledgeA || !knowledgeB) {
+        throw new Error(
+          'FASE 23.47 no pudo resolver ambos conocimientos controlados.'
+        );
+      }
+
+      if (
+        knowledgeA.id === knowledgeB.id ||
+        knowledgeA.sourcePatternId === knowledgeB.sourcePatternId
+      ) {
+        throw new Error(
+          'FASE 23.47 esperaba conocimientos y patrones fuente distintos.'
+        );
+      }
+
+      const compatibleMovementType =
+        knowledgeA.context.movementType as Parameters<
+          typeof evaluateOperationalKnowledgeEligibility
+        >[1]['movementType'];
+
+      if (
+        knowledgeB.context.movementType !== compatibleMovementType
+      ) {
+        throw new Error(
+          'FASE 23.47 esperaba que ambos conocimientos compartieran el mismo movementType.'
+        );
+      }
+
+      const eligibilityA =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeA,
+          { movementType: compatibleMovementType }
+        );
+
+      const eligibilityB =
+        evaluateOperationalKnowledgeEligibility(
+          knowledgeB,
+          { movementType: compatibleMovementType }
+        );
+
+      const considerationA =
+        considerOperationalKnowledge(eligibilityA);
+
+      const considerationB =
+        considerOperationalKnowledge(eligibilityB);
+
+      if (
+        eligibilityA.eligible !== true ||
+        eligibilityB.eligible !== true ||
+        eligibilityA.reason !== 'context-compatible' ||
+        eligibilityB.reason !== 'context-compatible' ||
+        !considerationA ||
+        !considerationB
+      ) {
+        throw new Error(
+          'FASE 23.47 no pudo reconstruir la precondición controlada de conocimiento considerado.'
+        );
+      }
+
+      type ControlledObservationalUse = {
+        relation: 'contextual_individual_observational_use';
+        knowledgeId: string;
+        sourcePatternId: string;
+        observed: true;
+        rationale: string;
+      };
+
+      const consumeOperationalKnowledgeObservation =
+        (
+          consideration: NonNullable<
+            ReturnType<
+              typeof considerOperationalKnowledge
+            >
+          >
+        ): ControlledObservationalUse => ({
+          relation:
+            'contextual_individual_observational_use',
+          knowledgeId: consideration.knowledgeId,
+          sourcePatternId: consideration.sourcePatternId,
+          observed: true,
+          rationale:
+            'Utilización observacional local y unaria reconstruida para establecer la precondición experimental de FASE 23.47.',
+        });
+
+      const utilizationA =
+        consumeOperationalKnowledgeObservation(
+          considerationA
+        );
+
+      const utilizationB =
+        consumeOperationalKnowledgeObservation(
+          considerationB
+        );
+
+      const baseDecision =
+        decisionsBeforePromotionBoundary.find(
+          (decision) =>
+            decision.id === 'decision-review-movements'
+        );
+
+      if (!baseDecision) {
+        throw new Error(
+          'FASE 23.47 no encontró decision-review-movements como decisión base controlada.'
+        );
+      }
+
+      type ControlledDecisionContentInfluence = {
+        relation: 'contextual_individual_decision_content_influence';
+        knowledgeId: string;
+        sourcePatternId: string;
+        decisionId: string;
+        baseAction: string;
+        influencedAction: string;
+        rationale: string;
+      };
+
+      const consumeDecisionContentInfluence =
+        (
+          decision: OperationalDecision,
+          utilization: ControlledObservationalUse
+        ): ControlledDecisionContentInfluence => ({
+          relation:
+            'contextual_individual_decision_content_influence',
+          knowledgeId: utilization.knowledgeId,
+          sourcePatternId: utilization.sourcePatternId,
+          decisionId: decision.id,
+          baseAction: decision.action,
+          influencedAction:
+            `${decision.action} | frontera-productiva:${utilization.knowledgeId}`,
+          rationale:
+            'Influencia decisional experimental individual derivada directamente de la misma decisión base.',
+        });
+
+      const influenceA =
+        consumeDecisionContentInfluence(
+          baseDecision,
+          utilizationA
+        );
+
+      const influenceB =
+        consumeDecisionContentInfluence(
+          baseDecision,
+          utilizationB
+        );
+
+      if (
+        influenceA.knowledgeId === influenceB.knowledgeId ||
+        influenceA.sourcePatternId ===
+          influenceB.sourcePatternId ||
+        influenceA.decisionId !== baseDecision.id ||
+        influenceB.decisionId !== baseDecision.id ||
+        influenceA.baseAction !== baseDecision.action ||
+        influenceB.baseAction !== baseDecision.action
+      ) {
+        throw new Error(
+          'FASE 23.47 no pudo reconstruir dos influencias decisionales individuales desde la misma decisión base.'
+        );
+      }
+
+      type ControlledExperimentalCapability = {
+        relation:
+          | 'no_contextual_experimental_decision_capability'
+          | 'contextual_experimental_decision_capability';
+        decisionContentInfluenceDemonstrated: boolean | null;
+        pluralIndividualInfluenceDemonstrated: boolean | null;
+        decisionId: string | null;
+        influences: [
+          ControlledDecisionContentInfluence,
+          ControlledDecisionContentInfluence
+        ] | null;
+        rationale: string;
+      };
+
+      type ControlledProductiveIntegrationContract = {
+        relation: 'observed_productive_integration_contract';
+        productiveConsumerDefined: false;
+        pluralResolutionDefined: false;
+        rationale: string;
+      };
+
+      type ControlledProductivePromotionBoundary = {
+        relation:
+          | 'no_contextual_productive_promotion_boundary'
+          | 'contextual_productive_promotion_boundary';
+        experimentalCapabilityEstablished: boolean | null;
+        automaticPromotion: false | null;
+        productiveResolutionAvailable: false | null;
+        rationale: string;
+      };
+
+      const experimentalCapability:
+        ControlledExperimentalCapability = {
+          relation:
+            'contextual_experimental_decision_capability',
+          decisionContentInfluenceDemonstrated: true,
+          pluralIndividualInfluenceDemonstrated: true,
+          decisionId: baseDecision.id,
+          influences: [
+            influenceA,
+            influenceB,
+          ],
+          rationale:
+            'FASE 23.46 demostró experimentalmente dos influencias decisionales individuales y trazables derivadas directamente de la misma decisión base.',
+        };
+
+      const notEvaluableExperimentalCapability:
+        ControlledExperimentalCapability = {
+          relation:
+            'no_contextual_experimental_decision_capability',
+          decisionContentInfluenceDemonstrated: null,
+          pluralIndividualInfluenceDemonstrated: null,
+          decisionId: null,
+          influences: null,
+          rationale:
+            'Control no evaluable: la capacidad experimental decisional no fue establecida previamente.',
+        };
+
+      /*
+       * Esta estructura NO es configuración productiva.
+       *
+       * No representa un feature flag, approval workflow ni
+       * governance persistente.
+       *
+       * Sólo expresa lo observado en el modelo actual:
+       * no existe aquí un consumidor productivo ni una regla
+       * explícita de resolución plural que FASE 23.47 pueda usar.
+       */
+      const productiveIntegrationContract:
+        ControlledProductiveIntegrationContract = {
+          relation:
+            'observed_productive_integration_contract',
+          productiveConsumerDefined: false,
+          pluralResolutionDefined: false,
+          rationale:
+            'El experimento no dispone de consumidor productivo ni contrato explícito de resolución plural para transformar múltiples influencias experimentales en una única decisión productiva final.',
+        };
+
+      const evaluateProductivePromotionBoundary =
+        (
+          capability:
+            ControlledExperimentalCapability,
+          productiveContract:
+            ControlledProductiveIntegrationContract
+        ): ControlledProductivePromotionBoundary => {
+          if (
+            capability.relation !==
+              'contextual_experimental_decision_capability' ||
+            capability.decisionContentInfluenceDemonstrated !== true ||
+            capability.pluralIndividualInfluenceDemonstrated !== true ||
+            capability.decisionId === null ||
+            capability.influences === null
+          ) {
+            return {
+              relation:
+                'no_contextual_productive_promotion_boundary',
+              experimentalCapabilityEstablished: null,
+              automaticPromotion: null,
+              productiveResolutionAvailable: null,
+              rationale:
+                'FASE 23.47 permanece no evaluable mientras no exista una capacidad experimental decisional previamente demostrada.',
+            };
+          }
+
+          if (
+            productiveContract.productiveConsumerDefined !== false ||
+            productiveContract.pluralResolutionDefined !== false
+          ) {
+            throw new Error(
+              'FASE 23.47 recibió un contrato productivo artificial que no pertenece al alcance de esta fase.'
+            );
+          }
+
+          return {
+            relation:
+              'contextual_productive_promotion_boundary',
+            experimentalCapabilityEstablished: true,
+            automaticPromotion: false,
+            productiveResolutionAvailable: false,
+            rationale:
+              'La capacidad decisional fue demostrada experimentalmente, pero su existencia no establece promoción automática hacia comportamiento productivo y no existe aquí una regla explícita para resolver pluralidad de influencias.',
+          };
+        };
+
+      const controlledKnowledgeSnapshot =
+        JSON.stringify(controlledKnowledge);
+      const experimentalCapabilitySnapshot =
+        JSON.stringify(experimentalCapability);
+      const notEvaluableCapabilitySnapshot =
+        JSON.stringify(notEvaluableExperimentalCapability);
+      const productiveContractSnapshot =
+        JSON.stringify(productiveIntegrationContract);
+      const baseDecisionSnapshot =
+        JSON.stringify(baseDecision);
+
+      /*
+       * Caso A:
+       * capacidad demostrada + ausencia de contrato productivo
+       * explícito => frontera de promoción alcanzada.
+       */
+      const boundaryEvaluation =
+        evaluateProductivePromotionBoundary(
+          experimentalCapability,
+          productiveIntegrationContract
+        );
+
+      if (
+        boundaryEvaluation.relation !==
+          'contextual_productive_promotion_boundary' ||
+        boundaryEvaluation.experimentalCapabilityEstablished !== true ||
+        boundaryEvaluation.automaticPromotion !== false ||
+        boundaryEvaluation.productiveResolutionAvailable !== false
+      ) {
+        throw new Error(
+          'FASE 23.47 no reconoció correctamente la frontera de promoción productiva.'
+        );
+      }
+
+      /*
+       * Caso B:
+       * la pluralidad experimental NO autoriza construir
+       * automáticamente una decisión productiva final.
+       *
+       * No resolvemos D1/D2, no seleccionamos una y no las
+       * combinamos.
+       */
+      if (
+        experimentalCapability.influences === null ||
+        experimentalCapability.influences.length !== 2
+      ) {
+        throw new Error(
+          'FASE 23.47 esperaba dos influencias decisionales individuales para demostrar la razón concreta de la frontera.'
+        );
+      }
+
+      const [
+        experimentalInfluenceA,
+        experimentalInfluenceB,
+      ] = experimentalCapability.influences;
+
+      if (
+        experimentalInfluenceA.knowledgeId ===
+          experimentalInfluenceB.knowledgeId ||
+        experimentalInfluenceA.decisionId !==
+          experimentalCapability.decisionId ||
+        experimentalInfluenceB.decisionId !==
+          experimentalCapability.decisionId
+      ) {
+        throw new Error(
+          'FASE 23.47 perdió pluralidad o trazabilidad dentro de la capacidad experimental.'
+        );
+      }
+
+      /*
+       * No existe una transformación D1 + D2 -> finalDecision.
+       *
+       * La prueba se limita a comprobar que ninguna propiedad de
+       * resolución productiva aparece en la frontera.
+       */
+      if (
+        'finalDecision' in boundaryEvaluation ||
+        'resolvedDecision' in boundaryEvaluation ||
+        'combinedDecision' in boundaryEvaluation ||
+        'mergedDecision' in boundaryEvaluation ||
+        'selectedDecisionId' in boundaryEvaluation ||
+        'preferredDecisionId' in boundaryEvaluation ||
+        'precedingDecisionId' in boundaryEvaluation
+      ) {
+        throw new Error(
+          'FASE 23.47 introdujo indebidamente una resolución productiva de influencias plurales.'
+        );
+      }
+
+      /*
+       * Caso C:
+       * sin capacidad experimental previa, la frontera no puede
+       * ni siquiera evaluarse.
+       */
+      const notEvaluableControl =
+        evaluateProductivePromotionBoundary(
+          notEvaluableExperimentalCapability,
+          productiveIntegrationContract
+        );
+
+      if (
+        notEvaluableControl.relation !==
+          'no_contextual_productive_promotion_boundary' ||
+        notEvaluableControl.experimentalCapabilityEstablished !== null ||
+        notEvaluableControl.automaticPromotion !== null ||
+        notEvaluableControl.productiveResolutionAvailable !== null
+      ) {
+        throw new Error(
+          'FASE 23.47 convirtió indebidamente la ausencia de precondición experimental en una evaluación de promoción.'
+        );
+      }
+
+      /*
+       * Inmutabilidad.
+       */
+      if (
+        JSON.stringify(controlledKnowledge) !==
+          controlledKnowledgeSnapshot ||
+        JSON.stringify(experimentalCapability) !==
+          experimentalCapabilitySnapshot ||
+        JSON.stringify(notEvaluableExperimentalCapability) !==
+          notEvaluableCapabilitySnapshot ||
+        JSON.stringify(productiveIntegrationContract) !==
+          productiveContractSnapshot ||
+        JSON.stringify(baseDecision) !==
+          baseDecisionSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.47 modificó alguna entrada controlada, la capacidad experimental, el contrato observado o la decisión base.'
+        );
+      }
+
+      /*
+       * Protección semántica:
+       *
+       * frontera de promoción NO equivale a sistema de aprobación.
+       * ausencia de promoción automática NO equivale a rechazo,
+       * invalidez, inseguridad, irrelevancia o menor fuerza.
+       */
+      const forbiddenProperties = [
+        'productionReady',
+        'readyForProduction',
+        'approved',
+        'approval',
+        'rejected',
+        'unsafe',
+        'safe',
+        'valid',
+        'invalid',
+        'irrelevant',
+        'weaker',
+        'promotionScore',
+        'readinessScore',
+        'safetyScore',
+        'promotionStrength',
+        'threshold',
+        'promotionWorkflow',
+        'approvalWorkflow',
+        'productiveKnowledgeSelector',
+        'decisionResolver',
+        'conflictResolver',
+        'winner',
+        'loser',
+        'preferred',
+        'preferredDecisionId',
+        'precedence',
+        'precedingDecisionId',
+        'combinedDecision',
+        'mergedDecision',
+        'finalDecision',
+        'resolvedDecision',
+        'consensusDecision',
+        'support',
+        'supportCount',
+        'strength',
+        'weight',
+        'reinforcement',
+        'corroboration',
+        'consensus',
+        'independentEvidence',
+        'evidenceIndependence',
+        'operationalIndependence',
+        'provenanceIndependence',
+        'causalIndependence',
+        'independent',
+        'confidence',
+        'priority',
+        'score',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationObjects: Array<Record<string, unknown>> = [
+        experimentalCapability,
+        notEvaluableExperimentalCapability,
+        productiveIntegrationContract,
+        boundaryEvaluation,
+        notEvaluableControl,
+      ];
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find((property) =>
+          evaluationObjects.some(
+            (evaluation) => property in evaluation
+          )
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 23.47 introdujo indebidamente la propiedad "${detectedForbiddenProperty}".`
+        );
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * La frontera de promoción se demuestra precisamente
+       * manteniendo intactos los motores reales.
+       */
+      const recommendationsAfterPromotionBoundary =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterPromotionBoundary =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterPromotionBoundary
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterPromotionBoundary
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.47 detectó modificación de recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterPromotionBoundary) !==
+          decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 23.47 detectó modificación, resolución, reordenamiento o ranking distinto de decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 23.47 OK: una capacidad de influencia sobre contenido decisional previamente demostrada en Integration Lab alcanzó controladamente la frontera de promoción productiva: su demostración experimental no produjo promoción automática hacia consumidores productivos.
+La existencia de dos influencias decisionales individuales y trazables sobre la misma decisión base ${baseDecision.id} no fue convertida en una decisión productiva final porque esta fase no dispone de consumidor productivo ni contrato explícito de resolución plural.
+La ausencia de promoción automática no fue interpretada como rechazo, invalidez, inseguridad, irrelevancia ni menor fuerza, y el control sin capacidad experimental previamente demostrada permaneció correctamente no evaluable.
+No se introdujeron productionReady, approved, rejected, promotionScore, readinessScore, safetyScore, promotionWorkflow, approvalWorkflow, decisionResolver, conflictResolver, winner, preferred, precedence, combinedDecision, finalDecision, soporte, consenso, refuerzo, indicadores de independencia, score, modificación de confidence o priority, ranking, selección ni ejecución, permaneciendo intactas ${recommendationsAfterPromotionBoundary.length} recomendaciones y ${decisionsAfterPromotionBoundary.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+      addLog(
+        error instanceof Error
+          ? `Error en frontera contextual controlada de promoción productiva del conocimiento operativo 23.47: ${error.message}`
+          : 'Error inesperado en frontera contextual controlada de promoción productiva del conocimiento operativo 23.47.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -27257,6 +27914,13 @@ No se introdujeron combinedDecisionInfluence, jointDecisionInfluence, collective
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Influencia Decisional Selectiva 23.46
+        </button>
+        <button
+          onClick={testOperationalKnowledgeControlledProductivePromotionBoundary}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Frontera Promoción Productiva 23.47
         </button>
         <button
           onClick={testMandatoryPhysicalPlacement}
