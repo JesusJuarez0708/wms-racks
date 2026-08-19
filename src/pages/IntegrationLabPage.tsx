@@ -87,6 +87,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceService';
 
 import {
+  establishProductiveKnowledgeRecommendationEffectRelevanceBoundary,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceBoundaryService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -32791,6 +32795,584 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+  async function testOperationalKnowledgeProductiveRecommendationEffectRelevanceBoundaryContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeBoundary =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeBoundary =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeBoundary
+        );
+
+      /*
+      * FASE 24.13 — Frontera productiva explícita
+      * de no promoción de la relevancia sobre recomendación.
+      *
+      * FASE 24.12 estableció:
+      *
+      * ProductiveKnowledgeRecommendationEffectInterpretation
+      *        +
+      * ProductiveKnowledgeRecommendationEffectRelevanceContext
+      *        ↓
+      * evaluateProductiveKnowledgeRecommendationEffectRelevance()
+      *        ↓
+      * ProductiveKnowledgeRecommendationEffectRelevance | null
+      *
+      * FASE 24.13 introduce:
+      *
+      * ProductiveKnowledgeRecommendationEffectRelevance
+      *        +
+      * ProductiveKnowledgeRecommendationEffectRelevanceBoundaryContext
+      *        ↓
+      * establishProductiveKnowledgeRecommendationEffectRelevanceBoundary()
+      *        ↓
+      * ProductiveKnowledgeRecommendationEffectRelevanceBoundary | null
+      *
+      * La tesis es:
+      *
+      * relevance exists
+      *   != relevance boundary exists
+      *   != evaluative promotion exists
+      *   != recommendation changes
+      *
+      * Además:
+      *
+      * relevant
+      *   != significant
+      *   != important
+      *   != stronger
+      *   != weighted
+      *   != higher priority
+      *   != preferred
+      *   != ranked
+      *   != selected
+      *   != actionable
+      *   != accepted
+      *   != rejected
+      *   != promoted
+      *   != decided
+      *   != executed
+      */
+      const recommendationsSnapshot =
+        JSON.stringify(recommendationsBeforeBoundary);
+
+      const decisionsSnapshot =
+        JSON.stringify(decisionsBeforeBoundary);
+
+      if (recommendationsBeforeBoundary.length < 1) {
+        throw new Error(
+          'FASE 24.13 esperaba al menos 1 recomendación productiva existente.'
+        );
+      }
+
+      const recommendation =
+        recommendationsBeforeBoundary[0];
+
+      if (!recommendation) {
+        throw new Error(
+          'FASE 24.13 no pudo resolver una recomendación productiva concreta.'
+        );
+      }
+
+      const recommendationSnapshot =
+        JSON.stringify(recommendation);
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-recommendation-effect-relevance-boundary-24-13',
+          title:
+            'Patrón controlado de frontera de relevancia productiva sobre recomendación',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.13.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-recommendation-effect-relevance-boundary-24-13',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-recommendation-effect-relevance-boundary-24-13-1',
+              'memory-controlled-productive-recommendation-effect-relevance-boundary-24-13-2',
+              'memory-controlled-productive-recommendation-effect-relevance-boundary-24-13-3',
+              'memory-controlled-productive-recommendation-effect-relevance-boundary-24-13-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.13 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.13 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.13 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.13 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.13 no pudo obtener ProductiveKnowledgeInput previo.'
+        );
+      }
+
+      const reception =
+        receiveProductiveKnowledge(productiveInput);
+
+      const availability =
+        makeProductiveKnowledgeAvailable(reception);
+
+      const consumer: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-effect-relevance-boundary-24-13',
+      };
+
+      const exposure =
+        exposeProductiveKnowledge(
+          availability,
+          consumer
+        );
+
+      const access =
+        accessProductiveKnowledge(exposure);
+
+      const consumption =
+        consumeProductiveKnowledge(access);
+
+      const utilization =
+        useProductiveKnowledge(consumption);
+
+      const influence =
+        influenceProductiveKnowledge(utilization);
+
+      const reach =
+        reachProductiveRecommendation(
+          influence,
+          recommendation
+        );
+
+      const effect =
+        observeProductiveKnowledgeRecommendationEffect(
+          reach,
+          {
+            observableRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!effect) {
+        throw new Error(
+          'FASE 24.13 no pudo establecer ProductiveKnowledgeRecommendationEffect previo.'
+        );
+      }
+
+      const interpretation =
+        interpretProductiveKnowledgeRecommendationEffect(
+          effect,
+          {
+            interpretableRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!interpretation) {
+        throw new Error(
+          'FASE 24.13 no pudo establecer ProductiveKnowledgeRecommendationEffectInterpretation previa.'
+        );
+      }
+
+      const relevance =
+        evaluateProductiveKnowledgeRecommendationEffectRelevance(
+          interpretation,
+          {
+            relevantRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!relevance) {
+        throw new Error(
+          'FASE 24.13 no pudo establecer ProductiveKnowledgeRecommendationEffectRelevance previa.'
+        );
+      }
+
+      const influenceSnapshot =
+        JSON.stringify(influence);
+
+      const reachSnapshot =
+        JSON.stringify(reach);
+
+      const effectSnapshot =
+        JSON.stringify(effect);
+
+      const interpretationSnapshot =
+        JSON.stringify(interpretation);
+
+      const relevanceSnapshot =
+        JSON.stringify(relevance);
+
+      /*
+      * CONTROL NEGATIVO
+      *
+      * Relevance existe != Boundary existe.
+      */
+      const boundaryOutsideScope =
+        establishProductiveKnowledgeRecommendationEffectRelevanceBoundary(
+          relevance,
+          {
+            boundedRecommendationId:
+              `${recommendation.id}-outside-relevance-boundary-24-13`,
+          }
+        );
+
+      if (boundaryOutsideScope !== null) {
+        throw new Error(
+          'FASE 24.13 materializó indebidamente la frontera fuera del ámbito explícito.'
+        );
+      }
+
+      if (
+        JSON.stringify(relevance) !==
+        relevanceSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.13 modificó ProductiveKnowledgeRecommendationEffectRelevance durante el control negativo.'
+        );
+      }
+
+      if (
+        JSON.stringify(interpretation) !==
+          interpretationSnapshot ||
+        JSON.stringify(effect) !==
+          effectSnapshot ||
+        JSON.stringify(reach) !==
+          reachSnapshot ||
+        JSON.stringify(influence) !==
+          influenceSnapshot ||
+        JSON.stringify(recommendation) !==
+          recommendationSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.13 modificó antecedentes durante el control negativo.'
+        );
+      }
+
+      /*
+      * CASO POSITIVO
+      *
+      * Exactamente la misma Relevance alcanza
+      * una frontera explícita.
+      */
+      const boundary =
+        establishProductiveKnowledgeRecommendationEffectRelevanceBoundary(
+          relevance,
+          {
+            boundedRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!boundary) {
+        throw new Error(
+          'FASE 24.13 no materializó la frontera esperada dentro del ámbito explícito.'
+        );
+      }
+
+      /*
+      * La frontera debe conservar exactamente
+      * la misma Relevance.
+      */
+      if (boundary.relevance !== relevance) {
+        throw new Error(
+          'FASE 24.13 no conservó exactamente la misma ProductiveKnowledgeRecommendationEffectRelevance.'
+        );
+      }
+
+      /*
+      * Preservación por identidad de toda
+      * la genealogía previa.
+      */
+      if (
+        boundary.relevance.interpretation !==
+          interpretation ||
+        boundary.relevance.interpretation.effect !==
+          effect ||
+        boundary.relevance.interpretation.effect.reach !==
+          reach ||
+        boundary.relevance.interpretation.effect.reach.influence !==
+          influence ||
+        boundary.relevance.interpretation.effect.reach.recommendation !==
+          recommendation
+      ) {
+        throw new Error(
+          'FASE 24.13 perdió identidad dentro de la genealogía previa.'
+        );
+      }
+
+      if (
+        boundary.boundaryType !==
+        'knowledge-relevance-without-evaluative-promotion'
+      ) {
+        throw new Error(
+          'FASE 24.13 produjo un tipo de frontera distinto del contrato esperado.'
+        );
+      }
+
+      /*
+      * Boundary debe seguir siendo un contrato mínimo.
+      *
+      * No puede transformarse silenciosamente en
+      * valoración, ponderación o promoción.
+      */
+      const forbiddenBoundaryProperties = [
+        'recommendationId',
+        'relevanceId',
+        'interpretationId',
+        'effectId',
+        'influenceId',
+        'target',
+        'targetId',
+        'targetType',
+        'purpose',
+        'message',
+        'description',
+        'rationale',
+        'effectSize',
+        'impact',
+        'changed',
+        'transformed',
+        'significance',
+        'significant',
+        'importance',
+        'important',
+        'value',
+        'score',
+        'priority',
+        'strength',
+        'weight',
+        'weighted',
+        'support',
+        'supportCount',
+        'confidence',
+        'rank',
+        'ranking',
+        'preference',
+        'preferred',
+        'selected',
+        'selection',
+        'actionable',
+        'actionability',
+        'accepted',
+        'rejected',
+        'promoted',
+        'promotion',
+        'decision',
+        'decisionId',
+        'executed',
+        'execution',
+      ];
+
+      const boundaryRecord =
+        boundary as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenBoundaryProperty =
+        forbiddenBoundaryProperties.find(
+          (property) =>
+            property in boundaryRecord
+        );
+
+      if (detectedForbiddenBoundaryProperty) {
+        throw new Error(
+          `FASE 24.13 introdujo indebidamente la propiedad "${detectedForbiddenBoundaryProperty}" dentro de ProductiveKnowledgeRecommendationEffectRelevanceBoundary.`
+        );
+      }
+
+      /*
+      * Ningún antecedente puede modificarse.
+      */
+      if (
+        JSON.stringify(relevance) !==
+          relevanceSnapshot ||
+        JSON.stringify(interpretation) !==
+          interpretationSnapshot ||
+        JSON.stringify(effect) !==
+          effectSnapshot ||
+        JSON.stringify(reach) !==
+          reachSnapshot ||
+        JSON.stringify(influence) !==
+          influenceSnapshot ||
+        JSON.stringify(recommendation) !==
+          recommendationSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.13 modificó alguno de sus antecedentes al materializar la frontera.'
+        );
+      }
+
+      /*
+      * Score y priority siguen perteneciendo
+      * exclusivamente a IntelligenceRecommendation.
+      */
+      if (
+        boundary.relevance.interpretation.effect.reach.recommendation
+          .score !== recommendation.score ||
+        boundary.relevance.interpretation.effect.reach.recommendation
+          .priority !== recommendation.priority
+      ) {
+        throw new Error(
+          'FASE 24.13 alteró score o priority de la recomendación.'
+        );
+      }
+
+      /*
+      * Preservación genealógica completa.
+      */
+      if (
+        boundary.relevance.interpretation.effect.reach.influence
+          .utilization.consumption.access.exposure
+          .availability.reception.input !==
+        productiveInput
+      ) {
+        throw new Error(
+          'FASE 24.13 perdió ProductiveKnowledgeInput dentro de la genealogía.'
+        );
+      }
+
+      if (
+        boundary.relevance.interpretation.effect.reach.influence
+          .utilization.consumption.access.exposure
+          .consumer !== consumer
+      ) {
+        throw new Error(
+          'FASE 24.13 perdió la referencia del consumidor dentro de la genealogía.'
+        );
+      }
+
+      /*
+      * La semántica previa debe permanecer exacta.
+      */
+      if (
+        boundary.relevance.relevanceType !==
+          'knowledge-effect-contextually-relevant' ||
+        boundary.relevance.interpretation.interpretationType !==
+          'knowledge-effect-interpreted' ||
+        boundary.relevance.interpretation.effect.effectType !==
+          'knowledge-influence-observed'
+      ) {
+        throw new Error(
+          'FASE 24.13 alteró la semántica de Relevance, Interpretation o Effect previos.'
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      *
+      * La frontera existe, pero no existe
+      * promoción evaluativa ni modificación
+      * productiva de recomendaciones o decisiones.
+      */
+      const recommendationsAfterBoundary =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterBoundary =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterBoundary
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterBoundary
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.13 detectó modificación de recomendaciones productivas después de materializar la frontera de relevancia.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterBoundary
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.13 detectó modificación, reordenamiento o ranking distinto de decisiones después de materializar la frontera de relevancia.'
+        );
+      }
+
+      addLog(
+        `FASE 24.13 OK: la misma ProductiveKnowledgeRecommendationEffectRelevance sobre la recomendación ${recommendation.id} no produjo frontera fuera del ámbito explícito y sí materializó ProductiveKnowledgeRecommendationEffectRelevanceBoundary dentro de dicho ámbito, conservando exactamente Relevance, Interpretation, Effect, Reach, Influence y Recommendation.
+        La frontera ${boundary.boundaryType} no introdujo significancia, importancia, fuerza, valor, score, priority, confidence, ponderación, ranking, preferencia, selección, accionabilidad, aceptación, rechazo, promoción, decisión ni ejecución.
+        Permanecieron intactas ${recommendationsAfterBoundary.length} recomendaciones y ${decisionsAfterBoundary.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en frontera productiva explícita de no promoción de la relevancia sobre recomendación 24.13: ${error.message}`
+          : 'Error inesperado en frontera productiva explícita de no promoción de la relevancia sobre recomendación 24.13.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -33724,6 +34306,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Relevancia Efecto 24.12
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveRecommendationEffectRelevanceBoundaryContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Frontera Relevancia 24.13
         </button>
 
         <button
