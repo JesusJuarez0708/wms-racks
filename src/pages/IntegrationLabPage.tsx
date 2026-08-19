@@ -91,6 +91,11 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceBoundaryService';
 
 import {
+  establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope,
+  type ProductiveKnowledgeRecommendationEffectRelevanceEvaluationContext,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationScopeService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -33373,6 +33378,774 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+
+  async function testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationScopeContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeEvaluationScope =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeEvaluationScope =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeEvaluationScope
+        );
+
+      /*
+      * FASE 24.14 — Ámbito productivo explícito
+      * previo a evaluación de la relevancia sobre recomendación.
+      *
+      * FASE 24.13 estableció:
+      *
+      * ProductiveKnowledgeRecommendationEffectRelevance
+      *        +
+      * ProductiveKnowledgeRecommendationEffectRelevanceBoundaryContext
+      *        ↓
+      * establishProductiveKnowledgeRecommendationEffectRelevanceBoundary()
+      *        ↓
+      * ProductiveKnowledgeRecommendationEffectRelevanceBoundary | null
+      *
+      * FASE 24.14 introduce:
+      *
+      * ProductiveKnowledgeRecommendationEffectRelevanceBoundary
+      *        +
+      * ProductiveKnowledgeRecommendationEffectRelevanceEvaluationContext
+      *        ↓
+      * establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope()
+      *        ↓
+      * ProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope | null
+      *
+      * La tesis es:
+      *
+      * relevance boundary exists
+      *   != evaluation scope exists
+      *   != evaluation criterion exists
+      *   != evaluation performed
+      *   != evaluative property exists
+      *   != recommendation changes
+      *
+      * EvaluationScope sigue siendo descriptivo.
+      *
+      * No significa:
+      *
+      * significant
+      * important
+      * valuable
+      * strong
+      * weighted
+      * high score
+      * high priority
+      * confident
+      * preferred
+      * selected
+      * actionable
+      * accepted
+      * rejected
+      * promoted
+      * decided
+      * executed
+      */
+      const recommendationsSnapshot =
+        JSON.stringify(recommendationsBeforeEvaluationScope);
+
+      const decisionsSnapshot =
+        JSON.stringify(decisionsBeforeEvaluationScope);
+
+      if (recommendationsBeforeEvaluationScope.length < 1) {
+        throw new Error(
+          'FASE 24.14 esperaba al menos 1 recomendación productiva existente.'
+        );
+      }
+
+      const recommendation =
+        recommendationsBeforeEvaluationScope[0];
+
+      if (!recommendation) {
+        throw new Error(
+          'FASE 24.14 no pudo resolver una recomendación productiva concreta.'
+        );
+      }
+
+      const recommendationSnapshot =
+        JSON.stringify(recommendation);
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-recommendation-effect-relevance-evaluation-scope-24-14',
+          title:
+            'Patrón controlado de ámbito evaluativo explícito de relevancia productiva sobre recomendación',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.14.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-recommendation-effect-relevance-evaluation-scope-24-14',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-recommendation-effect-relevance-evaluation-scope-24-14-1',
+              'memory-controlled-productive-recommendation-effect-relevance-evaluation-scope-24-14-2',
+              'memory-controlled-productive-recommendation-effect-relevance-evaluation-scope-24-14-3',
+              'memory-controlled-productive-recommendation-effect-relevance-evaluation-scope-24-14-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.14 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.14 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.14 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.14 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.14 no pudo obtener ProductiveKnowledgeInput previo.'
+        );
+      }
+
+      const reception =
+        receiveProductiveKnowledge(productiveInput);
+
+      const availability =
+        makeProductiveKnowledgeAvailable(reception);
+
+      const consumer: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-effect-relevance-evaluation-scope-24-14',
+      };
+
+      const exposure =
+        exposeProductiveKnowledge(
+          availability,
+          consumer
+        );
+
+      const access =
+        accessProductiveKnowledge(exposure);
+
+      const consumption =
+        consumeProductiveKnowledge(access);
+
+      const utilization =
+        useProductiveKnowledge(consumption);
+
+      const influence =
+        influenceProductiveKnowledge(utilization);
+
+      const reach =
+        reachProductiveRecommendation(
+          influence,
+          recommendation
+        );
+
+      const effect =
+        observeProductiveKnowledgeRecommendationEffect(
+          reach,
+          {
+            observableRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!effect) {
+        throw new Error(
+          'FASE 24.14 no pudo establecer ProductiveKnowledgeRecommendationEffect previo.'
+        );
+      }
+
+      const interpretation =
+        interpretProductiveKnowledgeRecommendationEffect(
+          effect,
+          {
+            interpretableRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!interpretation) {
+        throw new Error(
+          'FASE 24.14 no pudo establecer ProductiveKnowledgeRecommendationEffectInterpretation previa.'
+        );
+      }
+
+      const relevance =
+        evaluateProductiveKnowledgeRecommendationEffectRelevance(
+          interpretation,
+          {
+            relevantRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!relevance) {
+        throw new Error(
+          'FASE 24.14 no pudo establecer ProductiveKnowledgeRecommendationEffectRelevance previa.'
+        );
+      }
+
+      const relevanceBoundary =
+        establishProductiveKnowledgeRecommendationEffectRelevanceBoundary(
+          relevance,
+          {
+            boundedRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!relevanceBoundary) {
+        throw new Error(
+          'FASE 24.14 no pudo establecer ProductiveKnowledgeRecommendationEffectRelevanceBoundary previa.'
+        );
+      }
+
+      const influenceSnapshot =
+        JSON.stringify(influence);
+
+      const reachSnapshot =
+        JSON.stringify(reach);
+
+      const effectSnapshot =
+        JSON.stringify(effect);
+
+      const interpretationSnapshot =
+        JSON.stringify(interpretation);
+
+      const relevanceSnapshot =
+        JSON.stringify(relevance);
+
+      const relevanceBoundarySnapshot =
+        JSON.stringify(relevanceBoundary);
+
+      /*
+      * CONTROL NEGATIVO 1
+      *
+      * La misma RelevanceBoundary existe,
+      * pero el contexto apunta a otra recomendación.
+      *
+      * RelevanceBoundary existe
+      *   != EvaluationScope existe.
+      */
+      const evaluationScopeOutsideRecommendation =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope(
+          relevanceBoundary,
+          {
+            targetType:
+              'knowledge-effect-relevance',
+            evaluationRecommendationId:
+              `${recommendation.id}-outside-evaluation-scope-24-14`,
+          }
+        );
+
+      if (evaluationScopeOutsideRecommendation !== null) {
+        throw new Error(
+          'FASE 24.14 materializó indebidamente EvaluationScope para una recomendación fuera del ámbito explícito.'
+        );
+      }
+
+      /*
+      * CONTROL NEGATIVO 2
+      *
+      * Incluso sobre la misma recomendación,
+      * un targetType distinto no pertenece
+      * al ámbito de evaluación de Relevance.
+      *
+      * El cast existe exclusivamente para
+      * ejercer el control runtime.
+      * El contrato productivo permanece cerrado
+      * al literal knowledge-effect-relevance.
+      */
+      const incompatibleTargetContext = {
+        targetType:
+          'knowledge-effect-interpretation',
+        evaluationRecommendationId:
+          recommendation.id,
+      } as unknown as
+        ProductiveKnowledgeRecommendationEffectRelevanceEvaluationContext;
+
+      const evaluationScopeOutsideTarget =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope(
+          relevanceBoundary,
+          incompatibleTargetContext
+        );
+
+      if (evaluationScopeOutsideTarget !== null) {
+        throw new Error(
+          'FASE 24.14 materializó indebidamente EvaluationScope para un fenómeno productivo distinto de knowledge-effect-relevance.'
+        );
+      }
+
+      /*
+      * Los controles negativos no pueden modificar
+      * Boundary ni ninguno de sus antecedentes.
+      */
+      if (
+        JSON.stringify(relevanceBoundary) !==
+          relevanceBoundarySnapshot ||
+        JSON.stringify(relevance) !==
+          relevanceSnapshot ||
+        JSON.stringify(interpretation) !==
+          interpretationSnapshot ||
+        JSON.stringify(effect) !==
+          effectSnapshot ||
+        JSON.stringify(reach) !==
+          reachSnapshot ||
+        JSON.stringify(influence) !==
+          influenceSnapshot ||
+        JSON.stringify(recommendation) !==
+          recommendationSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.14 modificó Boundary o alguno de sus antecedentes durante los controles negativos.'
+        );
+      }
+
+      /*
+      * CASO POSITIVO
+      *
+      * La misma RelevanceBoundary entra
+      * únicamente en un ámbito evaluativo explícito.
+      *
+      * Todavía no existe evaluación.
+      */
+      const evaluationContext:
+        ProductiveKnowledgeRecommendationEffectRelevanceEvaluationContext = {
+          targetType:
+            'knowledge-effect-relevance',
+          evaluationRecommendationId:
+            recommendation.id,
+        };
+
+      const evaluationContextSnapshot =
+        JSON.stringify(evaluationContext);
+
+      const evaluationScope =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope(
+          relevanceBoundary,
+          evaluationContext
+        );
+
+      if (!evaluationScope) {
+        throw new Error(
+          'FASE 24.14 no materializó ProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope dentro del ámbito explícito.'
+        );
+      }
+
+      /*
+      * EvaluationScope debe conservar exactamente
+      * sus dos hechos de entrada.
+      */
+      if (
+        evaluationScope.relevanceBoundary !==
+        relevanceBoundary
+      ) {
+        throw new Error(
+          'FASE 24.14 no conservó exactamente la misma ProductiveKnowledgeRecommendationEffectRelevanceBoundary.'
+        );
+      }
+
+      if (
+        evaluationScope.evaluationContext !==
+        evaluationContext
+      ) {
+        throw new Error(
+          'FASE 24.14 no conservó exactamente el mismo ProductiveKnowledgeRecommendationEffectRelevanceEvaluationContext.'
+        );
+      }
+
+      /*
+      * Preservación por identidad de toda
+      * la genealogía productiva previa.
+      */
+      if (
+        evaluationScope.relevanceBoundary.relevance !==
+          relevance ||
+        evaluationScope.relevanceBoundary.relevance.interpretation !==
+          interpretation ||
+        evaluationScope.relevanceBoundary.relevance.interpretation.effect !==
+          effect ||
+        evaluationScope.relevanceBoundary.relevance.interpretation.effect.reach !==
+          reach ||
+        evaluationScope.relevanceBoundary.relevance.interpretation.effect.reach.influence !==
+          influence ||
+        evaluationScope.relevanceBoundary.relevance.interpretation.effect.reach.recommendation !==
+          recommendation
+      ) {
+        throw new Error(
+          'FASE 24.14 perdió identidad dentro de la genealogía productiva previa.'
+        );
+      }
+
+      if (
+        evaluationScope.scopeType !==
+        'knowledge-effect-relevance-within-explicit-evaluation-scope'
+      ) {
+        throw new Error(
+          'FASE 24.14 produjo un scopeType distinto del contrato esperado.'
+        );
+      }
+
+      if (
+        evaluationScope.evaluationContext.targetType !==
+          'knowledge-effect-relevance' ||
+        evaluationScope.evaluationContext.evaluationRecommendationId !==
+          recommendation.id
+      ) {
+        throw new Error(
+          'FASE 24.14 alteró el contexto explícito que delimita EvaluationScope.'
+        );
+      }
+
+      /*
+      * EvaluationContext identifica únicamente
+      * objeto productivo y recomendación.
+      *
+      * No puede transportar silenciosamente
+      * criterio, medición o valoración.
+      */
+      const forbiddenEvaluationContextProperties = [
+        'criterion',
+        'criteria',
+        'metric',
+        'measurement',
+        'measure',
+        'threshold',
+        'scale',
+        'dimension',
+        'rating',
+        'grade',
+        'level',
+        'assessment',
+        'evaluation',
+        'evaluationResult',
+        'result',
+        'outcome',
+        'significance',
+        'significant',
+        'importance',
+        'important',
+        'value',
+        'strength',
+        'weight',
+        'weighted',
+        'score',
+        'priority',
+        'confidence',
+        'rank',
+        'ranking',
+        'preference',
+        'preferred',
+        'selection',
+        'selected',
+        'actionability',
+        'actionable',
+        'acceptance',
+        'accepted',
+        'rejection',
+        'rejected',
+        'promotion',
+        'promoted',
+        'decision',
+        'decisionId',
+        'execution',
+        'executed',
+      ];
+
+      const evaluationContextRecord =
+        evaluationContext as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenEvaluationContextProperty =
+        forbiddenEvaluationContextProperties.find(
+          (property) =>
+            property in evaluationContextRecord
+        );
+
+      if (detectedForbiddenEvaluationContextProperty) {
+        throw new Error(
+          `FASE 24.14 introdujo indebidamente la propiedad "${detectedForbiddenEvaluationContextProperty}" dentro de ProductiveKnowledgeRecommendationEffectRelevanceEvaluationContext.`
+        );
+      }
+
+      /*
+      * EvaluationScope también debe permanecer
+      * como contrato descriptivo mínimo.
+      *
+      * Su existencia no materializa:
+      * criterio, resultado, valoración,
+      * comparación, norma, decisión ni ejecución.
+      */
+      const forbiddenEvaluationScopeProperties = [
+        'recommendationId',
+        'relevanceId',
+        'boundaryId',
+        'criterion',
+        'criteria',
+        'metric',
+        'measurement',
+        'measure',
+        'threshold',
+        'scale',
+        'dimension',
+        'rating',
+        'grade',
+        'level',
+        'assessment',
+        'evaluation',
+        'evaluationResult',
+        'result',
+        'outcome',
+        'significance',
+        'significant',
+        'importance',
+        'important',
+        'value',
+        'score',
+        'priority',
+        'strength',
+        'weight',
+        'weighted',
+        'support',
+        'supportCount',
+        'confidence',
+        'rank',
+        'ranking',
+        'preference',
+        'preferred',
+        'selected',
+        'selection',
+        'actionable',
+        'actionability',
+        'accepted',
+        'rejected',
+        'promoted',
+        'promotion',
+        'decision',
+        'decisionId',
+        'executed',
+        'execution',
+      ];
+
+      const evaluationScopeRecord =
+        evaluationScope as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenEvaluationScopeProperty =
+        forbiddenEvaluationScopeProperties.find(
+          (property) =>
+            property in evaluationScopeRecord
+        );
+
+      if (detectedForbiddenEvaluationScopeProperty) {
+        throw new Error(
+          `FASE 24.14 introdujo indebidamente la propiedad "${detectedForbiddenEvaluationScopeProperty}" dentro de ProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope.`
+        );
+      }
+
+      /*
+      * Ningún antecedente ni el contexto
+      * pueden ser mutados por la operación.
+      */
+      if (
+        JSON.stringify(evaluationContext) !==
+          evaluationContextSnapshot ||
+        JSON.stringify(relevanceBoundary) !==
+          relevanceBoundarySnapshot ||
+        JSON.stringify(relevance) !==
+          relevanceSnapshot ||
+        JSON.stringify(interpretation) !==
+          interpretationSnapshot ||
+        JSON.stringify(effect) !==
+          effectSnapshot ||
+        JSON.stringify(reach) !==
+          reachSnapshot ||
+        JSON.stringify(influence) !==
+          influenceSnapshot ||
+        JSON.stringify(recommendation) !==
+          recommendationSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.14 modificó EvaluationContext, Boundary o alguno de sus antecedentes al materializar EvaluationScope.'
+        );
+      }
+
+      /*
+      * Score y priority continúan perteneciendo
+      * exclusivamente a IntelligenceRecommendation.
+      *
+      * EvaluationScope no los evalúa,
+      * recalcula, pondera ni modifica.
+      */
+      if (
+        evaluationScope.relevanceBoundary.relevance.interpretation.effect.reach
+          .recommendation.score !==
+          recommendation.score ||
+        evaluationScope.relevanceBoundary.relevance.interpretation.effect.reach
+          .recommendation.priority !==
+          recommendation.priority
+      ) {
+        throw new Error(
+          'FASE 24.14 alteró score o priority de la recomendación.'
+        );
+      }
+
+      /*
+      * Preservación genealógica completa
+      * hasta ProductiveKnowledgeInput.
+      */
+      if (
+        evaluationScope.relevanceBoundary.relevance.interpretation.effect.reach
+          .influence.utilization.consumption.access.exposure.availability
+          .reception.input !==
+        productiveInput
+      ) {
+        throw new Error(
+          'FASE 24.14 perdió ProductiveKnowledgeInput dentro de la genealogía.'
+        );
+      }
+
+      if (
+        evaluationScope.relevanceBoundary.relevance.interpretation.effect.reach
+          .influence.utilization.consumption.access.exposure.consumer !==
+        consumer
+      ) {
+        throw new Error(
+          'FASE 24.14 perdió la referencia exacta del consumidor dentro de la genealogía.'
+        );
+      }
+
+      /*
+      * La semántica previa debe permanecer exacta.
+      */
+      if (
+        evaluationScope.relevanceBoundary.boundaryType !==
+          'knowledge-relevance-without-evaluative-promotion' ||
+        evaluationScope.relevanceBoundary.relevance.relevanceType !==
+          'knowledge-effect-contextually-relevant' ||
+        evaluationScope.relevanceBoundary.relevance.interpretation
+          .interpretationType !==
+          'knowledge-effect-interpreted' ||
+        evaluationScope.relevanceBoundary.relevance.interpretation.effect
+          .effectType !==
+          'knowledge-influence-observed'
+      ) {
+        throw new Error(
+          'FASE 24.14 alteró la semántica de Boundary, Relevance, Interpretation o Effect previos.'
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      *
+      * EvaluationScope existe, pero todavía
+      * no existe evaluación, comparación,
+      * norma, decisión ni ejecución derivada.
+      */
+      const recommendationsAfterEvaluationScope =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterEvaluationScope =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterEvaluationScope
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterEvaluationScope
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.14 detectó modificación de recomendaciones productivas después de materializar EvaluationScope.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterEvaluationScope
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.14 detectó modificación, reordenamiento o ranking distinto de decisiones después de materializar EvaluationScope.'
+        );
+      }
+
+      addLog(
+        `FASE 24.14 OK: la misma ProductiveKnowledgeRecommendationEffectRelevanceBoundary sobre la recomendación ${recommendation.id} no produjo EvaluationScope con una recomendación distinta ni con un targetType distinto, y sí materializó ProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope dentro del ámbito explícito correspondiente.
+        EvaluationScope ${evaluationScope.scopeType} conservó exactamente EvaluationContext, RelevanceBoundary, Relevance, Interpretation, Effect, Reach, Influence y Recommendation.
+        No introdujo criterio, medición, significancia, importancia, valor, fuerza, score, priority, confidence, ponderación, ranking, preferencia, selección, accionabilidad, aceptación, rechazo, promoción, decisión ni ejecución.
+        Permanecieron intactas ${recommendationsAfterEvaluationScope.length} recomendaciones y ${decisionsAfterEvaluationScope.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en ámbito productivo explícito previo a evaluación de la relevancia sobre recomendación 24.14: ${error.message}`
+          : 'Error inesperado en ámbito productivo explícito previo a evaluación de la relevancia sobre recomendación 24.14.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -34314,6 +35087,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Frontera Relevancia 24.13
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationScopeContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Ámbito Evaluación Relevancia 24.14
         </button>
 
         <button
