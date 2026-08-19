@@ -42,6 +42,10 @@ import {
 } from '../services/operationalKnowledgeIntegrationService';
 
 import {
+  receiveProductiveKnowledge,
+} from '../services/operationalKnowledgeReceptionService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -27465,6 +27469,324 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+  async function testOperationalKnowledgeProductiveReceptionContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeReception =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeReception =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeReception
+        );
+
+      /*
+       * FASE 24.2 — Contrato mínimo de recepción productiva
+       * del conocimiento operativo.
+       *
+       * FASE 24.1 estableció:
+       *
+       * OperationalKnowledge
+       *   + Consideration
+       *   + ProductiveKnowledgeContext
+       *        ↓
+       * ProductiveKnowledgeInput
+       *
+       * FASE 24.2 introduce una frontera receptora explícita:
+       *
+       * ProductiveKnowledgeInput
+       *        ↓
+       * receiveProductiveKnowledge()
+       *        ↓
+       * ProductiveKnowledgeReception
+       *
+       * La recepción NO constituye:
+       *
+       * - consumo;
+       * - utilización;
+       * - interpretación;
+       * - ponderación;
+       * - influencia;
+       * - modificación de recomendaciones;
+       * - modificación de decisiones;
+       * - ranking;
+       * - selección;
+       * - ejecución.
+       */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeReception
+      );
+
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeReception
+      );
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-reception-24-2',
+          title:
+            'Patrón controlado de recepción productiva',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.2.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-reception-24-2',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-reception-24-2-1',
+              'memory-controlled-productive-reception-24-2-2',
+              'memory-controlled-productive-reception-24-2-3',
+              'memory-controlled-productive-reception-24-2-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.2 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.2 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.2 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.2 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      /*
+       * La recepción sólo puede comenzar después de que exista
+       * una presentación productiva válida producida por FASE 24.1.
+       */
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.2 no pudo obtener ProductiveKnowledgeInput previo a la recepción.'
+        );
+      }
+
+      /*
+       * presented != received
+       *
+       * La existencia de ProductiveKnowledgeInput representa
+       * presentación, pero no crea automáticamente ninguna
+       * ProductiveKnowledgeReception.
+       *
+       * La recepción requiere un acto explícito separado:
+       * receiveProductiveKnowledge().
+       */
+      const productiveInputSnapshot =
+        JSON.stringify(productiveInput);
+
+      /*
+       * Acto explícito de recepción productiva.
+       */
+      const reception =
+        receiveProductiveKnowledge(productiveInput);
+
+      /*
+       * La recepción debe conservar exactamente la entrada
+       * productiva presentada.
+       */
+      if (reception.input !== productiveInput) {
+        throw new Error(
+          'FASE 24.2 no conservó la misma ProductiveKnowledgeInput durante la recepción.'
+        );
+      }
+
+      if (
+        reception.input.knowledgeId !==
+          productiveInput.knowledgeId ||
+        reception.input.sourcePatternId !==
+          productiveInput.sourcePatternId ||
+        reception.input.knowledgeType !==
+          productiveInput.knowledgeType ||
+        reception.input.context.movementType !==
+          productiveInput.context.movementType ||
+        reception.input.context.deviationReason !==
+          productiveInput.context.deviationReason
+      ) {
+        throw new Error(
+          'FASE 24.2 perdió identidad, procedencia, tipo o contexto durante la recepción productiva.'
+        );
+      }
+
+      /*
+       * La recepción tampoco puede mutar ProductiveKnowledgeInput.
+       */
+      if (
+        JSON.stringify(productiveInput) !==
+        productiveInputSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.2 modificó ProductiveKnowledgeInput durante la recepción.'
+        );
+      }
+
+      /*
+       * ProductiveKnowledgeReception debe ser un contenedor
+       * mínimo. No puede adquirir semántica de consumo,
+       * utilización, ponderación, influencia o decisión.
+       */
+      const forbiddenProperties = [
+        'evidence',
+        'score',
+        'occurrences',
+        'memoryIds',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'priority',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'consumed',
+        'consumption',
+        'used',
+        'utilized',
+        'influence',
+        'influential',
+        'decisionId',
+        'recommendationId',
+        'executed',
+        'execution',
+      ];
+
+      const receptionRecord =
+        reception as unknown as Record<string, unknown>;
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find(
+          (property) => property in receptionRecord
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 24.2 introdujo indebidamente la propiedad "${detectedForbiddenProperty}" dentro de ProductiveKnowledgeReception.`
+        );
+      }
+
+      /*
+       * También verificamos que la recepción no haya recuperado
+       * ninguna propiedad que FASE 24.1 eliminó del contrato
+       * ProductiveKnowledgeInput.
+       */
+      const receivedInputRecord =
+        reception.input as unknown as Record<string, unknown>;
+
+      const detectedForbiddenInputProperty =
+        forbiddenProperties.find(
+          (property) => property in receivedInputRecord
+        );
+
+      if (detectedForbiddenInputProperty) {
+        throw new Error(
+          `FASE 24.2 recuperó indebidamente la propiedad "${detectedForbiddenInputProperty}" dentro del conocimiento recibido.`
+        );
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * Existe ProductiveKnowledgeReception, pero ningún motor
+       * productivo la consume ni permite que influya.
+       */
+      const recommendationsAfterReception =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsAfterReception =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterReception
+        );
+
+      if (
+        JSON.stringify(recommendationsAfterReception) !==
+        recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.2 detectó modificación de recomendaciones productivas después de recibir conocimiento.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterReception) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.2 detectó modificación, reordenamiento o ranking distinto de decisiones después de recibir conocimiento.'
+        );
+      }
+
+      addLog(
+        `FASE 24.2 OK: ProductiveKnowledgeInput ${productiveInput.knowledgeId} fue recibido explícitamente mediante ProductiveKnowledgeReception conservando sourcePatternId ${productiveInput.sourcePatternId}, tipo y contexto mínimo.
+        La presentación no produjo recepción automática; la recepción requirió receiveProductiveKnowledge() y no modificó ni enriqueció ProductiveKnowledgeInput.
+        La recepción no introdujo score, occurrences, memoryIds, evidence, strength, weight, support, confidence, priority, consumo, utilización, influencia, ranking, selección ni ejecución, y permanecieron intactas ${recommendationsAfterReception.length} recomendaciones y ${decisionsAfterReception.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en contrato mínimo de recepción productiva del conocimiento operativo 24.2: ${error.message}`
+          : 'Error inesperado en contrato mínimo de recepción productiva del conocimiento operativo 24.2.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -28310,6 +28632,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Presentación Productiva 24.1
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveReceptionContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Recepción Productiva 24.2
         </button>
 
         <button
