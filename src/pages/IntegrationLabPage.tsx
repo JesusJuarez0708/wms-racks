@@ -87,6 +87,11 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceService';
 
 import {
+  establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionPresence,
+  type ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionInput,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionPresenceService';
+
+import {
   establishProductiveKnowledgeRecommendationEffectRelevanceBoundary,
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceBoundaryService';
 
@@ -34146,6 +34151,723 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+  async function testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionPresenceContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeCriterionPresence =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeCriterionPresence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeCriterionPresence
+        );
+
+      /*
+      * FASE 24.15 — Presencia productiva explícita
+      * de criterio externo previo a evaluación
+      * de la relevancia sobre recomendación.
+      *
+      * FASE 24.14 estableció:
+      *
+      * ProductiveKnowledgeRecommendationEffectRelevanceBoundary
+      *        +
+      * ProductiveKnowledgeRecommendationEffectRelevanceEvaluationContext
+      *        ↓
+      * establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope()
+      *        ↓
+      * ProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope | null
+      *
+      * FASE 24.15 introduce:
+      *
+      * ProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope
+      *        +
+      * ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionInput
+      *        ↓
+      * establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionPresence()
+      *        ↓
+      * ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionPresence
+      *
+      * La tesis es:
+      *
+      * evaluation scope exists
+      *   != criterion presence exists
+      *   != criterion applicability exists
+      *   != criterion utilization exists
+      *   != evaluation exists
+      *   != evaluation result exists
+      *   != recommendation changes
+      *
+      * CriterionPresence sigue siendo descriptivo.
+      */
+      const recommendationsSnapshot =
+        JSON.stringify(recommendationsBeforeCriterionPresence);
+
+      const decisionsSnapshot =
+        JSON.stringify(decisionsBeforeCriterionPresence);
+
+      if (recommendationsBeforeCriterionPresence.length < 1) {
+        throw new Error(
+          'FASE 24.15 esperaba al menos 1 recomendación productiva existente.'
+        );
+      }
+
+      const recommendation =
+        recommendationsBeforeCriterionPresence[0];
+
+      if (!recommendation) {
+        throw new Error(
+          'FASE 24.15 no pudo resolver una recomendación productiva concreta.'
+        );
+      }
+
+      const recommendationSnapshot =
+        JSON.stringify(recommendation);
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-recommendation-effect-relevance-evaluation-criterion-presence-24-15',
+          title:
+            'Patrón controlado de presencia explícita de criterio externo previo a evaluación de relevancia productiva',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.15.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-recommendation-effect-relevance-evaluation-criterion-presence-24-15',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-recommendation-effect-relevance-evaluation-criterion-presence-24-15-1',
+              'memory-controlled-productive-recommendation-effect-relevance-evaluation-criterion-presence-24-15-2',
+              'memory-controlled-productive-recommendation-effect-relevance-evaluation-criterion-presence-24-15-3',
+              'memory-controlled-productive-recommendation-effect-relevance-evaluation-criterion-presence-24-15-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.15 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.15 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.15 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.15 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.15 no pudo obtener ProductiveKnowledgeInput previo.'
+        );
+      }
+
+      const reception =
+        receiveProductiveKnowledge(productiveInput);
+
+      const availability =
+        makeProductiveKnowledgeAvailable(reception);
+
+      const consumer: ProductiveKnowledgeConsumerRef = {
+        id: 'productive-consumer-effect-relevance-evaluation-criterion-presence-24-15',
+      };
+
+      const exposure =
+        exposeProductiveKnowledge(
+          availability,
+          consumer
+        );
+
+      const access =
+        accessProductiveKnowledge(exposure);
+
+      const consumption =
+        consumeProductiveKnowledge(access);
+
+      const utilization =
+        useProductiveKnowledge(consumption);
+
+      const influence =
+        influenceProductiveKnowledge(utilization);
+
+      const reach =
+        reachProductiveRecommendation(
+          influence,
+          recommendation
+        );
+
+      const effect =
+        observeProductiveKnowledgeRecommendationEffect(
+          reach,
+          {
+            observableRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!effect) {
+        throw new Error(
+          'FASE 24.15 no pudo establecer ProductiveKnowledgeRecommendationEffect previo.'
+        );
+      }
+
+      const interpretation =
+        interpretProductiveKnowledgeRecommendationEffect(
+          effect,
+          {
+            interpretableRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!interpretation) {
+        throw new Error(
+          'FASE 24.15 no pudo establecer ProductiveKnowledgeRecommendationEffectInterpretation previa.'
+        );
+      }
+
+      const relevance =
+        evaluateProductiveKnowledgeRecommendationEffectRelevance(
+          interpretation,
+          {
+            relevantRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!relevance) {
+        throw new Error(
+          'FASE 24.15 no pudo establecer ProductiveKnowledgeRecommendationEffectRelevance previa.'
+        );
+      }
+
+      const relevanceBoundary =
+        establishProductiveKnowledgeRecommendationEffectRelevanceBoundary(
+          relevance,
+          {
+            boundedRecommendationId:
+              recommendation.id,
+          }
+        );
+
+      if (!relevanceBoundary) {
+        throw new Error(
+          'FASE 24.15 no pudo establecer ProductiveKnowledgeRecommendationEffectRelevanceBoundary previa.'
+        );
+      }
+
+      const evaluationContext:
+        ProductiveKnowledgeRecommendationEffectRelevanceEvaluationContext = {
+          targetType:
+            'knowledge-effect-relevance',
+          evaluationRecommendationId:
+            recommendation.id,
+        };
+
+      const evaluationScope =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope(
+          relevanceBoundary,
+          evaluationContext
+        );
+
+      if (!evaluationScope) {
+        throw new Error(
+          'FASE 24.15 no pudo establecer ProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope previo.'
+        );
+      }
+
+      /*
+      * Antes de aportar CriterionInput existe
+      * EvaluationScope, pero no CriterionPresence.
+      *
+      * El criterio no puede inferirse desde Scope.
+      */
+      const evaluationScopeSnapshot =
+        JSON.stringify(evaluationScope);
+
+      const relevanceBoundarySnapshot =
+        JSON.stringify(relevanceBoundary);
+
+      const relevanceSnapshot =
+        JSON.stringify(relevance);
+
+      const interpretationSnapshot =
+        JSON.stringify(interpretation);
+
+      const effectSnapshot =
+        JSON.stringify(effect);
+
+      const reachSnapshot =
+        JSON.stringify(reach);
+
+      const influenceSnapshot =
+        JSON.stringify(influence);
+
+      /*
+      * INPUT EXTERNO EXPLÍCITO.
+      *
+      * criterionId introduce información nueva
+      * que no existe en EvaluationScope.
+      *
+      * No contiene todavía semántica acerca de:
+      * aplicabilidad, uso o resultado.
+      */
+      const criterionInput:
+        ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionInput = {
+          criterionId:
+            'criterion-controlled-productive-recommendation-effect-relevance-24-15',
+        };
+
+      const criterionInputSnapshot =
+        JSON.stringify(criterionInput);
+
+      const criterionPresence =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionPresence(
+          evaluationScope,
+          criterionInput
+        );
+
+      /*
+      * CriterionPresence debe conservar exactamente
+      * sus dos hechos de entrada.
+      */
+      if (
+        criterionPresence.evaluationScope !==
+        evaluationScope
+      ) {
+        throw new Error(
+          'FASE 24.15 no conservó exactamente el mismo ProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope.'
+        );
+      }
+
+      if (
+        criterionPresence.criterionInput !==
+        criterionInput
+      ) {
+        throw new Error(
+          'FASE 24.15 no conservó exactamente el mismo criterio externo explícitamente suministrado.'
+        );
+      }
+
+      if (
+        criterionPresence.presenceType !==
+        'explicit-evaluation-criterion-present'
+      ) {
+        throw new Error(
+          'FASE 24.15 produjo un presenceType distinto del contrato esperado.'
+        );
+      }
+
+      /*
+      * El CriterionInput mínimo transporta
+      * exclusivamente la identidad externa.
+      */
+      const criterionInputKeys =
+        Object.keys(criterionInput);
+
+      if (
+        criterionInputKeys.length !== 1 ||
+        criterionInputKeys[0] !==
+          'criterionId'
+      ) {
+        throw new Error(
+          'FASE 24.15 permitió información distinta de criterionId dentro del criterio externo mínimo.'
+        );
+      }
+
+      /*
+      * CriterionInput no puede transportar
+      * silenciosamente aplicabilidad,
+      * medición, evaluación ni resultado.
+      */
+      const forbiddenCriterionInputProperties = [
+        'targetType',
+        'evaluationRecommendationId',
+        'applicable',
+        'applicability',
+        'compatible',
+        'compatibility',
+        'usable',
+        'utilized',
+        'utilization',
+        'used',
+        'criterionResult',
+        'criteria',
+        'metric',
+        'measurement',
+        'measure',
+        'threshold',
+        'scale',
+        'dimension',
+        'rating',
+        'grade',
+        'level',
+        'assessment',
+        'evaluation',
+        'evaluationResult',
+        'result',
+        'outcome',
+        'significance',
+        'significant',
+        'importance',
+        'important',
+        'value',
+        'strength',
+        'weight',
+        'weighted',
+        'score',
+        'priority',
+        'confidence',
+        'rank',
+        'ranking',
+        'preference',
+        'preferred',
+        'selection',
+        'selected',
+        'actionability',
+        'actionable',
+        'acceptance',
+        'accepted',
+        'rejection',
+        'rejected',
+        'promotion',
+        'promoted',
+        'decision',
+        'decisionId',
+        'execution',
+        'executed',
+      ];
+
+      const criterionInputRecord =
+        criterionInput as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenCriterionInputProperty =
+        forbiddenCriterionInputProperties.find(
+          (property) =>
+            property in criterionInputRecord
+        );
+
+      if (detectedForbiddenCriterionInputProperty) {
+        throw new Error(
+          `FASE 24.15 introdujo indebidamente la propiedad "${detectedForbiddenCriterionInputProperty}" dentro de ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionInput.`
+        );
+      }
+
+      /*
+      * CriterionPresence sigue siendo descriptivo.
+      *
+      * Su existencia no significa:
+      * aplicabilidad, utilización,
+      * evaluación ni resultado.
+      */
+      const forbiddenCriterionPresenceProperties = [
+        'recommendationId',
+        'criterionId',
+        'targetType',
+        'applicable',
+        'applicability',
+        'compatible',
+        'compatibility',
+        'usable',
+        'utilized',
+        'utilization',
+        'used',
+        'criterionResult',
+        'criteria',
+        'metric',
+        'measurement',
+        'measure',
+        'threshold',
+        'scale',
+        'dimension',
+        'rating',
+        'grade',
+        'level',
+        'assessment',
+        'evaluation',
+        'evaluationResult',
+        'result',
+        'outcome',
+        'significance',
+        'significant',
+        'importance',
+        'important',
+        'value',
+        'strength',
+        'weight',
+        'weighted',
+        'score',
+        'priority',
+        'confidence',
+        'rank',
+        'ranking',
+        'preference',
+        'preferred',
+        'selection',
+        'selected',
+        'actionability',
+        'actionable',
+        'acceptance',
+        'accepted',
+        'rejection',
+        'rejected',
+        'promotion',
+        'promoted',
+        'decision',
+        'decisionId',
+        'execution',
+        'executed',
+      ];
+
+      const criterionPresenceRecord =
+        criterionPresence as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenCriterionPresenceProperty =
+        forbiddenCriterionPresenceProperties.find(
+          (property) =>
+            property in criterionPresenceRecord
+        );
+
+      if (detectedForbiddenCriterionPresenceProperty) {
+        throw new Error(
+          `FASE 24.15 introdujo indebidamente la propiedad "${detectedForbiddenCriterionPresenceProperty}" dentro de ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionPresence.`
+        );
+      }
+
+      /*
+      * Preservación por identidad de toda
+      * la genealogía productiva previa.
+      */
+      if (
+        criterionPresence.evaluationScope !==
+          evaluationScope ||
+        criterionPresence.evaluationScope.relevanceBoundary !==
+          relevanceBoundary ||
+        criterionPresence.evaluationScope.relevanceBoundary.relevance !==
+          relevance ||
+        criterionPresence.evaluationScope.relevanceBoundary.relevance.interpretation !==
+          interpretation ||
+        criterionPresence.evaluationScope.relevanceBoundary.relevance.interpretation.effect !==
+          effect ||
+        criterionPresence.evaluationScope.relevanceBoundary.relevance.interpretation.effect.reach !==
+          reach ||
+        criterionPresence.evaluationScope.relevanceBoundary.relevance.interpretation.effect.reach.influence !==
+          influence ||
+        criterionPresence.evaluationScope.relevanceBoundary.relevance.interpretation.effect.reach.recommendation !==
+          recommendation
+      ) {
+        throw new Error(
+          'FASE 24.15 perdió identidad dentro de la genealogía productiva previa.'
+        );
+      }
+
+      /*
+      * Preservación completa hasta
+      * ProductiveKnowledgeInput y ConsumerRef.
+      */
+      if (
+        criterionPresence.evaluationScope.relevanceBoundary.relevance
+          .interpretation.effect.reach.influence.utilization.consumption
+          .access.exposure.availability.reception.input !==
+        productiveInput
+      ) {
+        throw new Error(
+          'FASE 24.15 perdió ProductiveKnowledgeInput dentro de la genealogía.'
+        );
+      }
+
+      if (
+        criterionPresence.evaluationScope.relevanceBoundary.relevance
+          .interpretation.effect.reach.influence.utilization.consumption
+          .access.exposure.consumer !==
+        consumer
+      ) {
+        throw new Error(
+          'FASE 24.15 perdió la referencia exacta del consumidor dentro de la genealogía.'
+        );
+      }
+
+      /*
+      * Ninguno de los inputs ni antecedentes
+      * puede ser mutado al registrar presencia.
+      */
+      if (
+        JSON.stringify(criterionInput) !==
+          criterionInputSnapshot ||
+        JSON.stringify(evaluationScope) !==
+          evaluationScopeSnapshot ||
+        JSON.stringify(relevanceBoundary) !==
+          relevanceBoundarySnapshot ||
+        JSON.stringify(relevance) !==
+          relevanceSnapshot ||
+        JSON.stringify(interpretation) !==
+          interpretationSnapshot ||
+        JSON.stringify(effect) !==
+          effectSnapshot ||
+        JSON.stringify(reach) !==
+          reachSnapshot ||
+        JSON.stringify(influence) !==
+          influenceSnapshot ||
+        JSON.stringify(recommendation) !==
+          recommendationSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.15 modificó CriterionInput, EvaluationScope o alguno de sus antecedentes al materializar CriterionPresence.'
+        );
+      }
+
+      /*
+      * La semántica de todos los estados
+      * anteriores debe permanecer exacta.
+      */
+      if (
+        criterionPresence.evaluationScope.scopeType !==
+          'knowledge-effect-relevance-within-explicit-evaluation-scope' ||
+        criterionPresence.evaluationScope.relevanceBoundary.boundaryType !==
+          'knowledge-relevance-without-evaluative-promotion' ||
+        criterionPresence.evaluationScope.relevanceBoundary.relevance.relevanceType !==
+          'knowledge-effect-contextually-relevant' ||
+        criterionPresence.evaluationScope.relevanceBoundary.relevance
+          .interpretation.interpretationType !==
+          'knowledge-effect-interpreted' ||
+        criterionPresence.evaluationScope.relevanceBoundary.relevance
+          .interpretation.effect.effectType !==
+          'knowledge-influence-observed'
+      ) {
+        throw new Error(
+          'FASE 24.15 alteró la semántica de EvaluationScope, Boundary, Relevance, Interpretation o Effect previos.'
+        );
+      }
+
+      /*
+      * Score y priority siguen perteneciendo
+      * exclusivamente a IntelligenceRecommendation.
+      */
+      if (
+        criterionPresence.evaluationScope.relevanceBoundary.relevance
+          .interpretation.effect.reach.recommendation.score !==
+          recommendation.score ||
+        criterionPresence.evaluationScope.relevanceBoundary.relevance
+          .interpretation.effect.reach.recommendation.priority !==
+          recommendation.priority
+      ) {
+        throw new Error(
+          'FASE 24.15 alteró score o priority de la recomendación.'
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      *
+      * CriterionPresence existe,
+      * pero no altera recomendaciones
+      * ni decisiones productivas.
+      */
+      const recommendationsAfterCriterionPresence =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterCriterionPresence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterCriterionPresence
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterCriterionPresence
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.15 detectó modificación de recomendaciones productivas después de materializar CriterionPresence.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterCriterionPresence
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.15 detectó modificación, reordenamiento o ranking distinto de decisiones después de materializar CriterionPresence.'
+        );
+      }
+
+      addLog(
+        `FASE 24.15 OK: ProductiveKnowledgeRecommendationEffectRelevanceEvaluationScope sobre la recomendación ${recommendation.id} recibió explícitamente el criterio externo ${criterionInput.criterionId} y materializó únicamente ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionPresence.
+        CriterionPresence ${criterionPresence.presenceType} conservó exactamente EvaluationScope, CriterionInput y toda la genealogía productiva previa.
+        La presencia del criterio no estableció aplicabilidad, compatibilidad, utilización, evaluación, resultado evaluativo, significancia, importancia, valor, fuerza, score, priority, confidence, ponderación, ranking, preferencia, selección, accionabilidad, aceptación, rechazo, promoción, decisión ni ejecución.
+        Permanecieron intactas ${recommendationsAfterCriterionPresence.length} recomendaciones y ${decisionsAfterCriterionPresence.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en presencia productiva explícita de criterio externo previo a evaluación de la relevancia sobre recomendación 24.15: ${error.message}`
+          : 'Error inesperado en presencia productiva explícita de criterio externo previo a evaluación de la relevancia sobre recomendación 24.15.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -35095,6 +35817,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Ámbito Evaluación Relevancia 24.14
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionPresenceContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Presencia Criterio Evaluación 24.15
         </button>
 
         <button
