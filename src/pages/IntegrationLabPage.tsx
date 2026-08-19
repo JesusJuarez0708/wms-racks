@@ -46,6 +46,10 @@ import {
 } from '../services/operationalKnowledgeReceptionService';
 
 import {
+  makeProductiveKnowledgeAvailable,
+} from '../services/operationalKnowledgeAvailabilityService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -27787,6 +27791,384 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
     }
   }
 
+  async function testOperationalKnowledgeProductiveAvailabilityContract() {
+    setLoading(true);
+
+    try {
+      const detectedPatterns = await detectMemoryPatterns();
+
+      const recommendationsBeforeAvailability =
+        generateRecommendationsFromPatterns(detectedPatterns);
+
+      const decisionsBeforeAvailability =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsBeforeAvailability
+        );
+
+      /*
+      * FASE 24.3 — Disponibilidad productiva explícita
+      * del conocimiento operativo recibido.
+      *
+      * FASE 24.2 estableció:
+      *
+      * ProductiveKnowledgeInput
+      *        ↓
+      * receiveProductiveKnowledge()
+      *        ↓
+      * ProductiveKnowledgeReception
+      *
+      * FASE 24.3 introduce:
+      *
+      * ProductiveKnowledgeReception
+      *        ↓
+      * makeProductiveKnowledgeAvailable()
+      *        ↓
+      * ProductiveKnowledgeAvailability
+      *
+      * La disponibilidad NO constituye:
+      *
+      * - acceso;
+      * - lectura;
+      * - consumo;
+      * - utilización;
+      * - interpretación;
+      * - influencia;
+      * - ponderación;
+      * - ranking;
+      * - selección;
+      * - ejecución;
+      * - modificación de recomendaciones;
+      * - modificación de decisiones.
+      */
+      const recommendationsSnapshot = JSON.stringify(
+        recommendationsBeforeAvailability
+      );
+
+      const decisionsSnapshot = JSON.stringify(
+        decisionsBeforeAvailability
+      );
+
+      const controlledPatterns: MemoryPattern[] = [
+        {
+          id: 'pattern-controlled-productive-availability-24-3',
+          title:
+            'Patrón controlado de disponibilidad productiva',
+          description:
+            'Patrón controlado utilizado exclusivamente por FASE 24.3.',
+          score: 100,
+          occurrences: 4,
+          kind: 'recommendation-deviation-recurrence',
+          context: {
+            movementType: 'reubicacion',
+            deviationReason:
+              'motivo-controlado-productive-availability-24-3',
+          },
+          evidence: {
+            memoryIds: [
+              'memory-controlled-productive-availability-24-3-1',
+              'memory-controlled-productive-availability-24-3-2',
+              'memory-controlled-productive-availability-24-3-3',
+              'memory-controlled-productive-availability-24-3-4',
+            ],
+          },
+        },
+      ];
+
+      const controlledKnowledge =
+        generateOperationalKnowledge(controlledPatterns);
+
+      if (controlledKnowledge.length !== 1) {
+        throw new Error(
+          `FASE 24.3 esperaba exactamente 1 conocimiento controlado y generó ${controlledKnowledge.length}.`
+        );
+      }
+
+      const knowledge = controlledKnowledge[0];
+
+      if (!knowledge) {
+        throw new Error(
+          'FASE 24.3 no pudo resolver el conocimiento controlado.'
+        );
+      }
+
+      const productiveContext = {
+        movementType: 'reubicacion' as const,
+      };
+
+      const eligibility =
+        evaluateOperationalKnowledgeEligibility(
+          knowledge,
+          productiveContext
+        );
+
+      if (
+        eligibility.eligible !== true ||
+        eligibility.reason !== 'context-compatible'
+      ) {
+        throw new Error(
+          'FASE 24.3 no pudo establecer elegibilidad contextual previa.'
+        );
+      }
+
+      const consideration =
+        considerOperationalKnowledge(eligibility);
+
+      if (!consideration) {
+        throw new Error(
+          'FASE 24.3 no pudo establecer consideración previa del conocimiento.'
+        );
+      }
+
+      /*
+      * La disponibilidad sólo puede comenzar después
+      * de una presentación productiva válida.
+      */
+      const productiveInput =
+        presentOperationalKnowledge(
+          knowledge,
+          consideration,
+          productiveContext
+        );
+
+      if (!productiveInput) {
+        throw new Error(
+          'FASE 24.3 no pudo obtener ProductiveKnowledgeInput previo a la disponibilidad.'
+        );
+      }
+
+      /*
+      * La presentación todavía no constituye recepción.
+      * Debe existir el acto explícito de FASE 24.2.
+      */
+      const reception =
+        receiveProductiveKnowledge(productiveInput);
+
+      if (reception.input !== productiveInput) {
+        throw new Error(
+          'FASE 24.3 no pudo conservar la recepción productiva previa.'
+        );
+      }
+
+      /*
+      * received != available
+      *
+      * La existencia de ProductiveKnowledgeReception
+      * no crea automáticamente ninguna
+      * ProductiveKnowledgeAvailability.
+      *
+      * La disponibilidad requiere un acto explícito:
+      * makeProductiveKnowledgeAvailable().
+      */
+      const receptionSnapshot =
+        JSON.stringify(reception);
+
+      /*
+      * Acto explícito de disponibilidad productiva.
+      */
+      const availability =
+        makeProductiveKnowledgeAvailable(reception);
+
+      /*
+      * ProductiveKnowledgeAvailability debe conservar
+      * exactamente la misma recepción.
+      */
+      if (availability.reception !== reception) {
+        throw new Error(
+          'FASE 24.3 no conservó la misma ProductiveKnowledgeReception durante la disponibilidad.'
+        );
+      }
+
+      /*
+      * Y transitivamente debe conservar exactamente
+      * la misma ProductiveKnowledgeInput.
+      */
+      if (
+        availability.reception.input !== productiveInput
+      ) {
+        throw new Error(
+          'FASE 24.3 perdió ProductiveKnowledgeInput al poner disponible la recepción.'
+        );
+      }
+
+      /*
+      * La disponibilidad tampoco puede mutar
+      * ProductiveKnowledgeReception.
+      */
+      if (
+        JSON.stringify(reception) !== receptionSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.3 modificó ProductiveKnowledgeReception durante la disponibilidad.'
+        );
+      }
+
+      /*
+      * ProductiveKnowledgeAvailability debe ser un
+      * contenedor mínimo.
+      *
+      * No puede adquirir semántica de acceso,
+      * consumo, utilización, influencia o decisión.
+      */
+      const forbiddenProperties = [
+        'input',
+        'knowledgeId',
+        'sourcePatternId',
+        'knowledgeType',
+        'context',
+        'evidence',
+        'score',
+        'occurrences',
+        'memoryIds',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'priority',
+        'consumerId',
+        'consumerType',
+        'accessed',
+        'access',
+        'read',
+        'consumed',
+        'consumption',
+        'used',
+        'utilized',
+        'influence',
+        'influential',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decisionId',
+        'recommendationId',
+        'executed',
+        'execution',
+      ];
+
+      const availabilityRecord =
+        availability as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const detectedForbiddenProperty =
+        forbiddenProperties.find(
+          (property) => property in availabilityRecord
+        );
+
+      if (detectedForbiddenProperty) {
+        throw new Error(
+          `FASE 24.3 introdujo indebidamente la propiedad "${detectedForbiddenProperty}" dentro de ProductiveKnowledgeAvailability.`
+        );
+      }
+
+      /*
+      * La disponibilidad tampoco puede enriquecer
+      * indirectamente la recepción recibida.
+      */
+      const receivedInputRecord =
+        availability.reception.input as unknown as Record<
+          string,
+          unknown
+        >;
+
+      const forbiddenInputProperties = [
+        'evidence',
+        'score',
+        'occurrences',
+        'memoryIds',
+        'strength',
+        'weight',
+        'support',
+        'supportCount',
+        'confidence',
+        'priority',
+        'consumerId',
+        'consumerType',
+        'accessed',
+        'consumed',
+        'used',
+        'utilized',
+        'influence',
+        'influential',
+        'rank',
+        'ranking',
+        'selected',
+        'selection',
+        'decisionId',
+        'recommendationId',
+        'executed',
+        'execution',
+      ];
+
+      const detectedForbiddenInputProperty =
+        forbiddenInputProperties.find(
+          (property) => property in receivedInputRecord
+        );
+
+      if (detectedForbiddenInputProperty) {
+        throw new Error(
+          `FASE 24.3 recuperó o introdujo indebidamente la propiedad "${detectedForbiddenInputProperty}" dentro del conocimiento disponible.`
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      *
+      * Existe ProductiveKnowledgeAvailability,
+      * pero ningún consumidor accede a ella,
+      * la consume, la utiliza ni permite que influya.
+      */
+      const recommendationsAfterAvailability =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterAvailability =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterAvailability
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterAvailability
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.3 detectó modificación de recomendaciones productivas después de poner disponible el conocimiento.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterAvailability) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.3 detectó modificación, reordenamiento o ranking distinto de decisiones después de poner disponible el conocimiento.'
+        );
+      }
+
+      addLog(
+        `FASE 24.3 OK: ProductiveKnowledgeReception con conocimiento ${productiveInput.knowledgeId} fue puesta explícitamente a disposición mediante ProductiveKnowledgeAvailability conservando exactamente la recepción y ProductiveKnowledgeInput originales.
+        La recepción no produjo disponibilidad automática; la disponibilidad requirió makeProductiveKnowledgeAvailable() y no introdujo acceso, lectura, consumo, utilización, influencia, ponderación, ranking, selección ni ejecución.
+        Permanecieron intactas ${recommendationsAfterAvailability.length} recomendaciones y ${decisionsAfterAvailability.length} decisiones productivas.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      addLog(
+        error instanceof Error
+          ? `Error en disponibilidad productiva explícita del conocimiento operativo 24.3: ${error.message}`
+          : 'Error inesperado en disponibilidad productiva explícita del conocimiento operativo 24.3.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function testMandatoryPhysicalPlacement() {
     setLoading(true);
 
@@ -28640,6 +29022,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Recepción Productiva 24.2
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveAvailabilityContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Disponibilidad Productiva 24.3
         </button>
 
         <button
