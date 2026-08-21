@@ -106,6 +106,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationScopeService';
 
 import {
+  establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeSemanticComparison,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeSemanticComparisonService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -35250,6 +35254,157 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
       }
 
       /*
+      * FASE 24.17 — Comparación semántica descriptiva explícita
+      * entre CriterionDefinition y EvaluationScope.
+      *
+      * La comparación materializa únicamente:
+      *
+      * exact-match
+      * |
+      * exact-mismatch
+      *
+      * sin inferir:
+      *
+      * - compatibilidad;
+      * - incompatibilidad;
+      * - aplicabilidad;
+      * - no-aplicabilidad;
+      * - utilización;
+      * - evaluación;
+      * - resultado evaluativo.
+      */
+      const criterionScopeSemanticComparison =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeSemanticComparison(
+          criterionDefinition
+        );
+
+      if (
+        criterionScopeSemanticComparison.comparisonType !==
+        'explicit-criterion-scope-semantic-comparison'
+      ) {
+        throw new Error(
+          'FASE 24.17 produjo un comparisonType inesperado.'
+        );
+      }
+
+      if (
+        criterionScopeSemanticComparison.comparisonResult !==
+        'exact-match'
+      ) {
+        throw new Error(
+          `FASE 24.17 esperaba exact-match y obtuvo ${criterionScopeSemanticComparison.comparisonResult}.`
+        );
+      }
+
+      if (
+        criterionScopeSemanticComparison.criterionDefinition !==
+        criterionDefinition
+      ) {
+        throw new Error(
+          'FASE 24.17 no conservó exactamente CriterionDefinition en el caso exact-match.'
+        );
+      }
+
+      const nonCorrespondingCriterionScopeSemanticComparison =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeSemanticComparison(
+          nonCorrespondingDefinition
+        );
+
+      if (
+        nonCorrespondingCriterionScopeSemanticComparison.comparisonType !==
+        'explicit-criterion-scope-semantic-comparison'
+      ) {
+        throw new Error(
+          'FASE 24.17 produjo un comparisonType inesperado en el caso exact-mismatch.'
+        );
+      }
+
+      if (
+        nonCorrespondingCriterionScopeSemanticComparison.comparisonResult !==
+        'exact-mismatch'
+      ) {
+        throw new Error(
+          `FASE 24.17 esperaba exact-mismatch y obtuvo ${nonCorrespondingCriterionScopeSemanticComparison.comparisonResult}.`
+        );
+      }
+
+      if (
+        nonCorrespondingCriterionScopeSemanticComparison.criterionDefinition !==
+        nonCorrespondingDefinition
+      ) {
+        throw new Error(
+          'FASE 24.17 no conservó exactamente CriterionDefinition en el caso exact-mismatch.'
+        );
+      }
+
+      /*
+      * FRONTERA CENTRAL DE 24.17.
+      *
+      * exact-match
+      * != compatibility
+      * != applicability
+      *
+      * exact-mismatch
+      * != incompatibility
+      * != non-applicability
+      */
+      if (
+        'compatibility' in
+          criterionScopeSemanticComparison ||
+        'compatible' in
+          criterionScopeSemanticComparison ||
+        'applicability' in
+          criterionScopeSemanticComparison ||
+        'applicable' in
+          criterionScopeSemanticComparison ||
+        'utilization' in
+          criterionScopeSemanticComparison ||
+        'evaluation' in
+          criterionScopeSemanticComparison ||
+        'evaluationResult' in
+          criterionScopeSemanticComparison ||
+        'score' in
+          criterionScopeSemanticComparison ||
+        'priority' in
+          criterionScopeSemanticComparison ||
+        'confidence' in
+          criterionScopeSemanticComparison ||
+        'weight' in
+          criterionScopeSemanticComparison ||
+        'ranking' in
+          criterionScopeSemanticComparison ||
+        'preference' in
+          criterionScopeSemanticComparison ||
+        'selection' in
+          criterionScopeSemanticComparison ||
+        'decision' in
+          criterionScopeSemanticComparison ||
+        'execution' in
+          criterionScopeSemanticComparison
+      ) {
+        throw new Error(
+          'FASE 24.17 detectó atributos ajenos a la comparación semántica descriptiva.'
+        );
+      }
+
+      if (
+        'incompatibility' in
+          nonCorrespondingCriterionScopeSemanticComparison ||
+        'incompatible' in
+          nonCorrespondingCriterionScopeSemanticComparison ||
+        'nonApplicability' in
+          nonCorrespondingCriterionScopeSemanticComparison ||
+        'nonApplicable' in
+          nonCorrespondingCriterionScopeSemanticComparison ||
+        'rejection' in
+          nonCorrespondingCriterionScopeSemanticComparison
+      ) {
+        throw new Error(
+          'FASE 24.17 convirtió indebidamente exact-mismatch en incompatibilidad, no-aplicabilidad o rechazo.'
+        );
+      }
+
+      /*
       * No mutación.
       */
       if (
@@ -35304,13 +35459,124 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
         La definición del criterio no estableció utilización, evaluación, resultado evaluativo, preferencia, decisión ni ejecución.
         Permanecieron intactas ${recommendationsAfterCriterionDefinition.length} recomendaciones y ${decisionsAfterCriterionDefinition.length} decisiones productivas.`
       );
+
+      /*
+      * CIERRE FASE 24.17.
+      *
+      * La comparación semántica produjo dos hechos descriptivos
+      * válidos e independientes:
+      *
+      * knowledge-effect-relevance
+      * vs
+      * knowledge-effect-relevance
+      * -> exact-match
+      *
+      * knowledge-effect-interpretation
+      * vs
+      * knowledge-effect-relevance
+      * -> exact-mismatch
+      *
+      * Ninguno de los dos resultados introduce todavía
+      * compatibilidad, aplicabilidad, utilización o evaluación.
+      */
+
+      /*
+      * Conservación por identidad de la genealogía completa.
+      */
+      if (
+        criterionScopeSemanticComparison
+          .criterionDefinition
+          .criterionPresence !== criterionPresence
+      ) {
+        throw new Error(
+          'FASE 24.17 perdió CriterionPresence durante la comparación exact-match.'
+        );
+      }
+
+      if (
+        criterionScopeSemanticComparison
+          .criterionDefinition
+          .definitionInput !== definitionInput
+      ) {
+        throw new Error(
+          'FASE 24.17 perdió CriterionDefinitionInput durante la comparación exact-match.'
+        );
+      }
+
+      if (
+        criterionScopeSemanticComparison
+          .criterionDefinition
+          .criterionPresence
+          .evaluationScope !== evaluationScope
+      ) {
+        throw new Error(
+          'FASE 24.17 perdió EvaluationScope durante la comparación semántica.'
+        );
+      }
+
+      /*
+      * La comparación tampoco puede haber mutado los operandos.
+      */
+      if (
+        JSON.stringify(criterionPresence) !==
+          criterionPresenceSnapshot ||
+        JSON.stringify(definitionInput) !==
+          definitionInputSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.17 modificó estados previos durante la comparación semántica.'
+        );
+      }
+
+      /*
+      * Verificación productiva externa después de 24.17.
+      */
+      const recommendationsAfterCriterionScopeSemanticComparison =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterCriterionScopeSemanticComparison =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterCriterionScopeSemanticComparison
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterCriterionScopeSemanticComparison
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.17 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterCriterionScopeSemanticComparison
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.17 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.17 OK: CriterionDefinition con criterionSubject ${definitionInput.criterionSubject} fue comparado explícitamente contra EvaluationScope.targetType ${evaluationScope.evaluationContext.targetType} y produjo ${criterionScopeSemanticComparison.comparisonResult}.
+        La definición alternativa con criterionSubject knowledge-effect-interpretation frente al mismo EvaluationScope produjo ${nonCorrespondingCriterionScopeSemanticComparison.comparisonResult}, demostrando que desigualdad semántica descriptiva no implica incompatibilidad, no-aplicabilidad ni rechazo.
+        ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeSemanticComparison conservó exactamente CriterionDefinition y su genealogía previa por identidad.
+        La comparación semántica no estableció compatibilidad, aplicabilidad, utilización, evaluación, resultado evaluativo, preferencia, decisión ni ejecución.
+        Permanecieron intactas ${recommendationsAfterCriterionScopeSemanticComparison.length} recomendaciones y ${decisionsAfterCriterionScopeSemanticComparison.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-          ? `Error en definición semántica productiva explícita del criterio externo 24.16: ${error.message}`
-          : 'Error inesperado en definición semántica productiva explícita del criterio externo 24.16.'
+          ? `Error en contrato productivo de criterio evaluativo 24.16/24.17: ${error.message}`
+          : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17.'
       );
     } finally {
       setLoading(false);
@@ -36282,6 +36548,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Definición Semántica Criterio 24.16
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Comparación Semántica Criterio-Scope 24.17
         </button>
 
         <button
