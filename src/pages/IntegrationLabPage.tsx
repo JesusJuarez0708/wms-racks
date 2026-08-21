@@ -115,6 +115,11 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRulePresenceService';
 
 import {
+  establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDefinition,
+  type ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDefinitionInput,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDefinitionService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -35952,13 +35957,522 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
         Permanecieron intactas ${recommendationsAfterCompatibilityRulePresence.length} recomendaciones y ${decisionsAfterCompatibilityRulePresence.length} decisiones productivas.`
       );
 
+      /*
+      * FASE 24.19 — Definición semántica productiva explícita
+      * de regla externa de compatibilidad.
+      *
+      * CompatibilityRulePresence
+      * +
+      * Explicit CompatibilityRuleDefinitionInput
+      * ->
+      * CompatibilityRuleDefinition
+      *
+      * La definición declara exclusivamente:
+      *
+      * - basis;
+      * - condition;
+      * - declaredDisposition.
+      *
+      * NO establece:
+      *
+      * - correspondencia regla-comparison;
+      * - satisfacción de condición;
+      * - aplicación de la regla;
+      * - compatibility assessment;
+      * - compatibility result;
+      * - aplicabilidad;
+      * - utilización;
+      * - evaluación;
+      * - resultado evaluativo;
+      * - preferencia;
+      * - decisión;
+      * - ejecución.
+      */
+
+      const comparisonResultCompatibilityRuleDefinitionInput:
+        ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDefinitionInput =
+        {
+          basis:
+            'semantic-comparison-result',
+
+          condition: {
+            comparisonResult:
+              'exact-mismatch',
+          },
+
+          declaredDisposition:
+            'compatible',
+        };
+
+      const comparisonResultCompatibilityRuleDefinitionInputSnapshot =
+        JSON.stringify(
+          comparisonResultCompatibilityRuleDefinitionInput
+        );
+
+      const compatibilityRulePresenceForExactMatchSnapshot =
+        JSON.stringify(
+          compatibilityRulePresenceForExactMatch
+        );
+
+      const compatibilityRulePresenceForExactMismatchSnapshot =
+        JSON.stringify(
+          compatibilityRulePresenceForExactMismatch
+        );
+
+      /*
+      * CASO A — genealogía exact-match.
+      *
+      * Deliberadamente la regla está definida como:
+      *
+      * exact-mismatch -> declared compatible
+      *
+      * aunque la genealogía actual contiene exact-match.
+      *
+      * La definición debe materializarse igualmente.
+      * Esto demuestra que RuleDefinition no aplica
+      * ni evalúa su propia condición.
+      */
+      const compatibilityRuleDefinitionForExactMatch =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDefinition(
+          compatibilityRulePresenceForExactMatch,
+          comparisonResultCompatibilityRuleDefinitionInput
+        );
+
+      if (
+        compatibilityRuleDefinitionForExactMatch.definitionType !==
+        'explicit-criterion-scope-compatibility-rule-semantic-definition'
+      ) {
+        throw new Error(
+          'FASE 24.19 produjo un definitionType inesperado en la genealogía exact-match.'
+        );
+      }
+
+      if (
+        compatibilityRuleDefinitionForExactMatch
+          .compatibilityRulePresence !==
+        compatibilityRulePresenceForExactMatch
+      ) {
+        throw new Error(
+          'FASE 24.19 no conservó exactamente CompatibilityRulePresence en la genealogía exact-match.'
+        );
+      }
+
+      if (
+        compatibilityRuleDefinitionForExactMatch
+          .definitionInput !==
+        comparisonResultCompatibilityRuleDefinitionInput
+      ) {
+        throw new Error(
+          'FASE 24.19 no conservó exactamente CompatibilityRuleDefinitionInput en la genealogía exact-match.'
+        );
+      }
+
+      /*
+      * La semántica declarada debe permanecer exactamente
+      * como fue proporcionada, incluso cuando la condición
+      * declarada no describe el comparison heredado.
+      */
+      if (
+        compatibilityRuleDefinitionForExactMatch
+          .definitionInput.basis !==
+          'semantic-comparison-result'
+      ) {
+        throw new Error(
+          'FASE 24.19 alteró basis de la regla basada en comparison result.'
+        );
+      }
+
+      if (
+        compatibilityRuleDefinitionForExactMatch
+          .definitionInput.basis ===
+          'semantic-comparison-result' &&
+        (
+          compatibilityRuleDefinitionForExactMatch
+            .definitionInput
+            .condition
+            .comparisonResult !==
+              'exact-mismatch' ||
+          compatibilityRuleDefinitionForExactMatch
+            .definitionInput
+            .declaredDisposition !==
+              'compatible'
+        )
+      ) {
+        throw new Error(
+          'FASE 24.19 alteró condition o declaredDisposition de la regla basada en comparison result.'
+        );
+      }
+
+      /*
+      * CASO B — genealogía exact-mismatch.
+      *
+      * Se utiliza EXACTAMENTE la misma definición.
+      *
+      * Aquí la condición declarada coincide descriptivamente
+      * con el comparison heredado, pero esa coincidencia
+      * tampoco debe producir CompatibilityResult.
+      */
+      const compatibilityRuleDefinitionForExactMismatch =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDefinition(
+          compatibilityRulePresenceForExactMismatch,
+          comparisonResultCompatibilityRuleDefinitionInput
+        );
+
+      if (
+        compatibilityRuleDefinitionForExactMismatch
+          .compatibilityRulePresence !==
+        compatibilityRulePresenceForExactMismatch
+      ) {
+        throw new Error(
+          'FASE 24.19 no conservó exactamente CompatibilityRulePresence en la genealogía exact-mismatch.'
+        );
+      }
+
+      if (
+        compatibilityRuleDefinitionForExactMismatch
+          .definitionInput !==
+        comparisonResultCompatibilityRuleDefinitionInput
+      ) {
+        throw new Error(
+          'FASE 24.19 no conservó exactamente el mismo CompatibilityRuleDefinitionInput en la genealogía exact-mismatch.'
+        );
+      }
+
+      /*
+      * La misma definición semántica declarativa debe poder
+      * coexistir con exact-match y exact-mismatch.
+      */
+      if (
+        compatibilityRuleDefinitionForExactMatch
+          .definitionInput !==
+        compatibilityRuleDefinitionForExactMismatch
+          .definitionInput
+      ) {
+        throw new Error(
+          'FASE 24.19 dejó de conservar una misma definición de regla por identidad entre exact-match y exact-mismatch.'
+        );
+      }
+
+      /*
+      * La identidad de regla continúa perteneciendo
+      * exclusivamente a CompatibilityRulePresence.
+      */
+      if (
+        compatibilityRuleDefinitionForExactMatch
+          .compatibilityRulePresence
+          .compatibilityRuleInput
+          .compatibilityRuleId !==
+        'criterion-scope-compatibility-rule-controlled-24-18'
+      ) {
+        throw new Error(
+          'FASE 24.19 perdió la identidad externa de la regla de compatibilidad.'
+        );
+      }
+
+      /*
+      * FRONTERA CENTRAL:
+      *
+      * declaredDisposition = compatible
+      * != CompatibilityResult compatible
+      *
+      * condition happens to match current comparison
+      * != condition has been evaluated
+      *
+      * RuleDefinition
+      * != RuleComparisonCorrespondence
+      * != CompatibilityAssessment
+      * != CompatibilityResult
+      */
+      const forbiddenCompatibilityRuleDefinitionProperties = [
+        'correspondence',
+        'ruleComparisonCorrespondence',
+        'conditionMatched',
+        'conditionSatisfied',
+        'matches',
+        'assessment',
+        'compatibilityAssessment',
+        'compatibilityResult',
+        'isCompatible',
+        'applicability',
+        'applicable',
+        'utilization',
+        'evaluation',
+        'evaluationResult',
+        'score',
+        'priority',
+        'confidence',
+        'weight',
+        'ranking',
+        'preference',
+        'selection',
+        'decision',
+        'execution',
+      ];
+
+      for (
+        const forbiddenProperty of
+        forbiddenCompatibilityRuleDefinitionProperties
+      ) {
+        if (
+          forbiddenProperty in
+            compatibilityRuleDefinitionForExactMatch ||
+          forbiddenProperty in
+            compatibilityRuleDefinitionForExactMismatch
+        ) {
+          throw new Error(
+            `FASE 24.19 introdujo indebidamente ${forbiddenProperty} dentro de CompatibilityRuleDefinition.`
+          );
+        }
+      }
+
+      /*
+      * CASO C — definición basada directamente
+      * en los operandos semánticos.
+      *
+      * Esta segunda familia demuestra que una regla
+      * no está obligada a operar únicamente sobre
+      * exact-match / exact-mismatch.
+      */
+      const operandBasedCompatibilityRuleDefinitionInput:
+        ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDefinitionInput =
+        {
+          basis:
+            'semantic-comparison-operands',
+
+          condition: {
+            criterionSubject:
+              'knowledge-effect-relevance',
+
+            targetType:
+              'knowledge-effect-interpretation',
+          },
+
+          declaredDisposition:
+            'compatible',
+        };
+
+      const operandBasedCompatibilityRuleDefinitionInputSnapshot =
+        JSON.stringify(
+          operandBasedCompatibilityRuleDefinitionInput
+        );
+
+      const operandBasedCompatibilityRuleDefinition =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDefinition(
+          compatibilityRulePresenceForExactMatch,
+          operandBasedCompatibilityRuleDefinitionInput
+        );
+
+      if (
+        operandBasedCompatibilityRuleDefinition
+          .definitionInput !==
+        operandBasedCompatibilityRuleDefinitionInput
+      ) {
+        throw new Error(
+          'FASE 24.19 no conservó exactamente la definición de regla basada en operandos.'
+        );
+      }
+
+      if (
+        operandBasedCompatibilityRuleDefinition
+          .definitionInput.basis !==
+        'semantic-comparison-operands'
+      ) {
+        throw new Error(
+          'FASE 24.19 no conservó basis semantic-comparison-operands.'
+        );
+      }
+
+      if (
+        operandBasedCompatibilityRuleDefinition
+          .definitionInput.basis ===
+          'semantic-comparison-operands' &&
+        (
+          operandBasedCompatibilityRuleDefinition
+            .definitionInput
+            .condition
+            .criterionSubject !==
+              'knowledge-effect-relevance' ||
+          operandBasedCompatibilityRuleDefinition
+            .definitionInput
+            .condition
+            .targetType !==
+              'knowledge-effect-interpretation' ||
+          operandBasedCompatibilityRuleDefinition
+            .definitionInput
+            .declaredDisposition !==
+              'compatible'
+        )
+      ) {
+        throw new Error(
+          'FASE 24.19 alteró la semántica declarativa de la regla basada en operandos.'
+        );
+      }
+
+      /*
+      * La definición basada en operandos tampoco puede
+      * establecer que esos operandos correspondan
+      * al comparison actual ni que satisfagan la regla.
+      */
+      for (
+        const forbiddenProperty of
+        forbiddenCompatibilityRuleDefinitionProperties
+      ) {
+        if (
+          forbiddenProperty in
+            operandBasedCompatibilityRuleDefinition
+        ) {
+          throw new Error(
+            `FASE 24.19 convirtió indebidamente la definición basada en operandos en ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+      * Preservación genealógica exacta.
+      */
+      if (
+        compatibilityRuleDefinitionForExactMatch
+          .compatibilityRulePresence
+          .semanticComparison !==
+        criterionScopeSemanticComparison
+      ) {
+        throw new Error(
+          'FASE 24.19 perdió CriterionScopeSemanticComparison exact-match dentro de la genealogía.'
+        );
+      }
+
+      if (
+        compatibilityRuleDefinitionForExactMismatch
+          .compatibilityRulePresence
+          .semanticComparison !==
+        nonCorrespondingCriterionScopeSemanticComparison
+      ) {
+        throw new Error(
+          'FASE 24.19 perdió CriterionScopeSemanticComparison exact-mismatch dentro de la genealogía.'
+        );
+      }
+
+      if (
+        compatibilityRuleDefinitionForExactMatch
+          .compatibilityRulePresence
+          .semanticComparison
+          .criterionDefinition !==
+        criterionDefinition
+      ) {
+        throw new Error(
+          'FASE 24.19 perdió CriterionDefinition dentro de la genealogía exact-match.'
+        );
+      }
+
+      if (
+        compatibilityRuleDefinitionForExactMismatch
+          .compatibilityRulePresence
+          .semanticComparison
+          .criterionDefinition !==
+        nonCorrespondingDefinition
+      ) {
+        throw new Error(
+          'FASE 24.19 perdió CriterionDefinition dentro de la genealogía exact-mismatch.'
+        );
+      }
+
+      /*
+      * No mutación de antecedentes ni inputs declarativos.
+      */
+      if (
+        JSON.stringify(
+          comparisonResultCompatibilityRuleDefinitionInput
+        ) !==
+        comparisonResultCompatibilityRuleDefinitionInputSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.19 modificó CompatibilityRuleDefinitionInput basado en comparison result.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          operandBasedCompatibilityRuleDefinitionInput
+        ) !==
+        operandBasedCompatibilityRuleDefinitionInputSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.19 modificó CompatibilityRuleDefinitionInput basado en operandos.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          compatibilityRulePresenceForExactMatch
+        ) !==
+        compatibilityRulePresenceForExactMatchSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.19 modificó CompatibilityRulePresence exact-match.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          compatibilityRulePresenceForExactMismatch
+        ) !==
+        compatibilityRulePresenceForExactMismatchSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.19 modificó CompatibilityRulePresence exact-mismatch.'
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      */
+      const recommendationsAfterCompatibilityRuleDefinition =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterCompatibilityRuleDefinition =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterCompatibilityRuleDefinition
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterCompatibilityRuleDefinition
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.19 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterCompatibilityRuleDefinition
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.19 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.19 OK: la regla externa ${compatibilityRuleInput.compatibilityRuleId} recibió una definición semántica declarativa explícita sin ser aplicada al CriterionScopeSemanticComparison.
+        La misma definición basada en comparison result declaró exact-mismatch -> compatible y pudo coexistir tanto con ${criterionScopeSemanticComparison.comparisonResult} como con ${nonCorrespondingCriterionScopeSemanticComparison.comparisonResult}, demostrando que definición, coincidencia descriptiva y resultado de compatibilidad son hechos distintos.
+        También se materializó una definición independiente basada directamente en criterionSubject y targetType, confirmando que semantic-comparison-result y semantic-comparison-operands son bases declarativas distintas.
+        ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDefinition conservó exactamente CompatibilityRulePresence, CompatibilityRuleDefinitionInput y toda su genealogía previa por identidad.
+        CompatibilityRuleDefinition no estableció correspondencia regla-comparison, satisfacción de condición, aplicación, CompatibilityAssessment, CompatibilityResult, aplicabilidad, utilización, evaluación, resultado evaluativo, preferencia, decisión ni ejecución.
+        Permanecieron intactas ${recommendationsAfterCompatibilityRuleDefinition.length} recomendaciones y ${decisionsAfterCompatibilityRuleDefinition.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-          ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18: ${error.message}`
-          : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19.'
       );
     } finally {
       setLoading(false);
@@ -36946,6 +37460,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Presencia Regla Compatibilidad Criterio-Scope 24.18
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Definición Regla Compatibilidad Criterio-Scope 24.19
         </button>
 
         <button
