@@ -110,6 +110,11 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeSemanticComparisonService';
 
 import {
+  establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRulePresence,
+  type ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleInput,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRulePresenceService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -35570,13 +35575,390 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
         Permanecieron intactas ${recommendationsAfterCriterionScopeSemanticComparison.length} recomendaciones y ${decisionsAfterCriterionScopeSemanticComparison.length} decisiones productivas.`
       );
 
+      /*
+      * FASE 24.18 — Presencia productiva explícita
+      * de regla externa de compatibilidad.
+      *
+      * CriterionScopeSemanticComparison
+      * +
+      * Explicit CompatibilityRuleInput
+      * ->
+      * CriterionScopeCompatibilityRulePresence
+      *
+      * La presencia de la regla NO establece:
+      *
+      * - semántica de la regla;
+      * - correspondencia de la regla;
+      * - compatibilidad;
+      * - incompatibilidad;
+      * - aplicabilidad;
+      * - utilización;
+      * - evaluación;
+      * - resultado evaluativo;
+      * - preferencia;
+      * - decisión;
+      * - ejecución.
+      */
+      const compatibilityRuleInput:
+        ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleInput =
+        {
+          compatibilityRuleId:
+            'criterion-scope-compatibility-rule-controlled-24-18',
+        };
+
+      const compatibilityRuleInputSnapshot =
+        JSON.stringify(compatibilityRuleInput);
+
+      const criterionScopeSemanticComparisonSnapshot =
+        JSON.stringify(
+          criterionScopeSemanticComparison
+        );
+
+      const nonCorrespondingCriterionScopeSemanticComparisonSnapshot =
+        JSON.stringify(
+          nonCorrespondingCriterionScopeSemanticComparison
+        );
+
+      /*
+      * CASO A — exact-match.
+      *
+      * La presencia de una regla externa puede materializarse
+      * sin convertir exact-match en compatibilidad.
+      */
+      const compatibilityRulePresenceForExactMatch =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRulePresence(
+          criterionScopeSemanticComparison,
+          compatibilityRuleInput
+        );
+
+      if (
+        compatibilityRulePresenceForExactMatch.presenceType !==
+        'explicit-criterion-scope-compatibility-rule-present'
+      ) {
+        throw new Error(
+          'FASE 24.18 produjo un presenceType inesperado para el caso exact-match.'
+        );
+      }
+
+      if (
+        compatibilityRulePresenceForExactMatch.semanticComparison !==
+        criterionScopeSemanticComparison
+      ) {
+        throw new Error(
+          'FASE 24.18 no conservó exactamente CriterionScopeSemanticComparison en el caso exact-match.'
+        );
+      }
+
+      if (
+        compatibilityRulePresenceForExactMatch.compatibilityRuleInput !==
+        compatibilityRuleInput
+      ) {
+        throw new Error(
+          'FASE 24.18 no conservó exactamente CompatibilityRuleInput en el caso exact-match.'
+        );
+      }
+
+      /*
+      * CASO B — exact-mismatch.
+      *
+      * Deliberadamente utilizamos EXACTAMENTE la misma regla
+      * presentada en el caso exact-match.
+      *
+      * Esto demuestra que RulePresence no selecciona,
+      * interpreta ni evalúa la regla según comparisonResult.
+      */
+      const compatibilityRulePresenceForExactMismatch =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRulePresence(
+          nonCorrespondingCriterionScopeSemanticComparison,
+          compatibilityRuleInput
+        );
+
+      if (
+        compatibilityRulePresenceForExactMismatch.presenceType !==
+        'explicit-criterion-scope-compatibility-rule-present'
+      ) {
+        throw new Error(
+          'FASE 24.18 produjo un presenceType inesperado para el caso exact-mismatch.'
+        );
+      }
+
+      if (
+        compatibilityRulePresenceForExactMismatch.semanticComparison !==
+        nonCorrespondingCriterionScopeSemanticComparison
+      ) {
+        throw new Error(
+          'FASE 24.18 no conservó exactamente CriterionScopeSemanticComparison en el caso exact-mismatch.'
+        );
+      }
+
+      if (
+        compatibilityRulePresenceForExactMismatch.compatibilityRuleInput !==
+        compatibilityRuleInput
+      ) {
+        throw new Error(
+          'FASE 24.18 no conservó exactamente el mismo CompatibilityRuleInput en el caso exact-mismatch.'
+        );
+      }
+
+      /*
+      * La misma identidad externa de regla debe estar presente
+      * frente a ambos resultados descriptivos.
+      */
+      if (
+        compatibilityRulePresenceForExactMatch.compatibilityRuleInput !==
+        compatibilityRulePresenceForExactMismatch.compatibilityRuleInput
+      ) {
+        throw new Error(
+          'FASE 24.18 dejó de conservar una misma regla externa por identidad entre exact-match y exact-mismatch.'
+        );
+      }
+
+      if (
+        compatibilityRulePresenceForExactMatch
+          .compatibilityRuleInput.compatibilityRuleId !==
+        'criterion-scope-compatibility-rule-controlled-24-18'
+      ) {
+        throw new Error(
+          'FASE 24.18 perdió la identidad explícita de la regla externa de compatibilidad.'
+        );
+      }
+
+      /*
+      * FRONTERA CENTRAL DE FASE 24.18.
+      *
+      * compatibilityRuleId exists
+      * != compatibility rule semantics exists
+      *
+      * exact-match + rule presence
+      * != compatibility
+      *
+      * exact-mismatch + rule presence
+      * != incompatibility
+      */
+      if (
+        'compatibility' in
+          compatibilityRulePresenceForExactMatch ||
+        'compatible' in
+          compatibilityRulePresenceForExactMatch ||
+        'incompatibility' in
+          compatibilityRulePresenceForExactMatch ||
+        'incompatible' in
+          compatibilityRulePresenceForExactMatch ||
+        'applicability' in
+          compatibilityRulePresenceForExactMatch ||
+        'applicable' in
+          compatibilityRulePresenceForExactMatch ||
+        'utilization' in
+          compatibilityRulePresenceForExactMatch ||
+        'evaluation' in
+          compatibilityRulePresenceForExactMatch ||
+        'evaluationResult' in
+          compatibilityRulePresenceForExactMatch ||
+        'score' in
+          compatibilityRulePresenceForExactMatch ||
+        'priority' in
+          compatibilityRulePresenceForExactMatch ||
+        'confidence' in
+          compatibilityRulePresenceForExactMatch ||
+        'weight' in
+          compatibilityRulePresenceForExactMatch ||
+        'ranking' in
+          compatibilityRulePresenceForExactMatch ||
+        'preference' in
+          compatibilityRulePresenceForExactMatch ||
+        'selection' in
+          compatibilityRulePresenceForExactMatch ||
+        'decision' in
+          compatibilityRulePresenceForExactMatch ||
+        'execution' in
+          compatibilityRulePresenceForExactMatch
+      ) {
+        throw new Error(
+          'FASE 24.18 introdujo atributos ajenos a la mera presencia de una regla externa de compatibilidad.'
+        );
+      }
+
+      /*
+      * Exact-mismatch tampoco puede transformarse
+      * silenciosamente en un juicio negativo.
+      */
+      if (
+        'compatibility' in
+          compatibilityRulePresenceForExactMismatch ||
+        'compatible' in
+          compatibilityRulePresenceForExactMismatch ||
+        'incompatibility' in
+          compatibilityRulePresenceForExactMismatch ||
+        'incompatible' in
+          compatibilityRulePresenceForExactMismatch ||
+        'nonApplicability' in
+          compatibilityRulePresenceForExactMismatch ||
+        'nonApplicable' in
+          compatibilityRulePresenceForExactMismatch ||
+        'rejection' in
+          compatibilityRulePresenceForExactMismatch
+      ) {
+        throw new Error(
+          'FASE 24.18 convirtió indebidamente exact-mismatch más RulePresence en incompatibilidad, no-aplicabilidad o rechazo.'
+        );
+      }
+
+      /*
+      * La presencia tampoco define la semántica de la regla.
+      */
+      if (
+        'ruleDefinition' in
+          compatibilityRulePresenceForExactMatch ||
+        'definitionInput' in
+          compatibilityRulePresenceForExactMatch ||
+        'allowedRelation' in
+          compatibilityRulePresenceForExactMatch ||
+        'allowedComparisonResult' in
+          compatibilityRulePresenceForExactMatch ||
+        'requiredComparisonResult' in
+          compatibilityRulePresenceForExactMatch ||
+        'matchPolicy' in
+          compatibilityRulePresenceForExactMatch ||
+        'condition' in
+          compatibilityRulePresenceForExactMatch
+      ) {
+        throw new Error(
+          'FASE 24.18 convirtió indebidamente CompatibilityRulePresence en CompatibilityRuleDefinition.'
+        );
+      }
+
+      /*
+      * Conservación genealógica por identidad.
+      */
+      if (
+        compatibilityRulePresenceForExactMatch
+          .semanticComparison
+          .criterionDefinition !==
+        criterionDefinition
+      ) {
+        throw new Error(
+          'FASE 24.18 perdió CriterionDefinition dentro de la genealogía exact-match.'
+        );
+      }
+
+      if (
+        compatibilityRulePresenceForExactMatch
+          .semanticComparison
+          .criterionDefinition
+          .criterionPresence !==
+        criterionPresence
+      ) {
+        throw new Error(
+          'FASE 24.18 perdió CriterionPresence dentro de la genealogía exact-match.'
+        );
+      }
+
+      if (
+        compatibilityRulePresenceForExactMatch
+          .semanticComparison
+          .criterionDefinition
+          .criterionPresence
+          .evaluationScope !==
+        evaluationScope
+      ) {
+        throw new Error(
+          'FASE 24.18 perdió EvaluationScope dentro de la genealogía de la regla.'
+        );
+      }
+
+      if (
+        compatibilityRulePresenceForExactMismatch
+          .semanticComparison
+          .criterionDefinition !==
+        nonCorrespondingDefinition
+      ) {
+        throw new Error(
+          'FASE 24.18 perdió CriterionDefinition dentro de la genealogía exact-mismatch.'
+        );
+      }
+
+      /*
+      * No mutación de ninguno de los antecedentes.
+      */
+      if (
+        JSON.stringify(compatibilityRuleInput) !==
+        compatibilityRuleInputSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.18 modificó CompatibilityRuleInput.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          criterionScopeSemanticComparison
+        ) !== criterionScopeSemanticComparisonSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.18 modificó CriterionScopeSemanticComparison exact-match.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          nonCorrespondingCriterionScopeSemanticComparison
+        ) !==
+        nonCorrespondingCriterionScopeSemanticComparisonSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.18 modificó CriterionScopeSemanticComparison exact-mismatch.'
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      */
+      const recommendationsAfterCompatibilityRulePresence =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterCompatibilityRulePresence =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterCompatibilityRulePresence
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterCompatibilityRulePresence
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.18 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterCompatibilityRulePresence
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.18 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.18 OK: la regla externa ${compatibilityRuleInput.compatibilityRuleId} fue presentada explícitamente ante CriterionScopeSemanticComparison ${criterionScopeSemanticComparison.comparisonResult} y ante ${nonCorrespondingCriterionScopeSemanticComparison.comparisonResult} sin interpretar ninguno de ambos resultados.
+        ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRulePresence conservó exactamente CriterionScopeSemanticComparison, CompatibilityRuleInput y su genealogía previa por identidad.
+        La misma regla pudo estar presente frente a exact-match y exact-mismatch, demostrando que RulePresence no implica compatibilidad ni incompatibilidad.
+        CompatibilityRulePresence no estableció definición semántica de la regla, correspondencia, compatibilidad, aplicabilidad, utilización, evaluación, resultado evaluativo, preferencia, decisión ni ejecución.
+        Permanecieron intactas ${recommendationsAfterCompatibilityRulePresence.length} recomendaciones y ${decisionsAfterCompatibilityRulePresence.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-          ? `Error en contrato productivo de criterio evaluativo 24.16/24.17: ${error.message}`
-          : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17.'
+          ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18: ${error.message}`
+          : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18.'
       );
     } finally {
       setLoading(false);
@@ -36556,6 +36938,14 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Comparación Semántica Criterio-Scope 24.17
+        </button>
+
+        <button
+          onClick={testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract}
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Presencia Regla Compatibilidad Criterio-Scope 24.18
         </button>
 
         <button
