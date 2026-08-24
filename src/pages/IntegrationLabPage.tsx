@@ -124,6 +124,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleComparisonCorrespondenceService';
 
 import {
+  establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleConditionSatisfaction,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleConditionSatisfactionService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -36802,13 +36806,610 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
         `FASE 24.20 OK: se materializó explícitamente RuleComparisonCorrespondence entre CompatibilityRuleDefinition y el CriterionScopeSemanticComparison de su propia genealogía, conservando exactamente la definición de regla y todos sus antecedentes por identidad. La misma regla basada en semantic-comparison-result, definida como exact-mismatch -> compatible, estableció correspondencia tanto con ${criterionScopeSemanticComparison.comparisonResult} como con ${nonCorrespondingCriterionScopeSemanticComparison.comparisonResult}, demostrando que RuleComparisonCorrespondence no evalúa la condition ni depende de que ésta describa los valores actuales del comparison. También se materializó correspondencia para una regla basada en semantic-comparison-operands sin evaluar coincidencia de criterionSubject ni targetType. RuleComparisonCorrespondence no produjo ConditionSatisfaction, RuleApplication, CompatibilityAssessment, CompatibilityResult, aplicabilidad, utilización, evaluación, resultado evaluativo, preferencia, decisión ni ejecución. Permanecieron intactas ${recommendationsAfterCompatibilityRuleComparisonCorrespondence.length} recomendaciones y ${decisionsAfterCompatibilityRuleComparisonCorrespondence.length} decisiones productivas.`
       );
 
+      /*
+      * FASE 24.21 — Satisfacción productiva explícita
+      * de la condición de la regla externa de compatibilidad
+      * criterio-scope.
+      *
+      * CompatibilityRuleComparisonCorrespondence
+      * ->
+      * CompatibilityRuleConditionSatisfaction
+      *
+      * Esta fase inspecciona exclusivamente la condition
+      * declarada y los hechos concretos del
+      * CriterionScopeSemanticComparison ya contenido
+      * en la genealogía.
+      *
+      * Para:
+      * basis = semantic-comparison-result
+      *
+      * compara:
+      * condition.comparisonResult
+      * vs
+      * semanticComparison.comparisonResult
+      *
+      * Para:
+      * basis = semantic-comparison-operands
+      *
+      * compara:
+      * condition.criterionSubject / condition.targetType
+      * vs
+      * los operandos concretos del semanticComparison.
+      *
+      * declaredDisposition NO participa en la satisfacción.
+      *
+      * satisfied
+      * != RuleApplication
+      * != CompatibilityAssessment
+      * != CompatibilityResult
+      * != CriterionApplicability
+      *
+      * not-satisfied
+      * != incompatible
+      * != CriterionNonApplicability
+      */
+
+      /*
+      * Snapshots de los antecedentes de 24.20.
+      * ConditionSatisfaction no puede mutarlos.
+      */
+      const compatibilityRuleComparisonCorrespondenceForExactMatchSnapshot =
+        JSON.stringify(
+          compatibilityRuleComparisonCorrespondenceForExactMatch
+        );
+
+      const compatibilityRuleComparisonCorrespondenceForExactMismatchSnapshot =
+        JSON.stringify(
+          compatibilityRuleComparisonCorrespondenceForExactMismatch
+        );
+
+      const operandBasedCompatibilityRuleComparisonCorrespondenceSnapshot =
+        JSON.stringify(
+          operandBasedCompatibilityRuleComparisonCorrespondence
+        );
+
+      /*
+      * CASO A — semantic-comparison-result satisfecho.
+      *
+      * condition = exact-mismatch
+      * actual    = exact-mismatch
+      *
+      * declaredDisposition = compatible
+      *
+      * Debe producir exclusivamente:
+      * satisfactionResult = satisfied.
+      */
+      const conditionSatisfactionForExactMismatch =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleConditionSatisfaction(
+          compatibilityRuleComparisonCorrespondenceForExactMismatch
+        );
+
+      if (
+        conditionSatisfactionForExactMismatch.satisfactionResult !==
+        'satisfied'
+      ) {
+        throw new Error(
+          `FASE 24.21 esperaba satisfied para condition exact-mismatch frente a comparison exact-mismatch y obtuvo ${conditionSatisfactionForExactMismatch.satisfactionResult}.`
+        );
+      }
+
+      /*
+      * CASO B — semantic-comparison-result no satisfecho.
+      *
+      * La MISMA condition declarada:
+      * exact-mismatch
+      *
+      * frente a:
+      * actual = exact-match
+      *
+      * debe producir not-satisfied.
+      */
+      const conditionSatisfactionForExactMatch =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleConditionSatisfaction(
+          compatibilityRuleComparisonCorrespondenceForExactMatch
+        );
+
+      if (
+        conditionSatisfactionForExactMatch.satisfactionResult !==
+        'not-satisfied'
+      ) {
+        throw new Error(
+          `FASE 24.21 esperaba not-satisfied para condition exact-mismatch frente a comparison exact-match y obtuvo ${conditionSatisfactionForExactMatch.satisfactionResult}.`
+        );
+      }
+
+      /*
+      * CASO C — semantic-comparison-operands no satisfecho.
+      *
+      * Reutilizamos deliberadamente la definición de 24.19:
+      *
+      * condition:
+      * criterionSubject = knowledge-effect-relevance
+      * targetType       = knowledge-effect-interpretation
+      *
+      * sobre la genealogía exact-match.
+      *
+      * Esa definición ya existe precisamente sin haber
+      * sido evaluada por las fases anteriores.
+      */
+      const operandConditionNotSatisfied =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleConditionSatisfaction(
+          operandBasedCompatibilityRuleComparisonCorrespondence
+        );
+
+      if (
+        operandConditionNotSatisfied.satisfactionResult !==
+        'not-satisfied'
+      ) {
+        throw new Error(
+          `FASE 24.21 esperaba not-satisfied para la condición heredada basada en operandos y obtuvo ${operandConditionNotSatisfied.satisfactionResult}.`
+        );
+      }
+
+      /*
+      * CASO D — semantic-comparison-operands satisfecho.
+      *
+      * Construimos una fixture declarativa controlada
+      * cuya condition reproduce EXACTAMENTE los operandos
+      * concretos del comparison exact-mismatch.
+      *
+      * Importante:
+      * semanticComparison.comparisonResult sigue siendo
+      * exact-mismatch.
+      *
+      * Esto demostrará que:
+      *
+      * comparisonResult = exact-mismatch
+      * puede coexistir con
+      * operand ConditionSatisfaction = satisfied.
+      */
+      const actualOperandCriterionSubject =
+        nonCorrespondingCriterionScopeSemanticComparison
+          .criterionDefinition
+          .definitionInput
+          .criterionSubject;
+
+      const actualOperandTargetType =
+        nonCorrespondingCriterionScopeSemanticComparison
+          .criterionDefinition
+          .criterionPresence
+          .evaluationScope
+          .evaluationContext
+          .targetType;
+
+      const satisfiedOperandCompatibilityRuleDefinitionInput:
+        ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDefinitionInput =
+        {
+          basis:
+            'semantic-comparison-operands',
+
+          condition: {
+            criterionSubject:
+              actualOperandCriterionSubject,
+
+            targetType:
+              actualOperandTargetType,
+          },
+
+          declaredDisposition:
+            'compatible',
+        };
+
+      const satisfiedOperandCompatibilityRuleDefinition =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDefinition(
+          compatibilityRulePresenceForExactMismatch,
+          satisfiedOperandCompatibilityRuleDefinitionInput
+        );
+
+      const satisfiedOperandRuleComparisonCorrespondence =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleComparisonCorrespondence(
+          satisfiedOperandCompatibilityRuleDefinition
+        );
+
+      const operandConditionSatisfied =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleConditionSatisfaction(
+          satisfiedOperandRuleComparisonCorrespondence
+        );
+
+      if (
+        operandConditionSatisfied.satisfactionResult !==
+        'satisfied'
+      ) {
+        throw new Error(
+          `FASE 24.21 esperaba satisfied cuando condition.criterionSubject y condition.targetType reproducen exactamente los operandos observados y obtuvo ${operandConditionSatisfied.satisfactionResult}.`
+        );
+      }
+
+      if (
+        nonCorrespondingCriterionScopeSemanticComparison
+          .comparisonResult !== 'exact-mismatch'
+      ) {
+        throw new Error(
+          'FASE 24.21 perdió la precondición controlada exact-mismatch del caso satisfecho basado en operandos.'
+        );
+      }
+
+      /*
+      * PRUEBA CENTRAL:
+      *
+      * exact-mismatch descriptivo entre los operandos
+      * !=
+      * not-satisfied de una regla basada en esos operandos.
+      *
+      * La condition basada en operandos puede estar
+      * satisfecha aunque el comparisonResult sea exact-mismatch.
+      */
+      if (
+        operandConditionSatisfied.satisfactionResult !==
+          'satisfied' ||
+        nonCorrespondingCriterionScopeSemanticComparison
+          .comparisonResult !== 'exact-mismatch'
+      ) {
+        throw new Error(
+          'FASE 24.21 confundió comparisonResult exact-mismatch con no satisfacción de una condición basada en operandos.'
+        );
+      }
+
+      /*
+      * CASO E — declaredDisposition es ortogonal
+      * a ConditionSatisfaction.
+      *
+      * Creamos exactamente la misma condition:
+      *
+      * exact-mismatch
+      *
+      * pero declaramos disposition incompatible.
+      *
+      * Frente al mismo comparison exact-mismatch,
+      * el resultado debe seguir siendo satisfied.
+      */
+      const incompatibleDispositionCompatibilityRuleDefinitionInput:
+        ProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDefinitionInput =
+        {
+          basis:
+            'semantic-comparison-result',
+
+          condition: {
+            comparisonResult:
+              'exact-mismatch',
+          },
+
+          declaredDisposition:
+            'incompatible',
+        };
+
+      const incompatibleDispositionCompatibilityRuleDefinition =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDefinition(
+          compatibilityRulePresenceForExactMismatch,
+          incompatibleDispositionCompatibilityRuleDefinitionInput
+        );
+
+      const incompatibleDispositionRuleComparisonCorrespondence =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleComparisonCorrespondence(
+          incompatibleDispositionCompatibilityRuleDefinition
+        );
+
+      const incompatibleDispositionConditionSatisfaction =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleConditionSatisfaction(
+          incompatibleDispositionRuleComparisonCorrespondence
+        );
+
+      if (
+        incompatibleDispositionConditionSatisfaction
+          .satisfactionResult !== 'satisfied'
+      ) {
+        throw new Error(
+          'FASE 24.21 permitió que declaredDisposition=incompatible alterara la satisfacción de condition exact-mismatch frente a comparison exact-mismatch.'
+        );
+      }
+
+      if (
+        conditionSatisfactionForExactMismatch
+          .satisfactionResult !==
+        incompatibleDispositionConditionSatisfaction
+          .satisfactionResult
+      ) {
+        throw new Error(
+          'FASE 24.21 hizo depender ConditionSatisfaction de declaredDisposition.'
+        );
+      }
+
+      /*
+      * CASO F — contrato estructural mínimo.
+      */
+      const conditionSatisfactions = [
+        conditionSatisfactionForExactMismatch,
+        conditionSatisfactionForExactMatch,
+        operandConditionNotSatisfied,
+        operandConditionSatisfied,
+        incompatibleDispositionConditionSatisfaction,
+      ];
+
+      for (
+        const conditionSatisfaction of
+        conditionSatisfactions
+      ) {
+        if (
+          conditionSatisfaction.satisfactionType !==
+          'explicit-criterion-scope-compatibility-rule-condition-satisfaction'
+        ) {
+          throw new Error(
+            'FASE 24.21 produjo un satisfactionType inesperado.'
+          );
+        }
+
+        const conditionSatisfactionKeys =
+          Object.keys(
+            conditionSatisfaction
+          ).sort();
+
+        if (
+          JSON.stringify(
+            conditionSatisfactionKeys
+          ) !==
+          JSON.stringify([
+            'ruleComparisonCorrespondence',
+            'satisfactionResult',
+            'satisfactionType',
+          ])
+        ) {
+          throw new Error(
+            'FASE 24.21 duplicó información genealógica o introdujo propiedades adicionales dentro de ConditionSatisfaction.'
+          );
+        }
+      }
+
+      /*
+      * Conservación exacta por identidad.
+      */
+      if (
+        conditionSatisfactionForExactMismatch
+          .ruleComparisonCorrespondence !==
+        compatibilityRuleComparisonCorrespondenceForExactMismatch
+      ) {
+        throw new Error(
+          'FASE 24.21 no conservó exactamente RuleComparisonCorrespondence en el caso satisfied.'
+        );
+      }
+
+      if (
+        conditionSatisfactionForExactMatch
+          .ruleComparisonCorrespondence !==
+        compatibilityRuleComparisonCorrespondenceForExactMatch
+      ) {
+        throw new Error(
+          'FASE 24.21 no conservó exactamente RuleComparisonCorrespondence en el caso not-satisfied.'
+        );
+      }
+
+      if (
+        operandConditionSatisfied
+          .ruleComparisonCorrespondence
+          .compatibilityRuleDefinition
+          .compatibilityRulePresence
+          .semanticComparison !==
+        nonCorrespondingCriterionScopeSemanticComparison
+      ) {
+        throw new Error(
+          'FASE 24.21 perdió CriterionScopeSemanticComparison dentro de la genealogía basada en operandos.'
+        );
+      }
+
+      /*
+      * CASO G — frontera de no promoción.
+      *
+      * ConditionSatisfaction sólo puede decir:
+      *
+      * satisfied / not-satisfied.
+      *
+      * No puede convertir esos estados en hechos
+      * pertenecientes a fases posteriores.
+      */
+      const forbiddenConditionSatisfactionProperties = [
+        'basis',
+        'condition',
+        'comparisonResult',
+        'criterionSubject',
+        'targetType',
+        'declaredDisposition',
+
+        'ruleApplication',
+        'application',
+        'applied',
+
+        'assessment',
+        'compatibilityAssessment',
+
+        'compatibility',
+        'compatibilityResult',
+        'isCompatible',
+        'compatible',
+        'incompatible',
+
+        'criterionApplicability',
+        'criterionNonApplicability',
+        'applicability',
+        'applicable',
+        'nonApplicable',
+
+        'utilization',
+
+        'evaluation',
+        'evaluationResult',
+
+        'score',
+        'priority',
+        'confidence',
+        'weight',
+        'ranking',
+        'preference',
+        'selection',
+
+        'decision',
+        'execution',
+      ];
+
+      for (
+        const conditionSatisfaction of
+        conditionSatisfactions
+      ) {
+        for (
+          const forbiddenProperty of
+          forbiddenConditionSatisfactionProperties
+        ) {
+          if (
+            forbiddenProperty in
+            conditionSatisfaction
+          ) {
+            throw new Error(
+              `FASE 24.21 convirtió indebidamente ConditionSatisfaction en ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+      * satisfied + declaredDisposition compatible
+      * != CompatibilityResult compatible.
+      */
+      if (
+        conditionSatisfactionForExactMismatch
+          .satisfactionResult !== 'satisfied' ||
+        compatibilityRuleDefinitionForExactMismatch
+          .definitionInput
+          .declaredDisposition !== 'compatible'
+      ) {
+        throw new Error(
+          'FASE 24.21 perdió el escenario crítico satisfied + declaredDisposition compatible.'
+        );
+      }
+
+      if (
+        'compatibilityResult' in
+          conditionSatisfactionForExactMismatch ||
+        'compatible' in
+          conditionSatisfactionForExactMismatch
+      ) {
+        throw new Error(
+          'FASE 24.21 convirtió indebidamente satisfied + declaredDisposition compatible en CompatibilityResult compatible.'
+        );
+      }
+
+      /*
+      * not-satisfied != incompatible.
+      */
+      if (
+        conditionSatisfactionForExactMatch
+          .satisfactionResult !==
+          'not-satisfied'
+      ) {
+        throw new Error(
+          'FASE 24.21 perdió el escenario controlado not-satisfied.'
+        );
+      }
+
+      if (
+        'incompatible' in
+          conditionSatisfactionForExactMatch ||
+        'compatibilityResult' in
+          conditionSatisfactionForExactMatch ||
+        'criterionNonApplicability' in
+          conditionSatisfactionForExactMatch
+      ) {
+        throw new Error(
+          'FASE 24.21 convirtió indebidamente not-satisfied en incompatibilidad o no-aplicabilidad.'
+        );
+      }
+
+      /*
+      * No mutación de antecedentes 24.20.
+      */
+      if (
+        JSON.stringify(
+          compatibilityRuleComparisonCorrespondenceForExactMatch
+        ) !==
+        compatibilityRuleComparisonCorrespondenceForExactMatchSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.21 modificó RuleComparisonCorrespondence exact-match.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          compatibilityRuleComparisonCorrespondenceForExactMismatch
+        ) !==
+        compatibilityRuleComparisonCorrespondenceForExactMismatchSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.21 modificó RuleComparisonCorrespondence exact-mismatch.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          operandBasedCompatibilityRuleComparisonCorrespondence
+        ) !==
+        operandBasedCompatibilityRuleComparisonCorrespondenceSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.21 modificó RuleComparisonCorrespondence basada en operandos.'
+        );
+      }
+
+      /*
+      * Verificación productiva externa.
+      *
+      * La nueva materialización no puede modificar
+      * Recommendation ni Decision.
+      */
+      const recommendationsAfterCompatibilityRuleConditionSatisfaction =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterCompatibilityRuleConditionSatisfaction =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterCompatibilityRuleConditionSatisfaction
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterCompatibilityRuleConditionSatisfaction
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.21 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterCompatibilityRuleConditionSatisfaction
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.21 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.21 OK: se materializó explícitamente ConditionSatisfaction sobre RuleComparisonCorrespondence sin aplicar todavía la regla de compatibilidad.
+La condition exact-mismatch produjo satisfied frente a actual exact-mismatch y not-satisfied frente a actual exact-match.
+Una condition basada en semantic-comparison-operands produjo satisfied al coincidir exactamente criterionSubject y targetType observados, incluso coexistiendo con comparisonResult exact-mismatch, demostrando que comparación semántica y satisfacción de condición son relaciones distintas.
+Cambiar declaredDisposition de compatible a incompatible no modificó satisfactionResult, demostrando que declaredDisposition no participa en ConditionSatisfaction.
+satisfied no produjo RuleApplication, CompatibilityAssessment, CompatibilityResult ni CriterionApplicability; not-satisfied no produjo incompatibilidad ni CriterionNonApplicability.
+Permanecieron intactas ${recommendationsAfterCompatibilityRuleConditionSatisfaction.length} recomendaciones y ${decisionsAfterCompatibilityRuleConditionSatisfaction.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21.'
       );
     } finally {
       setLoading(false);
@@ -37814,6 +38415,16 @@ No se introdujeron productionReady, approved, rejected, promotionScore, readines
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Correspondencia Regla-Comparación 24.20
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Satisfacción Condición Regla Compatibilidad Criterio-Scope 24.21
         </button>
 
         <button
