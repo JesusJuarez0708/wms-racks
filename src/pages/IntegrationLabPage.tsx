@@ -140,6 +140,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityAssessmentService';
 
 import {
+  concludeProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibility,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityResultService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -38806,13 +38810,609 @@ No se materializaron CriterionApplicability, CriterionUtilization, Evaluation, E
 Permanecieron intactas ${recommendationsAfterCompatibilityAssessment.length} recomendaciones y ${decisionsAfterCompatibilityAssessment.length} decisiones productivas.`
       );
 
+      /*
+       * ============================================================
+       * FASE 24.25
+       * Resultado explícito de compatibilidad criterio-scope
+       * basado en CompatibilityAssessment.
+       * ============================================================
+       *
+       * Frontera semántica:
+       *
+       * CompatibilityAssessment
+       *        ↓
+       * acto explícito de conclusión
+       *        ↓
+       * CompatibilityResult
+       *
+       * CompatibilityResult materializa por primera vez una
+       * conclusión productiva acerca de la compatibilidad del
+       * caso criterio-scope evaluado.
+       *
+       * El valor conclusivo:
+       *
+       * compatible | incompatible
+       *
+       * se deriva exclusivamente de la RuleDispositionInterpretation
+       * conservada genealógicamente por CompatibilityAssessment.
+       *
+       * NO vuelve a interpretar directamente:
+       *
+       * comparisonResult
+       * condition
+       * satisfactionResult
+       * declaredDisposition
+       * criterionSubject
+       * targetType
+       *
+       * NO materializa todavía:
+       *
+       * CriterionApplicability
+       * CriterionUtilization
+       * Evaluation
+       * EvaluationResult
+       * Preference
+       * Selection
+       * Decision
+       * Execution
+       */
+
+      const compatibilityAssessmentForCompatibleDispositionSnapshotBeforeResult =
+        JSON.stringify(
+          compatibilityAssessmentForCompatibleDisposition
+        );
+
+      const compatibilityAssessmentForIncompatibleDispositionSnapshotBeforeResult =
+        JSON.stringify(
+          compatibilityAssessmentForIncompatibleDisposition
+        );
+
+      /*
+       * FRONTERA DE NO AUTOMATICIDAD
+       *
+       * CompatibilityAssessment ya existe, pero antes de invocar
+       * explícitamente la operación de conclusión no existe
+       * CompatibilityResult.
+       *
+       * La existencia del assessment no materializó el resultado
+       * durante FASE 24.24.
+       */
+
+      if (
+        'compatibilityResult' in
+          compatibilityAssessmentForCompatibleDisposition ||
+        'result' in
+          compatibilityAssessmentForCompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.25 detectó que CompatibilityAssessment compatible ya contenía indebidamente un resultado antes de la conclusión explícita.'
+        );
+      }
+
+      if (
+        'compatibilityResult' in
+          compatibilityAssessmentForIncompatibleDisposition ||
+        'result' in
+          compatibilityAssessmentForIncompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.25 detectó que CompatibilityAssessment incompatible ya contenía indebidamente un resultado antes de la conclusión explícita.'
+        );
+      }
+
+      /*
+       * CASO A
+       *
+       * interpretedDisposition=compatible
+       * CompatibilityAssessment existente
+       *        ↓
+       * CompatibilityResult=compatible
+       */
+
+      const compatibilityResultForCompatibleDisposition =
+        concludeProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibility(
+          compatibilityAssessmentForCompatibleDisposition
+        );
+
+      if (
+        compatibilityResultForCompatibleDisposition.resultType !==
+        'explicit-criterion-scope-compatibility-result'
+      ) {
+        throw new Error(
+          'FASE 24.25 produjo un resultType inesperado para interpretedDisposition=compatible.'
+        );
+      }
+
+      if (
+        compatibilityResultForCompatibleDisposition
+          .compatibilityAssessment !==
+        compatibilityAssessmentForCompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.25 no conservó exactamente CompatibilityAssessment por identidad para interpretedDisposition=compatible.'
+        );
+      }
+
+      if (
+        compatibilityResultForCompatibleDisposition
+          .compatibilityResult !== 'compatible'
+      ) {
+        throw new Error(
+          'FASE 24.25 no concluyó compatibilityResult=compatible a partir del CompatibilityAssessment compatible.'
+        );
+      }
+
+      if (
+        compatibilityResultForCompatibleDisposition
+          .compatibilityResult !==
+        compatibilityAssessmentForCompatibleDisposition
+          .ruleDispositionInterpretation
+          .interpretedDisposition
+      ) {
+        throw new Error(
+          'FASE 24.25 perdió la correspondencia entre interpretedDisposition=compatible y compatibilityResult=compatible.'
+        );
+      }
+
+      /*
+       * CASO B
+       *
+       * interpretedDisposition=incompatible
+       * CompatibilityAssessment existente
+       *        ↓
+       * CompatibilityResult=incompatible
+       */
+
+      const compatibilityResultForIncompatibleDisposition =
+        concludeProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibility(
+          compatibilityAssessmentForIncompatibleDisposition
+        );
+
+      if (
+        compatibilityResultForIncompatibleDisposition.resultType !==
+        'explicit-criterion-scope-compatibility-result'
+      ) {
+        throw new Error(
+          'FASE 24.25 produjo un resultType inesperado para interpretedDisposition=incompatible.'
+        );
+      }
+
+      if (
+        compatibilityResultForIncompatibleDisposition
+          .compatibilityAssessment !==
+        compatibilityAssessmentForIncompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.25 no conservó exactamente CompatibilityAssessment por identidad para interpretedDisposition=incompatible.'
+        );
+      }
+
+      if (
+        compatibilityResultForIncompatibleDisposition
+          .compatibilityResult !== 'incompatible'
+      ) {
+        throw new Error(
+          'FASE 24.25 no concluyó compatibilityResult=incompatible a partir del CompatibilityAssessment incompatible.'
+        );
+      }
+
+      if (
+        compatibilityResultForIncompatibleDisposition
+          .compatibilityResult !==
+        compatibilityAssessmentForIncompatibleDisposition
+          .ruleDispositionInterpretation
+          .interpretedDisposition
+      ) {
+        throw new Error(
+          'FASE 24.25 perdió la correspondencia entre interpretedDisposition=incompatible y compatibilityResult=incompatible.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * compatible e incompatible deben atravesar exactamente
+       * la misma estructura productiva.
+       */
+
+      if (
+        compatibilityResultForCompatibleDisposition.resultType !==
+        compatibilityResultForIncompatibleDisposition.resultType
+      ) {
+        throw new Error(
+          'FASE 24.25 hizo depender resultType del valor de compatibilityResult.'
+        );
+      }
+
+      const compatibilityResultForCompatibleDispositionKeys =
+        Object.keys(
+          compatibilityResultForCompatibleDisposition
+        ).sort();
+
+      const compatibilityResultForIncompatibleDispositionKeys =
+        Object.keys(
+          compatibilityResultForIncompatibleDisposition
+        ).sort();
+
+      const expectedCompatibilityResultKeys = [
+        'resultType',
+        'compatibilityAssessment',
+        'compatibilityResult',
+      ].sort();
+
+      if (
+        JSON.stringify(
+          compatibilityResultForCompatibleDispositionKeys
+        ) !==
+        JSON.stringify(
+          expectedCompatibilityResultKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.25 introdujo propiedades adicionales dentro de CompatibilityResult para compatibilityResult=compatible.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          compatibilityResultForIncompatibleDispositionKeys
+        ) !==
+        JSON.stringify(
+          expectedCompatibilityResultKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.25 introdujo propiedades adicionales dentro de CompatibilityResult para compatibilityResult=incompatible.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          compatibilityResultForCompatibleDispositionKeys
+        ) !==
+        JSON.stringify(
+          compatibilityResultForIncompatibleDispositionKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.25 produjo estructuras distintas de CompatibilityResult para compatible e incompatible.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * CompatibilityResult conserva directamente sólo:
+       *
+       * resultType
+       * compatibilityAssessment
+       * compatibilityResult
+       *
+       * No debe duplicar información perteneciente a la genealogía
+       * del CompatibilityAssessment.
+       */
+
+      const forbiddenCompatibilityResultProperties = [
+        'ruleDispositionInterpretation',
+        'interpretedDisposition',
+        'declaredDisposition',
+        'ruleId',
+        'basis',
+        'condition',
+        'satisfactionResult',
+        'comparisonResult',
+        'criterionSubject',
+        'targetType',
+        'compatibility',
+        'assessedDisposition',
+        'assessmentResult',
+        'criterionApplicability',
+        'criterionUtilization',
+        'evaluation',
+        'evaluationResult',
+        'preference',
+        'selection',
+        'decision',
+        'execution',
+      ];
+
+      const compatibilityResults = [
+        compatibilityResultForCompatibleDisposition,
+        compatibilityResultForIncompatibleDisposition,
+      ];
+
+      for (
+        const compatibilityResult of
+        compatibilityResults
+      ) {
+        for (
+          const forbiddenProperty of
+          forbiddenCompatibilityResultProperties
+        ) {
+          if (
+            forbiddenProperty in
+            compatibilityResult
+          ) {
+            throw new Error(
+              `FASE 24.25 duplicó o promovió indebidamente ${forbiddenProperty} dentro de CompatibilityResult.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO E
+       *
+       * Igualdad textual de valor
+       * !=
+       * identidad del hecho arquitectónico.
+       *
+       * interpretedDisposition pertenece a
+       * RuleDispositionInterpretation.
+       *
+       * compatibilityResult pertenece a
+       * CompatibilityResult.
+       */
+
+      if (
+        compatibilityResultForCompatibleDisposition
+          .compatibilityResult !==
+        compatibilityResultForCompatibleDisposition
+          .compatibilityAssessment
+          .ruleDispositionInterpretation
+          .interpretedDisposition
+      ) {
+        throw new Error(
+          'FASE 24.25 no conservó la igualdad textual esperada entre interpretedDisposition y compatibilityResult para compatible.'
+        );
+      }
+
+      if (
+        'interpretedDisposition' in
+        compatibilityResultForCompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.25 convirtió interpretedDisposition y compatibilityResult en el mismo hecho estructural para compatible.'
+        );
+      }
+
+      if (
+        compatibilityResultForIncompatibleDisposition
+          .compatibilityResult !==
+        compatibilityResultForIncompatibleDisposition
+          .compatibilityAssessment
+          .ruleDispositionInterpretation
+          .interpretedDisposition
+      ) {
+        throw new Error(
+          'FASE 24.25 no conservó la igualdad textual esperada entre interpretedDisposition y compatibilityResult para incompatible.'
+        );
+      }
+
+      if (
+        'interpretedDisposition' in
+        compatibilityResultForIncompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.25 convirtió interpretedDisposition y compatibilityResult en el mismo hecho estructural para incompatible.'
+        );
+      }
+
+      /*
+       * CASO CRÍTICO HEREDADO
+       *
+       * La genealogía compatible continúa siendo exactamente:
+       *
+       * comparisonResult=exact-mismatch
+       * ConditionSatisfaction=satisfied
+       * RuleApplication existente
+       * declaredDisposition=compatible
+       * interpretedDisposition=compatible
+       * CompatibilityAssessment existente
+       *        ↓
+       * CompatibilityResult=compatible
+       *
+       * FASE 24.25 no vuelve a interpretar exact-mismatch.
+       */
+
+      if (
+        compatibilityResultForCompatibleDisposition
+          .compatibilityAssessment !==
+        compatibilityAssessmentForCompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.25 perdió CompatibilityAssessment en el escenario crítico exact-mismatch.'
+        );
+      }
+
+      if (
+        compatibilityResultForCompatibleDisposition
+          .compatibilityAssessment
+          .ruleDispositionInterpretation !==
+        compatibilityRuleDispositionInterpretationForCompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.25 perdió RuleDispositionInterpretation en la genealogía del escenario crítico exact-mismatch.'
+        );
+      }
+
+      if (
+        compatibilityResultForCompatibleDisposition
+          .compatibilityAssessment
+          .ruleDispositionInterpretation
+          .interpretedDisposition !== 'compatible'
+      ) {
+        throw new Error(
+          'FASE 24.25 reinterpretó indebidamente la disposición compatible del escenario crítico exact-mismatch.'
+        );
+      }
+
+      if (
+        compatibilityResultForCompatibleDisposition
+          .compatibilityResult !== 'compatible'
+      ) {
+        throw new Error(
+          'FASE 24.25 no produjo CompatibilityResult=compatible para el escenario crítico exact-mismatch ya resuelto genealógicamente por la regla.'
+        );
+      }
+
+      /*
+       * CASO SIMÉTRICO
+       *
+       * La misma operación productiva debe concluir:
+       *
+       * interpretedDisposition=incompatible
+       *        ↓
+       * CompatibilityAssessment
+       *        ↓
+       * CompatibilityResult=incompatible
+       */
+
+      if (
+        compatibilityResultForIncompatibleDisposition
+          .compatibilityAssessment
+          .ruleDispositionInterpretation !==
+        compatibilityRuleDispositionInterpretationForIncompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.25 perdió RuleDispositionInterpretation en el escenario incompatible.'
+        );
+      }
+
+      if (
+        compatibilityResultForIncompatibleDisposition
+          .compatibilityResult !== 'incompatible'
+      ) {
+        throw new Error(
+          'FASE 24.25 no produjo CompatibilityResult=incompatible mediante la misma estructura productiva.'
+        );
+      }
+
+      /*
+       * CompatibilityResult no puede modificar
+       * CompatibilityAssessment.
+       */
+
+      if (
+        JSON.stringify(
+          compatibilityAssessmentForCompatibleDisposition
+        ) !==
+        compatibilityAssessmentForCompatibleDispositionSnapshotBeforeResult
+      ) {
+        throw new Error(
+          'FASE 24.25 modificó CompatibilityAssessment con interpretedDisposition=compatible.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          compatibilityAssessmentForIncompatibleDisposition
+        ) !==
+        compatibilityAssessmentForIncompatibleDispositionSnapshotBeforeResult
+      ) {
+        throw new Error(
+          'FASE 24.25 modificó CompatibilityAssessment con interpretedDisposition=incompatible.'
+        );
+      }
+
+      /*
+       * FRONTERA POSTERIOR
+       *
+       * CompatibilityResult
+       * != CriterionApplicability
+       *
+       * Incluso compatibilityResult=compatible no materializa
+       * aplicabilidad del criterio.
+       */
+
+      for (
+        const compatibilityResult of
+        compatibilityResults
+      ) {
+        const forbiddenPostResultProperties = [
+          'criterionApplicability',
+          'criterionUtilization',
+          'evaluation',
+          'evaluationResult',
+          'preference',
+          'selection',
+          'decision',
+          'execution',
+        ];
+
+        for (
+          const forbiddenProperty of
+          forbiddenPostResultProperties
+        ) {
+          if (
+            forbiddenProperty in
+            compatibilityResult
+          ) {
+            throw new Error(
+              `FASE 24.25 promovió indebidamente CompatibilityResult hacia ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * CompatibilityResult no puede modificar
+       * Recommendation ni Decision.
+       */
+
+      const recommendationsAfterCompatibilityResult =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterCompatibilityResult =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterCompatibilityResult
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterCompatibilityResult
+        ) !==
+        recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.25 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterCompatibilityResult
+        ) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.25 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.25 OK: se materializó explícitamente CompatibilityResult a partir de CompatibilityAssessment, conservando exactamente CompatibilityAssessment y toda su genealogía por identidad.
+CompatibilityAssessment permaneció distinto de CompatibilityResult: la existencia previa del assessment no había materializado automáticamente ningún resultado.
+interpretedDisposition=compatible produjo compatibilityResult=compatible e interpretedDisposition=incompatible produjo compatibilityResult=incompatible mediante exactamente la misma estructura productiva.
+La igualdad textual entre interpretedDisposition y compatibilityResult no los convirtió en el mismo hecho arquitectónico: interpretedDisposition permaneció dentro de RuleDispositionInterpretation y compatibilityResult fue materializado únicamente dentro de CompatibilityResult.
+El escenario crítico heredado permaneció legítimo: comparisonResult=exact-mismatch, ConditionSatisfaction=satisfied, RuleApplication existente, declaredDisposition=compatible, interpretedDisposition=compatible, CompatibilityAssessment existente y finalmente compatibilityResult=compatible, sin reinterpretación directa de comparisonResult.
+CompatibilityResult sólo añadió resultType, compatibilityAssessment y compatibilityResult, sin duplicar RuleDispositionInterpretation, interpretedDisposition, declaredDisposition, ruleId, basis, condition, satisfactionResult, comparisonResult, criterionSubject ni targetType.
+No se materializaron CriterionApplicability, CriterionUtilization, Evaluation, EvaluationResult, Preference, Selection, Decision ni Execution.
+Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomendaciones y ${decisionsAfterCompatibilityResult.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25.'
       );
     } finally {
       setLoading(false);
@@ -39858,6 +40458,16 @@ Permanecieron intactas ${recommendationsAfterCompatibilityAssessment.length} rec
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Assessment Compatibilidad Criterio-Scope 24.24
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Resultado Compatibilidad Criterio-Scope 24.25
         </button>
 
         <button
