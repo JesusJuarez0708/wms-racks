@@ -160,6 +160,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationResultService';
 
 import {
+  establishProductiveKnowledgeRecommendationDeliberativeParticipation,
+} from '../services/operationalKnowledgeRecommendationDeliberativeParticipationService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -41272,6 +41276,579 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         );
       }
 
+      /**
+       * ============================================================
+       * FASE 24.30
+       * PARTICIPACIÓN DELIBERATIVA EXPLÍCITA DE UNA RECOMENDACIÓN
+       * ============================================================
+       *
+       * Recommendation
+       * +
+       * DeliberativeParticipationInput
+       * +
+       * acto explícito
+       * ↓
+       * DeliberativeParticipation
+       *
+       * La existencia de una Recommendation no materializa
+       * automáticamente participación deliberativa.
+       *
+       * La pertenencia a una misma deliberación tampoco implica:
+       *
+       * comparability
+       * Preference
+       * Selection
+       * Acceptance
+       * Rejection
+       * Decision
+       * Execution
+       *
+       * Asimismo:
+       *
+       * supported
+       * !=
+       * participates
+       *
+       * y:
+       *
+       * not-supported
+       * !=
+       * excluded
+       */
+
+      /*
+       * CASO A
+       *
+       * Debemos disponer de tres recomendaciones productivas
+       * independientes para demostrar:
+       *
+       * A y B -> misma deliberación
+       * C     -> deliberación distinta
+       */
+      if (
+        recommendationsAfterEvaluationResult.length < 3
+      ) {
+        throw new Error(
+          'FASE 24.30 requiere al menos tres recomendaciones productivas para demostrar pluralidad y separación deliberativa.'
+        );
+      }
+
+      const recommendationA =
+        recommendationsAfterEvaluationResult[0];
+
+      const recommendationB =
+        recommendationsAfterEvaluationResult[1];
+
+      const recommendationC =
+        recommendationsAfterEvaluationResult[2];
+
+      if (
+        !recommendationA ||
+        !recommendationB ||
+        !recommendationC
+      ) {
+        throw new Error(
+          'FASE 24.30 no pudo obtener las tres recomendaciones controladas necesarias.'
+        );
+      }
+
+      /*
+       * FRONTERA DE NO AUTOMATICIDAD.
+       *
+       * Recommendation exists
+       * !=
+       * DeliberativeParticipation exists
+       *
+       * Antes de invocar el nuevo servicio,
+       * ninguna Recommendation debe contener
+       * materialización deliberativa embebida.
+       */
+      for (
+        const recommendation of [
+          recommendationA,
+          recommendationB,
+          recommendationC,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of [
+            'deliberativeParticipation',
+            'participation',
+            'participationInput',
+            'deliberationId',
+            'participationType',
+          ]
+        ) {
+          if (
+            forbiddenProperty in recommendation
+          ) {
+            throw new Error(
+              `FASE 24.30 detectó ${forbiddenProperty} dentro de Recommendation antes de la participación deliberativa explícita.`
+            );
+          }
+        }
+      }
+
+      const recommendationASnapshotBeforeParticipation =
+        JSON.stringify(recommendationA);
+
+      const recommendationBSnapshotBeforeParticipation =
+        JSON.stringify(recommendationB);
+
+      const recommendationCSnapshotBeforeParticipation =
+        JSON.stringify(recommendationC);
+
+      /*
+       * CASO B
+       *
+       * Una Recommendation puede participar legítimamente
+       * por sí sola.
+       *
+       * No se requiere todavía:
+       *
+       * pluralidad
+       * comparabilidad
+       * Preference
+       */
+      const mainDeliberationParticipationInputA = {
+        deliberationId:
+          'controlled-deliberation-24-30-main',
+      };
+
+      const mainDeliberationParticipationInputASnapshot =
+        JSON.stringify(
+          mainDeliberationParticipationInputA
+        );
+
+      const explicitDeliberativeParticipationA =
+        establishProductiveKnowledgeRecommendationDeliberativeParticipation(
+          recommendationA,
+          mainDeliberationParticipationInputA
+        );
+
+      if (
+        explicitDeliberativeParticipationA
+          .participationType !==
+        'explicit-recommendation-deliberative-participation'
+      ) {
+        throw new Error(
+          'FASE 24.30 produjo un participationType inesperado para Recommendation A.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * La nueva entidad conserva exactamente
+       * ambos antecedentes por identidad.
+       */
+      if (
+        explicitDeliberativeParticipationA
+          .recommendation !==
+        recommendationA
+      ) {
+        throw new Error(
+          'FASE 24.30 no conservó Recommendation A exactamente por identidad.'
+        );
+      }
+
+      if (
+        explicitDeliberativeParticipationA
+          .participationInput !==
+        mainDeliberationParticipationInputA
+      ) {
+        throw new Error(
+          'FASE 24.30 no conservó ParticipationInput A exactamente por identidad.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * DeliberativeParticipation contiene exactamente:
+       *
+       * recommendation
+       * participationInput
+       * participationType
+       */
+      const explicitDeliberativeParticipationAKeys =
+        Object.keys(
+          explicitDeliberativeParticipationA
+        ).sort();
+
+      const expectedDeliberativeParticipationKeys = [
+        'recommendation',
+        'participationInput',
+        'participationType',
+      ].sort();
+
+      if (
+        JSON.stringify(
+          explicitDeliberativeParticipationAKeys
+        ) !==
+        JSON.stringify(
+          expectedDeliberativeParticipationKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.30 introdujo propiedades adicionales dentro de DeliberativeParticipation.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * Recommendation B participa explícitamente
+       * dentro de la MISMA deliberación que A.
+       *
+       * A participa
+       * +
+       * B participa
+       * +
+       * same deliberationId
+       * !=
+       * comparability
+       * !=
+       * Preference
+       */
+      const mainDeliberationParticipationInputB = {
+        deliberationId:
+          'controlled-deliberation-24-30-main',
+      };
+
+      const explicitDeliberativeParticipationB =
+        establishProductiveKnowledgeRecommendationDeliberativeParticipation(
+          recommendationB,
+          mainDeliberationParticipationInputB
+        );
+
+      if (
+        explicitDeliberativeParticipationB
+          .recommendation !==
+        recommendationB
+      ) {
+        throw new Error(
+          'FASE 24.30 no conservó Recommendation B exactamente por identidad.'
+        );
+      }
+
+      if (
+        explicitDeliberativeParticipationB
+          .participationInput !==
+        mainDeliberationParticipationInputB
+      ) {
+        throw new Error(
+          'FASE 24.30 no conservó ParticipationInput B exactamente por identidad.'
+        );
+      }
+
+      if (
+        explicitDeliberativeParticipationA
+          .participationInput
+          .deliberationId !==
+        explicitDeliberativeParticipationB
+          .participationInput
+          .deliberationId
+      ) {
+        throw new Error(
+          'FASE 24.30 no conservó A y B dentro de la misma deliberación controlada.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * Recommendation C participa en una deliberación
+       * diferente.
+       *
+       * Esto demuestra:
+       *
+       * participation exists
+       * !=
+       * same deliberation
+       */
+      const alternativeDeliberationParticipationInputC = {
+        deliberationId:
+          'controlled-deliberation-24-30-alternative',
+      };
+
+      const explicitDeliberativeParticipationC =
+        establishProductiveKnowledgeRecommendationDeliberativeParticipation(
+          recommendationC,
+          alternativeDeliberationParticipationInputC
+        );
+
+      if (
+        explicitDeliberativeParticipationC
+          .recommendation !==
+        recommendationC
+      ) {
+        throw new Error(
+          'FASE 24.30 no conservó Recommendation C exactamente por identidad.'
+        );
+      }
+
+      if (
+        explicitDeliberativeParticipationC
+          .participationInput !==
+        alternativeDeliberationParticipationInputC
+      ) {
+        throw new Error(
+          'FASE 24.30 no conservó ParticipationInput C exactamente por identidad.'
+        );
+      }
+
+      if (
+        explicitDeliberativeParticipationC
+          .participationInput
+          .deliberationId ===
+        explicitDeliberativeParticipationA
+          .participationInput
+          .deliberationId
+      ) {
+        throw new Error(
+          'FASE 24.30 perdió la separación explícita entre deliberaciones distintas.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * MISMA DELIBERACIÓN
+       * !=
+       * COMPARABILIDAD
+       * !=
+       * PREFERENCE
+       *
+       * Ninguna participación debe promoverse
+       * automáticamente hacia consecuencias posteriores.
+       */
+      const forbiddenPostParticipationProperties = [
+        'comparable',
+        'comparability',
+        'comparison',
+        'comparisonResult',
+        'preference',
+        'preferred',
+        'selection',
+        'acceptance',
+        'rejection',
+        'decision',
+        'execution',
+        'score',
+        'priority',
+        'confidence',
+        'weight',
+        'ranking',
+      ];
+
+      for (
+        const participation of [
+          explicitDeliberativeParticipationA,
+          explicitDeliberativeParticipationB,
+          explicitDeliberativeParticipationC,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of
+          forbiddenPostParticipationProperties
+        ) {
+          if (
+            forbiddenProperty in participation
+          ) {
+            throw new Error(
+              `FASE 24.30 promovió indebidamente DeliberativeParticipation hacia ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO H
+       *
+       * DeliberativeParticipation tampoco debe duplicar
+       * EvaluationResult ni su genealogía.
+       *
+       * EvaluationResult permanece en una rama independiente
+       * que podrá converger posteriormente con la deliberación.
+       */
+      const forbiddenEvaluationPropertiesInParticipation = [
+        'evaluationResult',
+        'criterionUtilization',
+        'conclusionInput',
+        'conclusion',
+        'resultType',
+        'evaluation',
+        'evaluationScope',
+        'criterionApplicability',
+        'applicabilityResult',
+        'compatibilityResult',
+        'compatibilityAssessment',
+        'ruleDispositionInterpretation',
+        'ruleApplication',
+        'conditionSatisfaction',
+        'ruleComparisonCorrespondence',
+        'compatibilityRuleDefinition',
+        'compatibilityRulePresence',
+        'semanticComparison',
+        'criterionDefinition',
+        'criterionPresence',
+      ];
+
+      for (
+        const participation of [
+          explicitDeliberativeParticipationA,
+          explicitDeliberativeParticipationB,
+          explicitDeliberativeParticipationC,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of
+          forbiddenEvaluationPropertiesInParticipation
+        ) {
+          if (
+            forbiddenProperty in participation
+          ) {
+            throw new Error(
+              `FASE 24.30 duplicó indebidamente ${forbiddenProperty} dentro de DeliberativeParticipation.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO I
+       *
+       * CONTINUIDAD CON FASE 24.29.
+       *
+       * La conclusión evaluativa supported existe,
+       * pero no produjo automáticamente participación:
+       *
+       * supported
+       * !=
+       * participates
+       */
+      if (
+        explicitEvaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.30 perdió el EvaluationResult supported necesario para demostrar independencia frente a participación.'
+        );
+      }
+
+      /*
+       * Asimismo, la estructura 24.29 ya demostró
+       * que not-supported es una conclusión legítima.
+       *
+       * FASE 24.30 no utiliza esa conclusión como
+       * causa automática de exclusión:
+       *
+       * not-supported
+       * !=
+       * excluded
+       *
+       * La nueva operación ni siquiera recibe
+       * EvaluationResult como antecedente.
+       */
+      if (
+        explicitNotSupportedEvaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-not-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.30 perdió el EvaluationResult not-supported necesario para preservar la frontera frente a exclusión deliberativa.'
+        );
+      }
+
+      /*
+       * CASO J
+       *
+       * La participación no modifica
+       * Recommendations ni ParticipationInput.
+       */
+      if (
+        JSON.stringify(recommendationA) !==
+        recommendationASnapshotBeforeParticipation
+      ) {
+        throw new Error(
+          'FASE 24.30 modificó Recommendation A durante la participación deliberativa.'
+        );
+      }
+
+      if (
+        JSON.stringify(recommendationB) !==
+        recommendationBSnapshotBeforeParticipation
+      ) {
+        throw new Error(
+          'FASE 24.30 modificó Recommendation B durante la participación deliberativa.'
+        );
+      }
+
+      if (
+        JSON.stringify(recommendationC) !==
+        recommendationCSnapshotBeforeParticipation
+      ) {
+        throw new Error(
+          'FASE 24.30 modificó Recommendation C durante la participación deliberativa.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          mainDeliberationParticipationInputA
+        ) !==
+        mainDeliberationParticipationInputASnapshot
+      ) {
+        throw new Error(
+          'FASE 24.30 modificó ParticipationInput A durante la materialización.'
+        );
+      }
+
+      /*
+       * CASO K
+       *
+       * Verificación productiva externa.
+       *
+       * DeliberativeParticipation no modifica
+       * Recommendation ni Decision.
+       */
+      const recommendationsAfterDeliberativeParticipation =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterDeliberativeParticipation =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterDeliberativeParticipation
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        ) !==
+        recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.30 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        ) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.30 modificó decisiones productivas.'
+        );
+      }
+
       addLog(
         `FASE 24.26 OK: se materializó explícitamente CriterionApplicability a partir de CompatibilityResult como único fundamento inmediato, conservando exactamente CompatibilityResult y toda su genealogía por identidad.
 CompatibilityResult permaneció distinto de CriterionApplicability: la existencia previa de compatibilityResult=compatible o compatibilityResult=incompatible no había materializado automáticamente aplicabilidad.
@@ -41313,13 +41890,25 @@ EvaluationResult permaneció explícitamente distinto de Preference, Selection y
 Permanecieron intactas ${recommendationsAfterEvaluationResult.length} recomendaciones y ${decisionsAfterEvaluationResult.length} decisiones productivas.`
       );
 
+      addLog(
+        `FASE 24.30 OK: se materializó explícitamente la participación deliberativa de una Recommendation a partir de la Recommendation y un DeliberativeParticipationInput con deliberationId explícito.
+Recommendation permaneció distinta de DeliberativeParticipation: la existencia previa de las recomendaciones no había materializado automáticamente ninguna participación deliberativa.
+Una sola Recommendation pudo participar legítimamente sin requerir pluralidad, comparabilidad ni una segunda alternativa.
+Recommendations A y B participaron explícitamente en controlled-deliberation-24-30-main, mientras Recommendation C participó en controlled-deliberation-24-30-alternative, demostrando que participation exists != same deliberation.
+La coincidencia de deliberationId entre A y B permaneció distinta de comparabilidad y Preference: no se materializaron Comparison, Preference, Selection, Acceptance, Rejection, Decision ni Execution.
+DeliberativeParticipation conservó exactamente Recommendation y ParticipationInput por identidad y sólo añadió participationType, sin duplicar EvaluationResult ni su genealogía evaluativa.
+Los EvaluationResult supported y not-supported heredados de FASE 24.29 permanecieron independientes de la participación: supported != participates y not-supported != excluded; FASE 24.30 no recibió ni reinterpretó conclusión evaluativa alguna.
+No se introdujeron score, priority, confidence, weight ni ranking.
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? 'Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29: ${error.message}'
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30.'
       );
     } finally {
       setLoading(false);
@@ -42416,6 +43005,16 @@ Permanecieron intactas ${recommendationsAfterEvaluationResult.length} recomendac
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Resultado Evaluativo 24.29
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Participación Deliberativa 24.30
         </button>
 
         <button
