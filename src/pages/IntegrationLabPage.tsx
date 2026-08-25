@@ -152,6 +152,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationService';
 
 import {
+  utilizeProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterion,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionUtilizationService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -343,6 +347,12 @@ function IntegrationLabPage() {
       });
 
       addLog('Estadísticas cargadas correctamente.');
+
+
+
+
+
+
     } catch (error) {
       console.error(error);
       addLog('Error al cargar estadísticas.');
@@ -40294,14 +40304,504 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         );
       }
 
-      addLog(
-        `FASE 24.27 OK: se materializó explícitamente Evaluation a partir de EvaluationScope como único fundamento inmediato, conservando exactamente EvaluationScope por identidad.
-EvaluationScope permaneció distinto de Evaluation: la existencia previa del scope no había materializado automáticamente ningún acto evaluativo.
-Evaluation sólo añadió evaluationType y evaluationScope, sin duplicar CriterionApplicability, CompatibilityResult, CompatibilityAssessment, RuleDispositionInterpretation, RuleApplication, ConditionSatisfaction, RuleComparisonCorrespondence, CompatibilityRuleDefinition, CompatibilityRulePresence, SemanticComparison, CriterionDefinition ni CriterionPresence.
-La rama evaluativa quedó explícitamente separada de la rama de aplicabilidad: CriterionApplicability=applicable y Evaluation pueden coexistir sin materializar CriterionUtilization.
-Evaluation permaneció explícitamente distinto de CriterionUtilization y EvaluationResult: no se materializaron utilización, resultado evaluativo, Preference, Selection, Decision ni Execution.
-Permanecieron intactas ${recommendationsAfterExplicitEvaluation.length} recomendaciones y ${decisionsAfterExplicitEvaluation.length} decisiones productivas.`
-      );
+
+
+      /*
+       * ============================================================
+       * FASE 24.28
+       * UTILIZACIÓN EXPLÍCITA DE CRITERIO APLICABLE
+       * POR ACTO EVALUATIVO
+       * ============================================================
+       *
+       * CriterionApplicability ─────┐
+       *                              │
+       *                              ├→ acto explícito de utilización
+       *                              │
+       * Evaluation ─────────────────┘
+       *                              ↓
+       *                    CriterionUtilization
+       *
+       * La mera coexistencia de:
+       *
+       * CriterionApplicability=applicable
+       * +
+       * Evaluation
+       *
+       * no materializa automáticamente CriterionUtilization.
+       *
+       * Para una utilización legítima:
+       *
+       * - CriterionApplicability debe ser applicable;
+       * - ambos antecedentes deben compartir exactamente
+       *   la misma instancia de EvaluationScope;
+       * - la operación de utilización debe ser invocada
+       *   explícitamente.
+       *
+       * CriterionUtilization tampoco materializa:
+       *
+       * EvaluationResult
+       * Preference
+       * Selection
+       * Decision
+       * Execution
+       */
+
+      /*
+       * CASO A
+       *
+       * FRONTERA DE NO AUTOMATICIDAD.
+       *
+       * CriterionApplicability=applicable
+       * +
+       * Evaluation
+       * +
+       * mismo EvaluationScope
+       * !=
+       * CriterionUtilization
+       *
+       * Ambos antecedentes ya coexisten desde FASE 24.27,
+       * pero ninguno contiene utilización.
+       */
+
+      if (
+        criterionApplicabilityForCompatibleResult
+          .applicabilityResult !==
+        'applicable'
+      ) {
+        throw new Error(
+          'FASE 24.28 perdió el antecedente CriterionApplicability=applicable.'
+        );
+      }
+
+      const criterionEvaluationScopeForUtilization =
+        criterionApplicabilityForCompatibleResult
+          .compatibilityResult
+          .compatibilityAssessment
+          .ruleDispositionInterpretation
+          .ruleApplication
+          .conditionSatisfaction
+          .ruleComparisonCorrespondence
+          .compatibilityRuleDefinition
+          .compatibilityRulePresence
+          .semanticComparison
+          .criterionDefinition
+          .criterionPresence
+          .evaluationScope;
+
+      if (
+        criterionEvaluationScopeForUtilization !==
+        explicitEvaluation.evaluationScope
+      ) {
+        throw new Error(
+          'FASE 24.28 perdió la identidad compartida de EvaluationScope antes de la utilización.'
+        );
+      }
+
+      for (
+        const forbiddenProperty of [
+          'criterionUtilization',
+          'utilization',
+        ]
+      ) {
+        if (
+          forbiddenProperty in
+            criterionApplicabilityForCompatibleResult ||
+          forbiddenProperty in
+            explicitEvaluation
+        ) {
+          throw new Error(
+            `FASE 24.28 detectó ${forbiddenProperty} antes de la invocación explícita de utilización.`
+          );
+        }
+      }
+
+      const criterionApplicabilitySnapshotBeforeUtilization =
+        JSON.stringify(
+          criterionApplicabilityForCompatibleResult
+        );
+
+      const evaluationSnapshotBeforeUtilization =
+        JSON.stringify(explicitEvaluation);
+
+      /*
+       * CASO B
+       *
+       * applicable
+       * +
+       * mismo EvaluationScope
+       * +
+       * invocación explícita
+       * =
+       * CriterionUtilization
+       */
+
+      const explicitCriterionUtilization =
+        utilizeProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterion(
+          criterionApplicabilityForCompatibleResult,
+          explicitEvaluation
+        );
+
+      if (!explicitCriterionUtilization) {
+        throw new Error(
+          'FASE 24.28 no materializó CriterionUtilization para un criterio applicable y una Evaluation del mismo EvaluationScope.'
+        );
+      }
+
+      if (
+        explicitCriterionUtilization.utilizationType !==
+        'explicit-applicable-criterion-utilized-by-evaluation'
+      ) {
+        throw new Error(
+          'FASE 24.28 produjo un utilizationType inesperado.'
+        );
+      }
+
+      if (
+        explicitCriterionUtilization
+          .criterionApplicability !==
+        criterionApplicabilityForCompatibleResult
+      ) {
+        throw new Error(
+          'FASE 24.28 no conservó CriterionApplicability exactamente por identidad.'
+        );
+      }
+
+      if (
+        explicitCriterionUtilization.evaluation !==
+        explicitEvaluation
+      ) {
+        throw new Error(
+          'FASE 24.28 no conservó Evaluation exactamente por identidad.'
+        );
+      }
+
+      const explicitCriterionUtilizationKeys =
+        Object.keys(explicitCriterionUtilization).sort();
+
+      const expectedExplicitCriterionUtilizationKeys = [
+        'criterionApplicability',
+        'evaluation',
+        'utilizationType',
+      ].sort();
+
+      if (
+        JSON.stringify(
+          explicitCriterionUtilizationKeys
+        ) !==
+        JSON.stringify(
+          expectedExplicitCriterionUtilizationKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.28 introdujo propiedades adicionales dentro de CriterionUtilization.'
+        );
+      }
+
+      /*
+       * La convergencia debe preservar exactamente
+       * el mismo EvaluationScope por ambas genealogías.
+       */
+
+      const utilizationCriterionEvaluationScope =
+        explicitCriterionUtilization
+          .criterionApplicability
+          .compatibilityResult
+          .compatibilityAssessment
+          .ruleDispositionInterpretation
+          .ruleApplication
+          .conditionSatisfaction
+          .ruleComparisonCorrespondence
+          .compatibilityRuleDefinition
+          .compatibilityRulePresence
+          .semanticComparison
+          .criterionDefinition
+          .criterionPresence
+          .evaluationScope;
+
+      if (
+        utilizationCriterionEvaluationScope !==
+        explicitCriterionUtilization
+          .evaluation
+          .evaluationScope
+      ) {
+        throw new Error(
+          'FASE 24.28 materializó CriterionUtilization sin conservar la misma instancia de EvaluationScope en ambas genealogías.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * not-applicable
+       * +
+       * Evaluation del mismo scope
+       * →
+       * null
+       *
+       * No se crea una entidad negativa artificial.
+       */
+
+      if (
+        criterionApplicabilityForIncompatibleResult
+          .applicabilityResult !==
+        'not-applicable'
+      ) {
+        throw new Error(
+          'FASE 24.28 perdió el antecedente CriterionApplicability=not-applicable.'
+        );
+      }
+
+      const notApplicableEvaluationScope =
+        criterionApplicabilityForIncompatibleResult
+          .compatibilityResult
+          .compatibilityAssessment
+          .ruleDispositionInterpretation
+          .ruleApplication
+          .conditionSatisfaction
+          .ruleComparisonCorrespondence
+          .compatibilityRuleDefinition
+          .compatibilityRulePresence
+          .semanticComparison
+          .criterionDefinition
+          .criterionPresence
+          .evaluationScope;
+
+      const evaluationForNotApplicableCriterion =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluation(
+          notApplicableEvaluationScope
+        );
+
+      const notApplicableCriterionUtilization =
+        utilizeProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterion(
+          criterionApplicabilityForIncompatibleResult,
+          evaluationForNotApplicableCriterion
+        );
+
+      if (
+        notApplicableCriterionUtilization !==
+        null
+      ) {
+        throw new Error(
+          'FASE 24.28 materializó indebidamente CriterionUtilization para un criterio not-applicable.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * applicable(scope A)
+       * +
+       * Evaluation(scope B)
+       * →
+       * null
+       *
+       * Creamos deliberadamente una nueva instancia de scope B
+       * descriptivamente equivalente al scope A.
+       *
+       * La equivalencia descriptiva no sustituye
+       * la identidad del ámbito evaluativo.
+       */
+
+      const distinctEvaluationScope = {
+        ...criterionEvaluationScopeForUtilization,
+      };
+
+      if (
+        distinctEvaluationScope ===
+        criterionEvaluationScopeForUtilization
+      ) {
+        throw new Error(
+          'FASE 24.28 no logró construir una instancia distinta de EvaluationScope para la prueba de identidad.'
+        );
+      }
+
+      if (
+        JSON.stringify(distinctEvaluationScope) !==
+        JSON.stringify(
+          criterionEvaluationScopeForUtilization
+        )
+      ) {
+        throw new Error(
+          'FASE 24.28 alteró descriptivamente EvaluationScope al construir el control de identidad.'
+        );
+      }
+
+      const evaluationWithDistinctScope =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluation(
+          distinctEvaluationScope
+        );
+
+      const crossScopeCriterionUtilization =
+        utilizeProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterion(
+          criterionApplicabilityForCompatibleResult,
+          evaluationWithDistinctScope
+        );
+
+      if (
+        crossScopeCriterionUtilization !==
+        null
+      ) {
+        throw new Error(
+          'FASE 24.28 permitió indebidamente utilizar un CriterionApplicability dentro de una Evaluation perteneciente a otra instancia de EvaluationScope.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * CriterionUtilization conserva exactamente
+       * sus dos antecedentes y no los modifica.
+       */
+
+      if (
+        JSON.stringify(
+          criterionApplicabilityForCompatibleResult
+        ) !==
+        criterionApplicabilitySnapshotBeforeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.28 modificó CriterionApplicability durante la utilización.'
+        );
+      }
+
+      if (
+        JSON.stringify(explicitEvaluation) !==
+        evaluationSnapshotBeforeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.28 modificó Evaluation durante la utilización.'
+        );
+      }
+
+      /*
+       * FRONTERA POSTERIOR
+       *
+       * CriterionUtilization
+       * !=
+       * EvaluationResult
+       *
+       * Utilizar un criterio dentro de una evaluación
+       * no significa que la evaluación ya haya producido
+       * una conclusión.
+       */
+
+      const forbiddenCriterionUtilizationProperties = [
+        'evaluationResult',
+        'result',
+        'outcome',
+        'conclusion',
+        'score',
+        'priority',
+        'confidence',
+        'weight',
+        'ranking',
+        'preference',
+        'selection',
+        'acceptance',
+        'rejection',
+        'decision',
+        'execution',
+      ];
+
+      for (
+        const forbiddenProperty of
+        forbiddenCriterionUtilizationProperties
+      ) {
+        if (
+          forbiddenProperty in
+          explicitCriterionUtilization
+        ) {
+          throw new Error(
+            `FASE 24.28 promovió indebidamente CriterionUtilization hacia ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CriterionUtilization tampoco debe duplicar
+       * directamente la genealogía interna de aplicabilidad.
+       */
+
+      const forbiddenDuplicatedUtilizationProperties = [
+        'evaluationScope',
+        'applicabilityResult',
+        'compatibilityResult',
+        'compatibilityAssessment',
+        'ruleDispositionInterpretation',
+        'ruleApplication',
+        'conditionSatisfaction',
+        'ruleComparisonCorrespondence',
+        'compatibilityRuleDefinition',
+        'compatibilityRulePresence',
+        'semanticComparison',
+        'criterionDefinition',
+        'criterionPresence',
+        'criterionId',
+        'criterionSubject',
+        'comparisonResult',
+        'condition',
+        'satisfactionResult',
+        'declaredDisposition',
+        'interpretedDisposition',
+      ];
+
+      for (
+        const forbiddenProperty of
+        forbiddenDuplicatedUtilizationProperties
+      ) {
+        if (
+          forbiddenProperty in
+          explicitCriterionUtilization
+        ) {
+          throw new Error(
+            `FASE 24.28 duplicó indebidamente ${forbiddenProperty} dentro de CriterionUtilization.`
+          );
+        }
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * CriterionUtilization no puede modificar
+       * Recommendation ni Decision.
+       */
+
+      const recommendationsAfterCriterionUtilization =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterCriterionUtilization =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterCriterionUtilization
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterCriterionUtilization
+        ) !==
+        recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.28 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterCriterionUtilization
+        ) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.28 modificó decisiones productivas.'
+        );
+      }
+
+
+
+
 
       addLog(
         `FASE 24.26 OK: se materializó explícitamente CriterionApplicability a partir de CompatibilityResult como único fundamento inmediato, conservando exactamente CompatibilityResult y toda su genealogía por identidad.
@@ -40314,13 +40814,32 @@ applicabilityResult=applicable permaneció explícitamente distinto de Criterion
 Permanecieron intactas ${recommendationsAfterCriterionApplicability.length} recomendaciones y ${decisionsAfterCriterionApplicability.length} decisiones productivas.`
       );
 
+      addLog(
+        `FASE 24.27 OK: se materializó explícitamente Evaluation a partir de EvaluationScope como único fundamento inmediato, conservando exactamente EvaluationScope por identidad.
+EvaluationScope permaneció distinto de Evaluation: la existencia previa del scope no había materializado automáticamente ningún acto evaluativo.
+Evaluation sólo añadió evaluationType y evaluationScope, sin duplicar CriterionApplicability, CompatibilityResult, CompatibilityAssessment, RuleDispositionInterpretation, RuleApplication, ConditionSatisfaction, RuleComparisonCorrespondence, CompatibilityRuleDefinition, CompatibilityRulePresence, SemanticComparison, CriterionDefinition ni CriterionPresence.
+La rama evaluativa quedó explícitamente separada de la rama de aplicabilidad: CriterionApplicability=applicable y Evaluation pueden coexistir sin materializar CriterionUtilization.
+Evaluation permaneció explícitamente distinto de CriterionUtilization y EvaluationResult: no se materializaron utilización, resultado evaluativo, Preference, Selection, Decision ni Execution.
+Permanecieron intactas ${recommendationsAfterExplicitEvaluation.length} recomendaciones y ${decisionsAfterExplicitEvaluation.length} decisiones productivas.`
+      );
+
+      addLog(
+        `FASE 24.28 OK: se materializó explícitamente CriterionUtilization como relación entre un CriterionApplicability=applicable y una Evaluation concreta pertenecientes exactamente a la misma instancia de EvaluationScope.
+La mera coexistencia de CriterionApplicability=applicable y Evaluation permaneció distinta de CriterionUtilization: la utilización sólo nació mediante invocación explícita.
+CriterionUtilization conservó exactamente CriterionApplicability y Evaluation por identidad, sin duplicar EvaluationScope, CompatibilityResult, CompatibilityAssessment, RuleDispositionInterpretation, RuleApplication, ConditionSatisfaction, RuleComparisonCorrespondence, CompatibilityRuleDefinition, CompatibilityRulePresence, SemanticComparison, CriterionDefinition ni CriterionPresence.
+Un CriterionApplicability=not-applicable no materializó utilización y devolvió null sin introducir una entidad negativa artificial.
+Un CriterionApplicability=applicable perteneciente a un EvaluationScope distinto por identidad tampoco pudo utilizarse dentro de otra Evaluation, incluso cuando ambos scopes eran descriptivamente equivalentes.
+CriterionUtilization permaneció explícitamente distinto de EvaluationResult: no se materializaron resultado evaluativo, Preference, Selection, Decision ni Execution.
+Permanecieron intactas ${recommendationsAfterCriterionUtilization.length} recomendaciones y ${decisionsAfterCriterionUtilization.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28.'
       );
     } finally {
       setLoading(false);
@@ -41397,6 +41916,16 @@ Permanecieron intactas ${recommendationsAfterCriterionApplicability.length} reco
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Acto Evaluativo Explícito 24.27
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Utilización Criterio 24.28
         </button>
 
         <button
