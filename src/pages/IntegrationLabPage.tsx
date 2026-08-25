@@ -128,6 +128,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleConditionSatisfactionService';
 
 import {
+  applyProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRule,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleApplicationService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -37403,13 +37407,501 @@ satisfied no produjo RuleApplication, CompatibilityAssessment, CompatibilityResu
 Permanecieron intactas ${recommendationsAfterCompatibilityRuleConditionSatisfaction.length} recomendaciones y ${decisionsAfterCompatibilityRuleConditionSatisfaction.length} decisiones productivas.`
       );
 
+      /*
+       * FASE 24.22 — Aplicación productiva explícita
+       * de la regla externa de compatibilidad criterio-scope.
+       *
+       * CompatibilityRuleConditionSatisfaction
+       * ->
+       * CompatibilityRuleApplication
+       *
+       * La aplicación sólo puede materializarse cuando:
+       *
+       * satisfactionResult = satisfied
+       *
+       * RuleApplication conserva exclusivamente
+       * ConditionSatisfaction por identidad.
+       *
+       * declaredDisposition sigue perteneciendo
+       * a la definición genealógica de la regla y
+       * NO se interpreta todavía.
+       *
+       * RuleApplication
+       * != CompatibilityAssessment
+       * != CompatibilityResult
+       * != CriterionApplicability
+       * != CriterionUtilization
+       * != Evaluation
+       * != EvaluationResult
+       * != Decision
+       * != Execution
+       *
+       * not-satisfied
+       * -> no RuleApplication
+       *
+       * sin materializar todavía una entidad
+       * explícita de no-aplicación.
+       */
+
+      /*
+       * Snapshots de los antecedentes 24.21.
+       * RuleApplication no puede mutarlos.
+       */
+      const conditionSatisfactionForExactMismatchSnapshot =
+        JSON.stringify(
+          conditionSatisfactionForExactMismatch
+        );
+
+      const conditionSatisfactionForExactMatchSnapshot =
+        JSON.stringify(
+          conditionSatisfactionForExactMatch
+        );
+
+      const incompatibleDispositionConditionSatisfactionSnapshot =
+        JSON.stringify(
+          incompatibleDispositionConditionSatisfaction
+        );
+
+      const operandConditionNotSatisfiedSnapshot =
+        JSON.stringify(
+          operandConditionNotSatisfied
+        );
+
+      /*
+       * CASO A — satisfied + declaredDisposition compatible.
+       *
+       * condition = exact-mismatch
+       * actual    = exact-mismatch
+       *
+       * satisfactionResult = satisfied
+       * declaredDisposition = compatible
+       *
+       * Debe producir RuleApplication.
+       */
+      const compatibilityRuleApplicationForCompatibleDisposition =
+        applyProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRule(
+          conditionSatisfactionForExactMismatch
+        );
+
+      if (
+        compatibilityRuleApplicationForCompatibleDisposition ===
+        null
+      ) {
+        throw new Error(
+          'FASE 24.22 no materializó RuleApplication para ConditionSatisfaction=satisfied con declaredDisposition=compatible.'
+        );
+      }
+
+      /*
+       * CASO B — misma satisfacción,
+       * declaredDisposition incompatible.
+       *
+       * Debe producir igualmente RuleApplication.
+       *
+       * Esto demuestra que declaredDisposition
+       * no controla la aplicación.
+       */
+      const compatibilityRuleApplicationForIncompatibleDisposition =
+        applyProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRule(
+          incompatibleDispositionConditionSatisfaction
+        );
+
+      if (
+        compatibilityRuleApplicationForIncompatibleDisposition ===
+        null
+      ) {
+        throw new Error(
+          'FASE 24.22 hizo depender RuleApplication de declaredDisposition=incompatible.'
+        );
+      }
+
+      /*
+       * CASO C — not-satisfied + declaredDisposition compatible.
+       *
+       * No debe existir RuleApplication.
+       */
+      const compatibilityRuleApplicationForNotSatisfiedExactMatch =
+        applyProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRule(
+          conditionSatisfactionForExactMatch
+        );
+
+      if (
+        compatibilityRuleApplicationForNotSatisfiedExactMatch !==
+        null
+      ) {
+        throw new Error(
+          'FASE 24.22 materializó indebidamente RuleApplication para ConditionSatisfaction=not-satisfied.'
+        );
+      }
+
+      /*
+       * CASO D — otro not-satisfied independiente,
+       * basado en semantic-comparison-operands.
+       *
+       * Tampoco debe existir RuleApplication.
+       */
+      const compatibilityRuleApplicationForNotSatisfiedOperands =
+        applyProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRule(
+          operandConditionNotSatisfied
+        );
+
+      if (
+        compatibilityRuleApplicationForNotSatisfiedOperands !==
+        null
+      ) {
+        throw new Error(
+          'FASE 24.22 materializó indebidamente RuleApplication para una condición de operandos not-satisfied.'
+        );
+      }
+
+      /*
+       * CASO E — contrato estructural mínimo.
+       */
+      const compatibilityRuleApplications = [
+        compatibilityRuleApplicationForCompatibleDisposition,
+        compatibilityRuleApplicationForIncompatibleDisposition,
+      ];
+
+      for (
+        const compatibilityRuleApplication of
+        compatibilityRuleApplications
+      ) {
+        if (
+          compatibilityRuleApplication.applicationType !==
+          'explicit-criterion-scope-compatibility-rule-application'
+        ) {
+          throw new Error(
+            'FASE 24.22 produjo un applicationType inesperado.'
+          );
+        }
+
+        const compatibilityRuleApplicationKeys =
+          Object.keys(
+            compatibilityRuleApplication
+          ).sort();
+
+        if (
+          JSON.stringify(
+            compatibilityRuleApplicationKeys
+          ) !==
+          JSON.stringify([
+            'applicationType',
+            'conditionSatisfaction',
+          ])
+        ) {
+          throw new Error(
+            'FASE 24.22 duplicó información genealógica o introdujo propiedades adicionales dentro de RuleApplication.'
+          );
+        }
+      }
+
+      /*
+       * Conservación exacta por identidad.
+       */
+      if (
+        compatibilityRuleApplicationForCompatibleDisposition
+          .conditionSatisfaction !==
+        conditionSatisfactionForExactMismatch
+      ) {
+        throw new Error(
+          'FASE 24.22 no conservó exactamente ConditionSatisfaction por identidad para declaredDisposition=compatible.'
+        );
+      }
+
+      if (
+        compatibilityRuleApplicationForIncompatibleDisposition
+          .conditionSatisfaction !==
+        incompatibleDispositionConditionSatisfaction
+      ) {
+        throw new Error(
+          'FASE 24.22 no conservó exactamente ConditionSatisfaction por identidad para declaredDisposition=incompatible.'
+        );
+      }
+
+      /*
+       * CASO F — declaredDisposition es ortogonal
+       * a RuleApplication.
+       */
+      const compatibleDeclaredDisposition =
+        compatibilityRuleApplicationForCompatibleDisposition
+          .conditionSatisfaction
+          .ruleComparisonCorrespondence
+          .compatibilityRuleDefinition
+          .definitionInput
+          .declaredDisposition;
+
+      const incompatibleDeclaredDisposition =
+        compatibilityRuleApplicationForIncompatibleDisposition
+          .conditionSatisfaction
+          .ruleComparisonCorrespondence
+          .compatibilityRuleDefinition
+          .definitionInput
+          .declaredDisposition;
+
+      if (
+        compatibleDeclaredDisposition !==
+        'compatible'
+      ) {
+        throw new Error(
+          'FASE 24.22 perdió el escenario crítico declaredDisposition=compatible.'
+        );
+      }
+
+      if (
+        incompatibleDeclaredDisposition !==
+        'incompatible'
+      ) {
+        throw new Error(
+          'FASE 24.22 perdió el escenario controlado declaredDisposition=incompatible.'
+        );
+      }
+
+      /*
+       * Ambos declaredDisposition distintos produjeron
+       * exactamente el mismo hecho estructural:
+       * RuleApplication.
+       *
+       * declaredDisposition no participa en la
+       * materialización de la aplicación.
+       */
+      if (
+        compatibilityRuleApplicationForCompatibleDisposition
+          .applicationType !==
+        compatibilityRuleApplicationForIncompatibleDisposition
+          .applicationType
+      ) {
+        throw new Error(
+          'FASE 24.22 hizo depender applicationType de declaredDisposition.'
+        );
+      }
+
+      /*
+       * CASO G — frontera de no promoción.
+       *
+       * RuleApplication sólo afirma que la regla
+       * satisfecha fue aplicada.
+       *
+       * No puede interpretar declaredDisposition
+       * ni producir resultados posteriores.
+       */
+      const forbiddenCompatibilityRuleApplicationProperties = [
+        'ruleId',
+        'basis',
+        'condition',
+        'comparisonResult',
+        'criterionSubject',
+        'targetType',
+        'declaredDisposition',
+
+        'assessment',
+        'compatibilityAssessment',
+
+        'compatibility',
+        'compatibilityResult',
+        'isCompatible',
+        'compatible',
+        'incompatible',
+        'effectiveDisposition',
+        'evaluatedDisposition',
+
+        'criterionApplicability',
+        'criterionNonApplicability',
+        'applicability',
+        'applicable',
+        'nonApplicable',
+
+        'utilization',
+
+        'evaluation',
+        'evaluationResult',
+        'score',
+        'priority',
+        'confidence',
+        'weight',
+        'ranking',
+        'preference',
+        'selection',
+
+        'decision',
+        'execution',
+      ];
+
+      for (
+        const compatibilityRuleApplication of
+        compatibilityRuleApplications
+      ) {
+        for (
+          const forbiddenProperty of
+          forbiddenCompatibilityRuleApplicationProperties
+        ) {
+          if (
+            forbiddenProperty in
+            compatibilityRuleApplication
+          ) {
+            throw new Error(
+              `FASE 24.22 convirtió indebidamente RuleApplication en ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO CRÍTICO:
+       *
+       * satisfied
+       * +
+       * RuleApplication
+       * +
+       * declaredDisposition = compatible
+       *
+       * != CompatibilityResult compatible.
+       */
+      if (
+        compatibilityRuleApplicationForCompatibleDisposition
+          .conditionSatisfaction
+          .satisfactionResult !== 'satisfied' ||
+        compatibleDeclaredDisposition !== 'compatible'
+      ) {
+        throw new Error(
+          'FASE 24.22 perdió el escenario crítico satisfied + RuleApplication + declaredDisposition compatible.'
+        );
+      }
+
+      if (
+        'compatibilityResult' in
+          compatibilityRuleApplicationForCompatibleDisposition ||
+        'compatible' in
+          compatibilityRuleApplicationForCompatibleDisposition ||
+        'assessment' in
+          compatibilityRuleApplicationForCompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.22 convirtió indebidamente RuleApplication + declaredDisposition compatible en CompatibilityAssessment o CompatibilityResult compatible.'
+        );
+      }
+
+      /*
+       * Caso simétrico:
+       *
+       * RuleApplication
+       * +
+       * declaredDisposition = incompatible
+       *
+       * != CompatibilityResult incompatible.
+       */
+      if (
+        'compatibilityResult' in
+          compatibilityRuleApplicationForIncompatibleDisposition ||
+        'incompatible' in
+          compatibilityRuleApplicationForIncompatibleDisposition ||
+        'assessment' in
+          compatibilityRuleApplicationForIncompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.22 convirtió indebidamente RuleApplication + declaredDisposition incompatible en CompatibilityAssessment o CompatibilityResult incompatible.'
+        );
+      }
+
+      /*
+       * No mutación de antecedentes 24.21.
+       */
+      if (
+        JSON.stringify(
+          conditionSatisfactionForExactMismatch
+        ) !==
+        conditionSatisfactionForExactMismatchSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.22 modificó ConditionSatisfaction satisfied con declaredDisposition compatible.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          conditionSatisfactionForExactMatch
+        ) !==
+        conditionSatisfactionForExactMatchSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.22 modificó ConditionSatisfaction not-satisfied.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          incompatibleDispositionConditionSatisfaction
+        ) !==
+        incompatibleDispositionConditionSatisfactionSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.22 modificó ConditionSatisfaction satisfied con declaredDisposition incompatible.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          operandConditionNotSatisfied
+        ) !==
+        operandConditionNotSatisfiedSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.22 modificó ConditionSatisfaction not-satisfied basada en operandos.'
+        );
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * RuleApplication no puede modificar
+       * Recommendation ni Decision.
+       */
+      const recommendationsAfterCompatibilityRuleApplication =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterCompatibilityRuleApplication =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterCompatibilityRuleApplication
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterCompatibilityRuleApplication
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.22 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterCompatibilityRuleApplication
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.22 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.22 OK: se materializó explícitamente RuleApplication únicamente para ConditionSatisfaction=satisfied, conservando exactamente ConditionSatisfaction y toda su genealogía por identidad.
+ConditionSatisfaction=not-satisfied no materializó RuleApplication, tanto para una condición basada en semantic-comparison-result como para una basada en semantic-comparison-operands.
+La misma condición satisfecha produjo RuleApplication con declaredDisposition=compatible y con declaredDisposition=incompatible, demostrando que declaredDisposition no controla la aplicación.
+RuleApplication no interpretó declaredDisposition ni produjo CompatibilityAssessment, CompatibilityResult, CriterionApplicability, CriterionUtilization, Evaluation, EvaluationResult, Decision ni Execution.
+RuleApplication + declaredDisposition=compatible siguió siendo distinto de CompatibilityResult compatible, y RuleApplication + declaredDisposition=incompatible siguió siendo distinto de CompatibilityResult incompatible.
+Permanecieron intactas ${recommendationsAfterCompatibilityRuleApplication.length} recomendaciones y ${decisionsAfterCompatibilityRuleApplication.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22.'
       );
     } finally {
       setLoading(false);
@@ -38425,6 +38917,16 @@ Permanecieron intactas ${recommendationsAfterCompatibilityRuleConditionSatisfact
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Satisfacción Condición Regla Compatibilidad Criterio-Scope 24.21
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Aplicación Regla Compatibilidad Criterio-Scope 24.22
         </button>
 
         <button
