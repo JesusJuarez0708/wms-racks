@@ -132,6 +132,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleApplicationService';
 
 import {
+  interpretProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDisposition,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDispositionInterpretationService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -37895,6 +37899,483 @@ RuleApplication + declaredDisposition=compatible siguió siendo distinto de Comp
 Permanecieron intactas ${recommendationsAfterCompatibilityRuleApplication.length} recomendaciones y ${decisionsAfterCompatibilityRuleApplication.length} decisiones productivas.`
       );
 
+      /*
+       * FASE 24.23 — Interpretación productiva explícita
+       * de la disposición declarada de la regla externa
+       * de compatibilidad criterio-scope aplicada.
+       *
+       * CompatibilityRuleApplication
+       * ->
+       * CompatibilityRuleDispositionInterpretation
+       *
+       * La interpretación sólo recibe una RuleApplication
+       * ya materializada.
+       *
+       * interpretedDisposition procede exclusivamente de
+       * declaredDisposition dentro de la definición
+       * genealógica de la regla aplicada.
+       *
+       * RuleDispositionInterpretation conserva
+       * exclusivamente RuleApplication por identidad
+       * y materializa interpretedDisposition como
+       * nuevo hecho productivo.
+       *
+       * interpretedDisposition
+       * != CompatibilityAssessment
+       * != CompatibilityResult
+       * != CriterionApplicability
+       * != CriterionUtilization
+       * != Evaluation
+       * != EvaluationResult
+       * != Decision
+       * != Execution
+       */
+
+      /*
+       * Snapshots de las RuleApplication 24.22.
+       * RuleDispositionInterpretation no puede mutarlas.
+       */
+      const compatibilityRuleApplicationForCompatibleDispositionSnapshot =
+        JSON.stringify(
+          compatibilityRuleApplicationForCompatibleDisposition
+        );
+
+      const compatibilityRuleApplicationForIncompatibleDispositionSnapshot =
+        JSON.stringify(
+          compatibilityRuleApplicationForIncompatibleDisposition
+        );
+
+      /*
+       * CASO A — RuleApplication con
+       * declaredDisposition = compatible.
+       *
+       * El caso crítico heredado conserva:
+       *
+       * actual comparisonResult = exact-mismatch
+       * satisfactionResult = satisfied
+       * declaredDisposition = compatible
+       *
+       * Debe producir:
+       *
+       * interpretedDisposition = compatible
+       *
+       * sin producir CompatibilityResult compatible.
+       */
+      const compatibilityRuleDispositionInterpretationForCompatibleDisposition =
+        interpretProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDisposition(
+          compatibilityRuleApplicationForCompatibleDisposition
+        );
+
+      if (
+        compatibilityRuleDispositionInterpretationForCompatibleDisposition
+          .interpretationType !==
+        'explicit-applied-criterion-scope-compatibility-rule-disposition-interpretation'
+      ) {
+        throw new Error(
+          'FASE 24.23 produjo un interpretationType inesperado para declaredDisposition=compatible.'
+        );
+      }
+
+      if (
+        compatibilityRuleDispositionInterpretationForCompatibleDisposition
+          .interpretedDisposition !== 'compatible'
+      ) {
+        throw new Error(
+          'FASE 24.23 no interpretó declaredDisposition=compatible como interpretedDisposition=compatible.'
+        );
+      }
+
+      /*
+       * CASO B — RuleApplication con
+       * declaredDisposition = incompatible.
+       *
+       * Debe producir estructuralmente la misma
+       * interpretación, cambiando únicamente
+       * interpretedDisposition.
+       */
+      const compatibilityRuleDispositionInterpretationForIncompatibleDisposition =
+        interpretProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityRuleDisposition(
+          compatibilityRuleApplicationForIncompatibleDisposition
+        );
+
+      if (
+        compatibilityRuleDispositionInterpretationForIncompatibleDisposition
+          .interpretationType !==
+        'explicit-applied-criterion-scope-compatibility-rule-disposition-interpretation'
+      ) {
+        throw new Error(
+          'FASE 24.23 produjo un interpretationType inesperado para declaredDisposition=incompatible.'
+        );
+      }
+
+      if (
+        compatibilityRuleDispositionInterpretationForIncompatibleDisposition
+          .interpretedDisposition !== 'incompatible'
+      ) {
+        throw new Error(
+          'FASE 24.23 no interpretó declaredDisposition=incompatible como interpretedDisposition=incompatible.'
+        );
+      }
+
+      /*
+       * CASO C — conservación exacta por identidad.
+       *
+       * La nueva entidad no reconstruye RuleApplication.
+       */
+      if (
+        compatibilityRuleDispositionInterpretationForCompatibleDisposition
+          .ruleApplication !==
+        compatibilityRuleApplicationForCompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.23 no conservó exactamente RuleApplication por identidad para interpretedDisposition=compatible.'
+        );
+      }
+
+      if (
+        compatibilityRuleDispositionInterpretationForIncompatibleDisposition
+          .ruleApplication !==
+        compatibilityRuleApplicationForIncompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.23 no conservó exactamente RuleApplication por identidad para interpretedDisposition=incompatible.'
+        );
+      }
+
+      /*
+       * CASO D — contrato estructural mínimo.
+       *
+       * RuleDispositionInterpretation sólo debe contener:
+       *
+       * interpretationType
+       * interpretedDisposition
+       * ruleApplication
+       */
+      const compatibilityRuleDispositionInterpretations = [
+        compatibilityRuleDispositionInterpretationForCompatibleDisposition,
+        compatibilityRuleDispositionInterpretationForIncompatibleDisposition,
+      ];
+
+      for (
+        const compatibilityRuleDispositionInterpretation of
+        compatibilityRuleDispositionInterpretations
+      ) {
+        const compatibilityRuleDispositionInterpretationKeys =
+          Object.keys(
+            compatibilityRuleDispositionInterpretation
+          ).sort();
+
+        if (
+          JSON.stringify(
+            compatibilityRuleDispositionInterpretationKeys
+          ) !==
+          JSON.stringify([
+            'interpretationType',
+            'interpretedDisposition',
+            'ruleApplication',
+          ])
+        ) {
+          throw new Error(
+            'FASE 24.23 duplicó información genealógica o introdujo propiedades adicionales dentro de RuleDispositionInterpretation.'
+          );
+        }
+      }
+
+      /*
+       * CASO E — interpretedDisposition procede
+       * exclusivamente de declaredDisposition.
+       *
+       * No se deriva directamente de comparisonResult
+       * ni de satisfactionResult.
+       */
+      const compatibleDispositionSource =
+        compatibilityRuleDispositionInterpretationForCompatibleDisposition
+          .ruleApplication
+          .conditionSatisfaction
+          .ruleComparisonCorrespondence
+          .compatibilityRuleDefinition
+          .definitionInput
+          .declaredDisposition;
+
+      const incompatibleDispositionSource =
+        compatibilityRuleDispositionInterpretationForIncompatibleDisposition
+          .ruleApplication
+          .conditionSatisfaction
+          .ruleComparisonCorrespondence
+          .compatibilityRuleDefinition
+          .definitionInput
+          .declaredDisposition;
+
+      if (
+        compatibleDispositionSource !==
+        compatibilityRuleDispositionInterpretationForCompatibleDisposition
+          .interpretedDisposition
+      ) {
+        throw new Error(
+          'FASE 24.23 produjo interpretedDisposition=compatible desde una fuente distinta de declaredDisposition.'
+        );
+      }
+
+      if (
+        incompatibleDispositionSource !==
+        compatibilityRuleDispositionInterpretationForIncompatibleDisposition
+          .interpretedDisposition
+      ) {
+        throw new Error(
+          'FASE 24.23 produjo interpretedDisposition=incompatible desde una fuente distinta de declaredDisposition.'
+        );
+      }
+
+      /*
+       * CASO F — independencia respecto de la
+       * comparación semántica descriptiva.
+       *
+       * El escenario crítico conserva exact-mismatch
+       * y, aun así, la regla aplicada puede prescribir
+       * interpretedDisposition=compatible.
+       */
+      const criticalActualComparisonResult =
+        compatibilityRuleDispositionInterpretationForCompatibleDisposition
+          .ruleApplication
+          .conditionSatisfaction
+          .ruleComparisonCorrespondence
+          .compatibilityRuleDefinition
+          .compatibilityRulePresence
+          .semanticComparison
+          .comparisonResult;
+
+      if (
+        criticalActualComparisonResult !== 'exact-mismatch'
+      ) {
+        throw new Error(
+          'FASE 24.23 perdió el escenario crítico comparisonResult=exact-mismatch.'
+        );
+      }
+
+      if (
+        compatibilityRuleDispositionInterpretationForCompatibleDisposition
+          .interpretedDisposition !== 'compatible'
+      ) {
+        throw new Error(
+          'FASE 24.23 reinterpretó indebidamente exact-mismatch como una disposición distinta de la declarada por la regla.'
+        );
+      }
+
+      /*
+       * CASO G — simetría estructural.
+       *
+       * Las dos RuleApplication satisfechas utilizan
+       * el mismo mecanismo de interpretación:
+       *
+       * declaredDisposition compatible
+       * -> interpretedDisposition compatible
+       *
+       * declaredDisposition incompatible
+       * -> interpretedDisposition incompatible
+       */
+      if (
+        compatibilityRuleDispositionInterpretationForCompatibleDisposition
+          .interpretationType !==
+        compatibilityRuleDispositionInterpretationForIncompatibleDisposition
+          .interpretationType
+      ) {
+        throw new Error(
+          'FASE 24.23 hizo depender interpretationType del valor de declaredDisposition.'
+        );
+      }
+
+      /*
+       * CASO H — no duplicación de genealogía
+       * y frontera de no promoción.
+       *
+       * interpretedDisposition es el único dato
+       * semántico nuevo materializado.
+       */
+      const forbiddenCompatibilityRuleDispositionInterpretationProperties = [
+        'ruleId',
+        'basis',
+        'condition',
+        'comparisonResult',
+        'criterionSubject',
+        'targetType',
+        'declaredDisposition',
+
+        'assessment',
+        'compatibilityAssessment',
+
+        'compatibility',
+        'compatibilityResult',
+        'isCompatible',
+        'compatible',
+        'incompatible',
+        'effectiveDisposition',
+        'evaluatedDisposition',
+
+        'criterionApplicability',
+        'criterionNonApplicability',
+        'applicability',
+        'applicable',
+        'nonApplicable',
+
+        'utilization',
+
+        'evaluation',
+        'evaluationResult',
+        'score',
+        'priority',
+        'confidence',
+        'weight',
+        'ranking',
+        'preference',
+        'selection',
+
+        'decision',
+        'execution',
+      ];
+
+      for (
+        const compatibilityRuleDispositionInterpretation of
+        compatibilityRuleDispositionInterpretations
+      ) {
+        for (
+          const forbiddenProperty of
+          forbiddenCompatibilityRuleDispositionInterpretationProperties
+        ) {
+          if (
+            forbiddenProperty in
+            compatibilityRuleDispositionInterpretation
+          ) {
+            throw new Error(
+              `FASE 24.23 convirtió indebidamente RuleDispositionInterpretation en ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO CRÍTICO — interpretedDisposition compatible
+       * todavía NO es CompatibilityResult compatible.
+       */
+      if (
+        compatibilityRuleDispositionInterpretationForCompatibleDisposition
+          .interpretedDisposition !== 'compatible'
+      ) {
+        throw new Error(
+          'FASE 24.23 perdió interpretedDisposition=compatible en el escenario crítico.'
+        );
+      }
+
+      if (
+        'compatibilityAssessment' in
+          compatibilityRuleDispositionInterpretationForCompatibleDisposition ||
+        'compatibilityResult' in
+          compatibilityRuleDispositionInterpretationForCompatibleDisposition ||
+        'compatible' in
+          compatibilityRuleDispositionInterpretationForCompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.23 convirtió indebidamente interpretedDisposition=compatible en CompatibilityAssessment o CompatibilityResult compatible.'
+        );
+      }
+
+      /*
+       * Caso simétrico — interpretedDisposition incompatible
+       * todavía NO es CompatibilityResult incompatible.
+       */
+      if (
+        compatibilityRuleDispositionInterpretationForIncompatibleDisposition
+          .interpretedDisposition !== 'incompatible'
+      ) {
+        throw new Error(
+          'FASE 24.23 perdió interpretedDisposition=incompatible en el escenario simétrico.'
+        );
+      }
+
+      if (
+        'compatibilityAssessment' in
+          compatibilityRuleDispositionInterpretationForIncompatibleDisposition ||
+        'compatibilityResult' in
+          compatibilityRuleDispositionInterpretationForIncompatibleDisposition ||
+        'incompatible' in
+          compatibilityRuleDispositionInterpretationForIncompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.23 convirtió indebidamente interpretedDisposition=incompatible en CompatibilityAssessment o CompatibilityResult incompatible.'
+        );
+      }
+
+      /*
+       * No mutación de RuleApplication 24.22.
+       */
+      if (
+        JSON.stringify(
+          compatibilityRuleApplicationForCompatibleDisposition
+        ) !==
+        compatibilityRuleApplicationForCompatibleDispositionSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.23 modificó RuleApplication con declaredDisposition=compatible.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          compatibilityRuleApplicationForIncompatibleDisposition
+        ) !==
+        compatibilityRuleApplicationForIncompatibleDispositionSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.23 modificó RuleApplication con declaredDisposition=incompatible.'
+        );
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * RuleDispositionInterpretation no puede modificar
+       * Recommendation ni Decision.
+       */
+      const recommendationsAfterCompatibilityRuleDispositionInterpretation =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterCompatibilityRuleDispositionInterpretation =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterCompatibilityRuleDispositionInterpretation
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterCompatibilityRuleDispositionInterpretation
+        ) !== recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.23 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterCompatibilityRuleDispositionInterpretation
+        ) !== decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.23 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.23 OK: se materializó explícitamente RuleDispositionInterpretation a partir de RuleApplication, conservando exactamente RuleApplication y toda su genealogía por identidad.
+declaredDisposition=compatible produjo interpretedDisposition=compatible y declaredDisposition=incompatible produjo interpretedDisposition=incompatible mediante la misma estructura de interpretación.
+El escenario crítico conservó comparisonResult=exact-mismatch junto con interpretedDisposition=compatible, demostrando que interpretedDisposition procede de declaredDisposition de la regla aplicada y no de una reinterpretación directa del resultado descriptivo de la comparación semántica.
+RuleDispositionInterpretation no duplicó ruleId, basis, condition, comparisonResult, criterionSubject, targetType ni declaredDisposition.
+interpretedDisposition=compatible siguió siendo distinto de CompatibilityAssessment y CompatibilityResult compatible, e interpretedDisposition=incompatible siguió siendo distinto de CompatibilityAssessment y CompatibilityResult incompatible.
+No se materializaron CriterionApplicability, CriterionUtilization, Evaluation, EvaluationResult, Preference, Selection, Decision ni Execution.
+Permanecieron intactas ${recommendationsAfterCompatibilityRuleDispositionInterpretation.length} recomendaciones y ${decisionsAfterCompatibilityRuleDispositionInterpretation.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
@@ -38927,6 +39408,16 @@ Permanecieron intactas ${recommendationsAfterCompatibilityRuleApplication.length
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Aplicación Regla Compatibilidad Criterio-Scope 24.22
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Interpretación Disposición Regla Compatibilidad Criterio-Scope 24.23
         </button>
 
         <button
