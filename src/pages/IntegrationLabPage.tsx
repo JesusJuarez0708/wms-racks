@@ -156,6 +156,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionUtilizationService';
 
 import {
+  establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationResult,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationResultService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -39424,7 +39428,6 @@ No se materializaron CriterionApplicability, CriterionUtilization, Evaluation, E
 Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomendaciones y ${decisionsAfterCompatibilityResult.length} decisiones productivas.`
       );
 
-
       /*
        * ============================================================
        * FASE 24.26
@@ -40304,8 +40307,6 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         );
       }
 
-
-
       /*
        * ============================================================
        * FASE 24.28
@@ -40799,9 +40800,477 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         );
       }
 
+      /*
+       * ============================================================
+       * FASE 24.29
+       * MATERIALIZACIÓN EXPLÍCITA DEL RESULTADO EVALUATIVO
+       * A PARTIR DE UTILIZACIÓN DE CRITERIO Y CONCLUSIÓN EXPLÍCITA
+       * ============================================================
+       *
+       * CriterionUtilization ────────────────┐
+       *                                       │
+       * EvaluationConclusionInput ────────────┤
+       *                                       │
+       *                            acto explícito
+       *                                       ↓
+       *                               EvaluationResult
+       *
+       * CriterionUtilization por sí solo no materializa
+       * automáticamente EvaluationResult.
+       *
+       * La conclusión tampoco puede inferirse desde:
+       *
+       * applicabilityResult
+       * compatibilityResult
+       * comparisonResult
+       *
+       * EvaluationResult tampoco materializa:
+       *
+       * Preference
+       * Selection
+       * Acceptance
+       * Rejection
+       * Decision
+       * Execution
+       */
 
+      /*
+       * CASO A
+       *
+       * FRONTERA DE NO AUTOMATICIDAD.
+       *
+       * CriterionUtilization existe
+       * !=
+       * EvaluationResult existe
+       *
+       * FASE 24.28 ya materializó utilización,
+       * pero todavía no existe ninguna conclusión
+       * evaluativa dentro de ese objeto.
+       */
 
+      for (
+        const forbiddenProperty of [
+          'evaluationResult',
+          'result',
+          'outcome',
+          'conclusion',
+          'conclusionInput',
+        ]
+      ) {
+        if (
+          forbiddenProperty in
+          explicitCriterionUtilization
+        ) {
+          throw new Error(
+            `FASE 24.29 detectó ${forbiddenProperty} dentro de CriterionUtilization antes de producir explícitamente EvaluationResult.`
+          );
+        }
+      }
 
+      const criterionUtilizationSnapshotBeforeEvaluationResult =
+        JSON.stringify(
+          explicitCriterionUtilization
+        );
+
+      /*
+       * CASO B
+       *
+       * La conclusión evaluativa constituye
+       * información nueva e independiente.
+       *
+       * CriterionUtilization
+       * +
+       * ConclusionInput
+       * !=
+       * EvaluationResult
+       *
+       * La mera coexistencia todavía no materializa
+       * ningún resultado evaluativo.
+       */
+
+      const supportedEvaluationConclusionInput = {
+        conclusion:
+          'evaluated-relevance-supported-by-criterion',
+      } as const;
+
+      const supportedConclusionInputSnapshot =
+        JSON.stringify(
+          supportedEvaluationConclusionInput
+        );
+
+      if (
+        'evaluationResult' in
+          supportedEvaluationConclusionInput ||
+        'resultType' in
+          supportedEvaluationConclusionInput
+      ) {
+        throw new Error(
+          'FASE 24.29 detectó que ConclusionInput materializaba indebidamente EvaluationResult antes de la invocación explícita.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * CriterionUtilization
+       * +
+       * ConclusionInput
+       * +
+       * invocación explícita
+       * =
+       * EvaluationResult
+       */
+
+      const explicitEvaluationResult =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationResult(
+          explicitCriterionUtilization,
+          supportedEvaluationConclusionInput
+        );
+
+      if (
+        explicitEvaluationResult.resultType !==
+        'explicit-knowledge-effect-relevance-evaluation-result'
+      ) {
+        throw new Error(
+          'FASE 24.29 produjo un resultType inesperado.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * EvaluationResult conserva exactamente
+       * ambos antecedentes por identidad.
+       */
+
+      if (
+        explicitEvaluationResult
+          .criterionUtilization !==
+        explicitCriterionUtilization
+      ) {
+        throw new Error(
+          'FASE 24.29 no conservó CriterionUtilization exactamente por identidad.'
+        );
+      }
+
+      if (
+        explicitEvaluationResult
+          .conclusionInput !==
+        supportedEvaluationConclusionInput
+      ) {
+        throw new Error(
+          'FASE 24.29 no conservó ConclusionInput exactamente por identidad.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * EvaluationResult contiene exactamente:
+       *
+       * criterionUtilization
+       * conclusionInput
+       * resultType
+       */
+
+      const explicitEvaluationResultKeys =
+        Object.keys(
+          explicitEvaluationResult
+        ).sort();
+
+      const expectedExplicitEvaluationResultKeys = [
+        'criterionUtilization',
+        'conclusionInput',
+        'resultType',
+      ].sort();
+
+      if (
+        JSON.stringify(
+          explicitEvaluationResultKeys
+        ) !==
+        JSON.stringify(
+          expectedExplicitEvaluationResultKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.29 introdujo propiedades adicionales dentro de EvaluationResult.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * La conclusión no es calculada automáticamente.
+       *
+       * El mismo CriterionUtilization puede participar
+       * en una materialización explícita cuya conclusión sea:
+       *
+       * evaluated-relevance-not-supported-by-criterion
+       *
+       * Esto demuestra que:
+       *
+       * applicable
+       * !=
+       * supported
+       *
+       * y también:
+       *
+       * utilized
+       * !=
+       * supported
+       */
+
+      const notSupportedEvaluationConclusionInput = {
+        conclusion:
+          'evaluated-relevance-not-supported-by-criterion',
+      } as const;
+
+      const explicitNotSupportedEvaluationResult =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationResult(
+          explicitCriterionUtilization,
+          notSupportedEvaluationConclusionInput
+        );
+
+      if (
+        explicitNotSupportedEvaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-not-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.29 no conservó la conclusión explícita not-supported.'
+        );
+      }
+
+      if (
+        explicitNotSupportedEvaluationResult
+          .criterionUtilization !==
+        explicitCriterionUtilization
+      ) {
+        throw new Error(
+          'FASE 24.29 alteró CriterionUtilization al materializar una conclusión not-supported.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * applicable
+       * !=
+       * supported
+       *
+       * CriterionUtilization sólo puede existir
+       * porque CriterionApplicability era applicable.
+       *
+       * Sin embargo, una conclusión legítima puede declarar
+       * que la relevancia evaluada NO quedó soportada
+       * por el criterio utilizado.
+       *
+       * Por tanto, FASE 24.29 no reinterpreta
+       * applicabilityResult como conclusión evaluativa.
+       */
+
+      if (
+        explicitCriterionUtilization
+          .criterionApplicability
+          .applicabilityResult !==
+        'applicable'
+      ) {
+        throw new Error(
+          'FASE 24.29 perdió el antecedente applicable necesario para demostrar la independencia frente a la conclusión evaluativa.'
+        );
+      }
+
+      /*
+       * CASO H
+       *
+       * EvaluationResult no duplica directamente
+       * la genealogía interna de CriterionUtilization.
+       */
+
+      const forbiddenDuplicatedEvaluationResultProperties = [
+        'evaluation',
+        'evaluationScope',
+        'criterionApplicability',
+        'applicabilityResult',
+        'compatibilityResult',
+        'compatibilityAssessment',
+        'ruleDispositionInterpretation',
+        'ruleApplication',
+        'conditionSatisfaction',
+        'ruleComparisonCorrespondence',
+        'compatibilityRuleDefinition',
+        'compatibilityRulePresence',
+        'semanticComparison',
+        'criterionDefinition',
+        'criterionPresence',
+        'criterionId',
+        'criterionSubject',
+        'comparisonResult',
+        'condition',
+        'satisfactionResult',
+        'declaredDisposition',
+        'interpretedDisposition',
+      ];
+
+      for (
+        const forbiddenProperty of
+        forbiddenDuplicatedEvaluationResultProperties
+      ) {
+        if (
+          forbiddenProperty in
+          explicitEvaluationResult
+        ) {
+          throw new Error(
+            `FASE 24.29 duplicó indebidamente ${forbiddenProperty} dentro de EvaluationResult.`
+          );
+        }
+      }
+
+      /*
+       * Toda la genealogía previa debe permanecer
+       * accesible exclusivamente a través de:
+       *
+       * EvaluationResult
+       *   ↓
+       * CriterionUtilization
+       */
+
+      if (
+        explicitEvaluationResult
+          .criterionUtilization
+          .evaluation !==
+        explicitEvaluation
+      ) {
+        throw new Error(
+          'FASE 24.29 perdió Evaluation dentro de la genealogía de CriterionUtilization.'
+        );
+      }
+
+      if (
+        explicitEvaluationResult
+          .criterionUtilization
+          .criterionApplicability !==
+        criterionApplicabilityForCompatibleResult
+      ) {
+        throw new Error(
+          'FASE 24.29 perdió CriterionApplicability dentro de la genealogía de CriterionUtilization.'
+        );
+      }
+
+      /*
+       * CASO I
+       *
+       * FRONTERA POSTERIOR.
+       *
+       * EvaluationResult
+       * !=
+       * Preference
+       * !=
+       * Selection
+       * !=
+       * Decision
+       *
+       * Una conclusión evaluativa todavía no constituye
+       * una consecuencia decisional.
+       */
+
+      const forbiddenPostEvaluationResultProperties = [
+        'score',
+        'priority',
+        'confidence',
+        'weight',
+        'ranking',
+        'preference',
+        'selection',
+        'acceptance',
+        'rejection',
+        'decision',
+        'execution',
+      ];
+
+      for (
+        const forbiddenProperty of
+        forbiddenPostEvaluationResultProperties
+      ) {
+        if (
+          forbiddenProperty in
+          explicitEvaluationResult
+        ) {
+          throw new Error(
+            `FASE 24.29 promovió indebidamente EvaluationResult hacia ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO J
+       *
+       * EvaluationResult no modifica
+       * ninguno de sus antecedentes.
+       */
+
+      if (
+        JSON.stringify(
+          explicitCriterionUtilization
+        ) !==
+        criterionUtilizationSnapshotBeforeEvaluationResult
+      ) {
+        throw new Error(
+          'FASE 24.29 modificó CriterionUtilization durante la materialización de EvaluationResult.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          supportedEvaluationConclusionInput
+        ) !==
+        supportedConclusionInputSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.29 modificó ConclusionInput durante la materialización de EvaluationResult.'
+        );
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * EvaluationResult no puede modificar
+       * Recommendation ni Decision.
+       */
+
+      const recommendationsAfterEvaluationResult =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterEvaluationResult =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterEvaluationResult
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterEvaluationResult
+        ) !==
+        recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.29 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterEvaluationResult
+        ) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.29 modificó decisiones productivas.'
+        );
+      }
 
       addLog(
         `FASE 24.26 OK: se materializó explícitamente CriterionApplicability a partir de CompatibilityResult como único fundamento inmediato, conservando exactamente CompatibilityResult y toda su genealogía por identidad.
@@ -40833,13 +41302,24 @@ CriterionUtilization permaneció explícitamente distinto de EvaluationResult: n
 Permanecieron intactas ${recommendationsAfterCriterionUtilization.length} recomendaciones y ${decisionsAfterCriterionUtilization.length} decisiones productivas.`
       );
 
+      addLog(
+        `FASE 24.29 OK: se materializó explícitamente EvaluationResult a partir de CriterionUtilization y una conclusión evaluativa explícita como información nueva.
+CriterionUtilization permaneció distinto de EvaluationResult: la existencia previa de utilización no había materializado automáticamente ningún resultado evaluativo.
+La mera coexistencia de CriterionUtilization y ConclusionInput tampoco materializó EvaluationResult; el resultado sólo nació mediante invocación explícita de la operación.
+EvaluationResult conservó exactamente CriterionUtilization y ConclusionInput por identidad, sin duplicar Evaluation, EvaluationScope, CriterionApplicability, CompatibilityResult, CompatibilityAssessment, RuleDispositionInterpretation, RuleApplication, ConditionSatisfaction, RuleComparisonCorrespondence, CompatibilityRuleDefinition, CompatibilityRulePresence, SemanticComparison, CriterionDefinition ni CriterionPresence.
+La misma estructura permitió materializar explícitamente evaluated-relevance-supported-by-criterion y evaluated-relevance-not-supported-by-criterion, demostrando que la conclusión no fue inferida automáticamente desde applicabilityResult.
+En particular, CriterionApplicability=applicable coexistió legítimamente con evaluated-relevance-not-supported-by-criterion, demostrando que applicable != supported y utilized != supported.
+EvaluationResult permaneció explícitamente distinto de Preference, Selection y Decision: no se materializaron score, priority, confidence, weight, ranking, Preference, Selection, Acceptance, Rejection, Decision ni Execution.
+Permanecieron intactas ${recommendationsAfterEvaluationResult.length} recomendaciones y ${decisionsAfterEvaluationResult.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28.'
+        ? 'Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29: ${error.message}'
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29.'
       );
     } finally {
       setLoading(false);
@@ -41926,6 +42406,16 @@ Permanecieron intactas ${recommendationsAfterCriterionUtilization.length} recome
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Utilización Criterio 24.28
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Resultado Evaluativo 24.29
         </button>
 
         <button
