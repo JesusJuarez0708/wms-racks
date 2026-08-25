@@ -144,6 +144,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionScopeCompatibilityResultService';
 
 import {
+  establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionApplicability,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionApplicabilityService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -39406,13 +39410,573 @@ No se materializaron CriterionApplicability, CriterionUtilization, Evaluation, E
 Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomendaciones y ${decisionsAfterCompatibilityResult.length} decisiones productivas.`
       );
 
+
+      /*
+       * ============================================================
+       * FASE 24.26
+       * Aplicabilidad explícita del criterio respecto del
+       * ámbito evaluativo.
+       * ============================================================
+       *
+       * Frontera semántica:
+       *
+       * CompatibilityResult
+       *        ↓
+       * acto explícito de establecimiento de aplicabilidad
+       *        ↓
+       * CriterionApplicability
+       *
+       * CompatibilityResult responde:
+       *
+       * ¿con qué conclusión terminó el assessment explícito
+       * de compatibilidad criterio-scope?
+       *
+       * CriterionApplicability responde:
+       *
+       * ¿puede este criterio ser legítimamente aplicado
+       * respecto del ámbito evaluativo concreto?
+       *
+       * La correspondencia es determinista:
+       *
+       * compatible
+       *        ↓
+       * applicable
+       *
+       * incompatible
+       *        ↓
+       * not-applicable
+       *
+       * pero la materialización NO es automática.
+       *
+       * CompatibilityResult existe
+       * !=
+       * CriterionApplicability existe.
+       *
+       * FASE 24.26 usa exclusivamente CompatibilityResult como
+       * fundamento inmediato y NO vuelve a interpretar:
+       *
+       * comparisonResult
+       * condition
+       * satisfactionResult
+       * declaredDisposition
+       * interpretedDisposition
+       *
+       * Tampoco materializa todavía:
+       *
+       * CriterionUtilization
+       * Evaluation
+       * EvaluationResult
+       * Preference
+       * Selection
+       * Decision
+       * Execution
+       */
+
+      const compatibilityResultForCompatibleDispositionSnapshotBeforeApplicability =
+        JSON.stringify(
+          compatibilityResultForCompatibleDisposition
+        );
+
+      const compatibilityResultForIncompatibleDispositionSnapshotBeforeApplicability =
+        JSON.stringify(
+          compatibilityResultForIncompatibleDisposition
+        );
+
+      /*
+       * FRONTERA DE NO AUTOMATICIDAD
+       *
+       * Los CompatibilityResult ya existen desde 24.25,
+       * pero todavía no contienen ni materializan
+       * CriterionApplicability.
+       */
+
+      for (
+        const compatibilityResult of
+        compatibilityResults
+      ) {
+        const forbiddenPreApplicabilityProperties = [
+          'criterionApplicability',
+          'applicabilityResult',
+          'applicabilityType',
+        ];
+
+        for (
+          const forbiddenProperty of
+          forbiddenPreApplicabilityProperties
+        ) {
+          if (
+            forbiddenProperty in
+            compatibilityResult
+          ) {
+            throw new Error(
+              `FASE 24.26 detectó que CompatibilityResult ya materializaba indebidamente ${forbiddenProperty} antes del establecimiento explícito de aplicabilidad.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO A
+       *
+       * compatibilityResult=compatible
+       *        ↓
+       * CriterionApplicability
+       *        ↓
+       * applicabilityResult=applicable
+       */
+
+      const criterionApplicabilityForCompatibleResult =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionApplicability(
+          compatibilityResultForCompatibleDisposition
+        );
+
+      if (
+        criterionApplicabilityForCompatibleResult
+          .applicabilityType !==
+        'explicit-criterion-scope-applicability'
+      ) {
+        throw new Error(
+          'FASE 24.26 produjo un applicabilityType inesperado para compatibilityResult=compatible.'
+        );
+      }
+
+      if (
+        criterionApplicabilityForCompatibleResult
+          .compatibilityResult !==
+        compatibilityResultForCompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.26 no conservó exactamente CompatibilityResult por identidad para compatibilityResult=compatible.'
+        );
+      }
+
+      if (
+        criterionApplicabilityForCompatibleResult
+          .applicabilityResult !==
+        'applicable'
+      ) {
+        throw new Error(
+          'FASE 24.26 no estableció applicabilityResult=applicable a partir de compatibilityResult=compatible.'
+        );
+      }
+
+      /*
+       * CASO B
+       *
+       * compatibilityResult=incompatible
+       *        ↓
+       * CriterionApplicability
+       *        ↓
+       * applicabilityResult=not-applicable
+       */
+
+      const criterionApplicabilityForIncompatibleResult =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluationCriterionApplicability(
+          compatibilityResultForIncompatibleDisposition
+        );
+
+      if (
+        criterionApplicabilityForIncompatibleResult
+          .applicabilityType !==
+        'explicit-criterion-scope-applicability'
+      ) {
+        throw new Error(
+          'FASE 24.26 produjo un applicabilityType inesperado para compatibilityResult=incompatible.'
+        );
+      }
+
+      if (
+        criterionApplicabilityForIncompatibleResult
+          .compatibilityResult !==
+        compatibilityResultForIncompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.26 no conservó exactamente CompatibilityResult por identidad para compatibilityResult=incompatible.'
+        );
+      }
+
+      if (
+        criterionApplicabilityForIncompatibleResult
+          .applicabilityResult !==
+        'not-applicable'
+      ) {
+        throw new Error(
+          'FASE 24.26 no estableció applicabilityResult=not-applicable a partir de compatibilityResult=incompatible.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * compatible e incompatible deben atravesar exactamente
+       * la misma estructura productiva.
+       */
+
+      if (
+        criterionApplicabilityForCompatibleResult
+          .applicabilityType !==
+        criterionApplicabilityForIncompatibleResult
+          .applicabilityType
+      ) {
+        throw new Error(
+          'FASE 24.26 hizo depender applicabilityType del valor de compatibilityResult.'
+        );
+      }
+
+      const criterionApplicabilityForCompatibleResultKeys =
+        Object.keys(
+          criterionApplicabilityForCompatibleResult
+        ).sort();
+
+      const criterionApplicabilityForIncompatibleResultKeys =
+        Object.keys(
+          criterionApplicabilityForIncompatibleResult
+        ).sort();
+
+      const expectedCriterionApplicabilityKeys = [
+        'compatibilityResult',
+        'applicabilityType',
+        'applicabilityResult',
+      ].sort();
+
+      if (
+        JSON.stringify(
+          criterionApplicabilityForCompatibleResultKeys
+        ) !==
+        JSON.stringify(
+          expectedCriterionApplicabilityKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.26 introdujo propiedades adicionales dentro de CriterionApplicability para applicabilityResult=applicable.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          criterionApplicabilityForIncompatibleResultKeys
+        ) !==
+        JSON.stringify(
+          expectedCriterionApplicabilityKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.26 introdujo propiedades adicionales dentro de CriterionApplicability para applicabilityResult=not-applicable.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          criterionApplicabilityForCompatibleResultKeys
+        ) !==
+        JSON.stringify(
+          criterionApplicabilityForIncompatibleResultKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.26 produjo estructuras distintas de CriterionApplicability para applicable y not-applicable.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * CriterionApplicability conserva directamente sólo:
+       *
+       * compatibilityResult
+       * applicabilityType
+       * applicabilityResult
+       *
+       * Toda la genealogía previa continúa accesible
+       * exclusivamente a través de CompatibilityResult.
+       */
+
+      const forbiddenCriterionApplicabilityProperties = [
+        'compatibilityAssessment',
+        'ruleDispositionInterpretation',
+        'ruleApplication',
+        'conditionSatisfaction',
+        'ruleComparisonCorrespondence',
+        'compatibilityRuleDefinition',
+        'compatibilityRulePresence',
+        'semanticComparison',
+        'interpretedDisposition',
+        'declaredDisposition',
+        'ruleId',
+        'basis',
+        'condition',
+        'satisfactionResult',
+        'comparisonResult',
+        'criterionSubject',
+        'targetType',
+        'evaluationScope',
+        'criterionDefinition',
+        'criterionPresence',
+        'criterionUtilization',
+        'utilization',
+        'evaluation',
+        'evaluationResult',
+        'score',
+        'priority',
+        'confidence',
+        'weight',
+        'ranking',
+        'preference',
+        'selection',
+        'decision',
+        'execution',
+      ];
+
+      const criterionApplicabilities = [
+        criterionApplicabilityForCompatibleResult,
+        criterionApplicabilityForIncompatibleResult,
+      ];
+
+      for (
+        const criterionApplicability of
+        criterionApplicabilities
+      ) {
+        for (
+          const forbiddenProperty of
+          forbiddenCriterionApplicabilityProperties
+        ) {
+          if (
+            forbiddenProperty in
+            criterionApplicability
+          ) {
+            throw new Error(
+              `FASE 24.26 duplicó o promovió indebidamente ${forbiddenProperty} dentro de CriterionApplicability.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO E
+       *
+       * Correspondencia determinista
+       * !=
+       * alias arquitectónico.
+       *
+       * compatibilityResult pertenece a CompatibilityResult.
+       *
+       * applicabilityResult pertenece a CriterionApplicability.
+       */
+
+      if (
+        criterionApplicabilityForCompatibleResult
+          .compatibilityResult
+          .compatibilityResult !==
+        'compatible' ||
+        criterionApplicabilityForCompatibleResult
+          .applicabilityResult !==
+        'applicable'
+      ) {
+        throw new Error(
+          'FASE 24.26 perdió la correspondencia determinista compatible -> applicable.'
+        );
+      }
+
+      if (
+        'applicabilityResult' in
+        compatibilityResultForCompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.26 convirtió compatibilityResult y applicabilityResult en el mismo hecho estructural para el caso compatible.'
+        );
+      }
+
+      if (
+        criterionApplicabilityForIncompatibleResult
+          .compatibilityResult
+          .compatibilityResult !==
+        'incompatible' ||
+        criterionApplicabilityForIncompatibleResult
+          .applicabilityResult !==
+        'not-applicable'
+      ) {
+        throw new Error(
+          'FASE 24.26 perdió la correspondencia determinista incompatible -> not-applicable.'
+        );
+      }
+
+      if (
+        'applicabilityResult' in
+        compatibilityResultForIncompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.26 convirtió compatibilityResult y applicabilityResult en el mismo hecho estructural para el caso incompatible.'
+        );
+      }
+
+      /*
+       * CASO CRÍTICO HEREDADO
+       *
+       * 24.25 ya demostró que el CompatibilityResult compatible
+       * conserva exactamente la genealogía crítica cuyo origen
+       * descriptivo era comparisonResult=exact-mismatch.
+       *
+       * 24.26 no vuelve a inspeccionar ni reinterpretar ese
+       * comparisonResult: conserva exactamente ESE MISMO
+       * CompatibilityResult por identidad.
+       */
+
+      if (
+        criterionApplicabilityForCompatibleResult
+          .compatibilityResult !==
+        compatibilityResultForCompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.26 perdió el CompatibilityResult compatible que conservaba la genealogía crítica exact-mismatch.'
+        );
+      }
+
+      if (
+        criterionApplicabilityForCompatibleResult
+          .compatibilityResult
+          .compatibilityAssessment !==
+        compatibilityAssessmentForCompatibleDisposition
+      ) {
+        throw new Error(
+          'FASE 24.26 perdió la genealogía del CompatibilityAssessment dentro del escenario crítico heredado.'
+        );
+      }
+
+      if (
+        criterionApplicabilityForCompatibleResult
+          .applicabilityResult !==
+        'applicable'
+      ) {
+        throw new Error(
+          'FASE 24.26 no produjo applicable para el CompatibilityResult compatible del escenario crítico heredado.'
+        );
+      }
+
+      /*
+       * CriterionApplicability no puede modificar
+       * CompatibilityResult.
+       */
+
+      if (
+        JSON.stringify(
+          compatibilityResultForCompatibleDisposition
+        ) !==
+        compatibilityResultForCompatibleDispositionSnapshotBeforeApplicability
+      ) {
+        throw new Error(
+          'FASE 24.26 modificó CompatibilityResult con compatibilityResult=compatible.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          compatibilityResultForIncompatibleDisposition
+        ) !==
+        compatibilityResultForIncompatibleDispositionSnapshotBeforeApplicability
+      ) {
+        throw new Error(
+          'FASE 24.26 modificó CompatibilityResult con compatibilityResult=incompatible.'
+        );
+      }
+
+      /*
+       * FRONTERA POSTERIOR
+       *
+       * CriterionApplicability
+       * != CriterionUtilization
+       *
+       * Incluso applicabilityResult=applicable no significa
+       * que el criterio haya sido utilizado.
+       */
+
+      for (
+        const criterionApplicability of
+        criterionApplicabilities
+      ) {
+        const forbiddenPostApplicabilityProperties = [
+          'criterionUtilization',
+          'utilization',
+          'evaluation',
+          'evaluationResult',
+          'preference',
+          'selection',
+          'decision',
+          'execution',
+        ];
+
+        for (
+          const forbiddenProperty of
+          forbiddenPostApplicabilityProperties
+        ) {
+          if (
+            forbiddenProperty in
+            criterionApplicability
+          ) {
+            throw new Error(
+              `FASE 24.26 promovió indebidamente CriterionApplicability hacia ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * CriterionApplicability no puede modificar
+       * Recommendation ni Decision.
+       */
+
+      const recommendationsAfterCriterionApplicability =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterCriterionApplicability =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterCriterionApplicability
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterCriterionApplicability
+        ) !==
+        recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.26 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterCriterionApplicability
+        ) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.26 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.26 OK: se materializó explícitamente CriterionApplicability a partir de CompatibilityResult como único fundamento inmediato, conservando exactamente CompatibilityResult y toda su genealogía por identidad.
+CompatibilityResult permaneció distinto de CriterionApplicability: la existencia previa de compatibilityResult=compatible o compatibilityResult=incompatible no había materializado automáticamente aplicabilidad.
+compatibilityResult=compatible produjo applicabilityResult=applicable y compatibilityResult=incompatible produjo applicabilityResult=not-applicable mediante exactamente la misma estructura productiva.
+La correspondencia determinista compatible -> applicable e incompatible -> not-applicable no convirtió CompatibilityResult y CriterionApplicability en aliases arquitectónicos: compatibilityResult permaneció dentro de CompatibilityResult y applicabilityResult fue materializado únicamente dentro de CriterionApplicability.
+El escenario crítico heredado permaneció legítimo mediante conservación por identidad del mismo CompatibilityResult compatible cuya genealogía exact-mismatch ya había sido validada por FASE 24.25; FASE 24.26 no reinterpretó directamente comparisonResult, condition, satisfactionResult, declaredDisposition ni interpretedDisposition.
+CriterionApplicability sólo añadió compatibilityResult, applicabilityType y applicabilityResult, sin duplicar CompatibilityAssessment, RuleDispositionInterpretation, declaredDisposition, interpretedDisposition, ruleId, basis, condition, satisfactionResult, comparisonResult, criterionSubject, targetType, EvaluationScope ni CriterionDefinition.
+applicabilityResult=applicable permaneció explícitamente distinto de CriterionUtilization: no se materializaron CriterionUtilization, Evaluation, EvaluationResult, Preference, Selection, Decision ni Execution.
+Permanecieron intactas ${recommendationsAfterCriterionApplicability.length} recomendaciones y ${decisionsAfterCriterionApplicability.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26.'
       );
     } finally {
       setLoading(false);
@@ -40468,6 +41032,17 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Resultado Compatibilidad Criterio-Scope 24.25
+        </button>
+
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Aplicabilidad Criterio-Scope 24.26
         </button>
 
         <button
