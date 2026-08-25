@@ -148,6 +148,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationCriterionApplicabilityService';
 
 import {
+  establishProductiveKnowledgeRecommendationEffectRelevanceEvaluation,
+} from '../services/operationalKnowledgeRecommendationEffectRelevanceEvaluationService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -39959,6 +39963,346 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         );
       }
 
+      /*
+       * ============================================================
+       * FASE 24.27
+       * MATERIALIZACIÓN EXPLÍCITA DEL ACTO EVALUATIVO
+       * DENTRO DEL EVALUATION SCOPE
+       * ============================================================
+       *
+       * EvaluationScope
+       *        ↓
+       * acto explícito de evaluación
+       *        ↓
+       * Evaluation
+       *
+       * La existencia de EvaluationScope no materializa
+       * automáticamente Evaluation.
+       *
+       * Evaluation tampoco materializa:
+       *
+       * CriterionUtilization
+       * EvaluationResult
+       * Preference
+       * Selection
+       * Decision
+       * Execution
+       */
+
+      const evaluationScopeForExplicitEvaluation =
+        criterionApplicabilityForCompatibleResult
+          .compatibilityResult
+          .compatibilityAssessment
+          .ruleDispositionInterpretation
+          .ruleApplication
+          .conditionSatisfaction
+          .ruleComparisonCorrespondence
+          .compatibilityRuleDefinition
+          .compatibilityRulePresence
+          .semanticComparison
+          .criterionDefinition
+          .criterionPresence
+          .evaluationScope;
+
+      /*
+       * FRONTERA DE NO AUTOMATICIDAD
+       *
+       * EvaluationScope ya existe, pero todavía no contiene
+       * ni materializa Evaluation.
+       */
+
+      const forbiddenPreEvaluationProperties = [
+        'evaluation',
+        'evaluationType',
+        'evaluationResult',
+        'criterionUtilization',
+        'utilization',
+      ];
+
+      for (
+        const forbiddenProperty of
+        forbiddenPreEvaluationProperties
+      ) {
+        if (
+          forbiddenProperty in
+          evaluationScopeForExplicitEvaluation
+        ) {
+          throw new Error(
+            `FASE 24.27 detectó que EvaluationScope ya materializaba indebidamente ${forbiddenProperty} antes del acto evaluativo explícito.`
+          );
+        }
+      }
+
+      const evaluationScopeSnapshotBeforeEvaluation =
+        JSON.stringify(
+          evaluationScopeForExplicitEvaluation
+        );
+
+      /*
+       * CASO A
+       *
+       * EvaluationScope
+       *        ↓
+       * invocación explícita
+       *        ↓
+       * Evaluation
+       */
+
+      const explicitEvaluation =
+        establishProductiveKnowledgeRecommendationEffectRelevanceEvaluation(
+          evaluationScopeForExplicitEvaluation
+        );
+
+      if (
+        explicitEvaluation.evaluationType !==
+        'explicit-knowledge-effect-relevance-evaluation'
+      ) {
+        throw new Error(
+          'FASE 24.27 produjo un evaluationType inesperado.'
+        );
+      }
+
+      if (
+        explicitEvaluation.evaluationScope !==
+        evaluationScopeForExplicitEvaluation
+      ) {
+        throw new Error(
+          'FASE 24.27 no conservó exactamente EvaluationScope por identidad.'
+        );
+      }
+
+      /*
+       * CASO B
+       *
+       * Evaluation contiene exactamente:
+       *
+       * evaluationType
+       * evaluationScope
+       */
+
+      const explicitEvaluationKeys =
+        Object.keys(explicitEvaluation).sort();
+
+      const expectedExplicitEvaluationKeys = [
+        'evaluationType',
+        'evaluationScope',
+      ].sort();
+
+      if (
+        JSON.stringify(explicitEvaluationKeys) !==
+        JSON.stringify(expectedExplicitEvaluationKeys)
+      ) {
+        throw new Error(
+          'FASE 24.27 introdujo propiedades adicionales dentro de Evaluation.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * Evaluation
+       * !=
+       * CriterionApplicability
+       *
+       * Evaluation nace exclusivamente desde EvaluationScope.
+       * No debe duplicar ni transportar directamente
+       * la rama específica del criterio.
+       */
+
+      const forbiddenEvaluationProperties = [
+        'criterionApplicability',
+        'applicabilityResult',
+        'compatibilityResult',
+        'compatibilityAssessment',
+        'ruleDispositionInterpretation',
+        'ruleApplication',
+        'conditionSatisfaction',
+        'ruleComparisonCorrespondence',
+        'compatibilityRuleDefinition',
+        'compatibilityRulePresence',
+        'semanticComparison',
+        'criterionDefinition',
+        'criterionPresence',
+        'criterionId',
+        'criterionSubject',
+        'comparisonResult',
+        'condition',
+        'satisfactionResult',
+        'declaredDisposition',
+        'interpretedDisposition',
+        'criterionUtilization',
+        'utilization',
+        'evaluationResult',
+        'result',
+        'outcome',
+        'score',
+        'priority',
+        'confidence',
+        'weight',
+        'ranking',
+        'preference',
+        'selection',
+        'acceptance',
+        'rejection',
+        'decision',
+        'execution',
+      ];
+
+      for (
+        const forbiddenProperty of
+        forbiddenEvaluationProperties
+      ) {
+        if (
+          forbiddenProperty in
+          explicitEvaluation
+        ) {
+          throw new Error(
+            `FASE 24.27 duplicó o promovió indebidamente ${forbiddenProperty} dentro de Evaluation.`
+          );
+        }
+      }
+
+      /*
+       * CASO D
+       *
+       * CriterionApplicability=applicable
+       * +
+       * Evaluation existe
+       * !=
+       * CriterionUtilization existe
+       *
+       * La coexistencia de ambos antecedentes todavía
+       * no establece que el criterio haya sido utilizado.
+       */
+
+      if (
+        criterionApplicabilityForCompatibleResult
+          .applicabilityResult !==
+        'applicable'
+      ) {
+        throw new Error(
+          'FASE 24.27 perdió el antecedente applicable necesario para demostrar la frontera frente a CriterionUtilization.'
+        );
+      }
+
+      for (
+        const forbiddenProperty of [
+          'criterionUtilization',
+          'utilization',
+        ]
+      ) {
+        if (
+          forbiddenProperty in
+            criterionApplicabilityForCompatibleResult ||
+          forbiddenProperty in
+            explicitEvaluation
+        ) {
+          throw new Error(
+            `FASE 24.27 materializó indebidamente ${forbiddenProperty} por la mera coexistencia de CriterionApplicability y Evaluation.`
+          );
+        }
+      }
+
+      /*
+       * CASO E
+       *
+       * Evaluation no puede modificar EvaluationScope.
+       */
+
+      if (
+        JSON.stringify(
+          evaluationScopeForExplicitEvaluation
+        ) !==
+        evaluationScopeSnapshotBeforeEvaluation
+      ) {
+        throw new Error(
+          'FASE 24.27 modificó EvaluationScope durante la materialización de Evaluation.'
+        );
+      }
+
+      /*
+       * FRONTERA POSTERIOR
+       *
+       * Evaluation
+       * != CriterionUtilization
+       * != EvaluationResult
+       */
+
+      const forbiddenPostEvaluationProperties = [
+        'criterionUtilization',
+        'utilization',
+        'evaluationResult',
+        'result',
+        'outcome',
+        'preference',
+        'selection',
+        'decision',
+        'execution',
+      ];
+
+      for (
+        const forbiddenProperty of
+        forbiddenPostEvaluationProperties
+      ) {
+        if (
+          forbiddenProperty in
+          explicitEvaluation
+        ) {
+          throw new Error(
+            `FASE 24.27 promovió indebidamente Evaluation hacia ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * Verificación productiva externa.
+       *
+       * Evaluation no puede modificar
+       * Recommendation ni Decision.
+       */
+
+      const recommendationsAfterExplicitEvaluation =
+        generateRecommendationsFromPatterns(
+          detectedPatterns
+        );
+
+      const decisionsAfterExplicitEvaluation =
+        generateOperationalDecisions(
+          detectedPatterns,
+          recommendationsAfterExplicitEvaluation
+        );
+
+      if (
+        JSON.stringify(
+          recommendationsAfterExplicitEvaluation
+        ) !==
+        recommendationsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.27 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterExplicitEvaluation
+        ) !==
+        decisionsSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.27 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.27 OK: se materializó explícitamente Evaluation a partir de EvaluationScope como único fundamento inmediato, conservando exactamente EvaluationScope por identidad.
+EvaluationScope permaneció distinto de Evaluation: la existencia previa del scope no había materializado automáticamente ningún acto evaluativo.
+Evaluation sólo añadió evaluationType y evaluationScope, sin duplicar CriterionApplicability, CompatibilityResult, CompatibilityAssessment, RuleDispositionInterpretation, RuleApplication, ConditionSatisfaction, RuleComparisonCorrespondence, CompatibilityRuleDefinition, CompatibilityRulePresence, SemanticComparison, CriterionDefinition ni CriterionPresence.
+La rama evaluativa quedó explícitamente separada de la rama de aplicabilidad: CriterionApplicability=applicable y Evaluation pueden coexistir sin materializar CriterionUtilization.
+Evaluation permaneció explícitamente distinto de CriterionUtilization y EvaluationResult: no se materializaron utilización, resultado evaluativo, Preference, Selection, Decision ni Execution.
+Permanecieron intactas ${recommendationsAfterExplicitEvaluation.length} recomendaciones y ${decisionsAfterExplicitEvaluation.length} decisiones productivas.`
+      );
+
       addLog(
         `FASE 24.26 OK: se materializó explícitamente CriterionApplicability a partir de CompatibilityResult como único fundamento inmediato, conservando exactamente CompatibilityResult y toda su genealogía por identidad.
 CompatibilityResult permaneció distinto de CriterionApplicability: la existencia previa de compatibilityResult=compatible o compatibilityResult=incompatible no había materializado automáticamente aplicabilidad.
@@ -39975,8 +40319,8 @@ Permanecieron intactas ${recommendationsAfterCriterionApplicability.length} reco
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27.'
       );
     } finally {
       setLoading(false);
@@ -41043,6 +41387,16 @@ Permanecieron intactas ${recommendationsAfterCriterionApplicability.length} reco
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Aplicabilidad Criterio-Scope 24.26
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Acto Evaluativo Explícito 24.27
         </button>
 
         <button
