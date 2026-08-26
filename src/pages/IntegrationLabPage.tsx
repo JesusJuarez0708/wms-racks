@@ -193,6 +193,9 @@ import {
 import {
   establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisPresence,
 } from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisPresenceService';
+import {
+  establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisDefinition,
+} from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisDefinitionService';
 
 import {
   generateRecommendationsFromPatterns,
@@ -46772,13 +46775,433 @@ DirectionalAxisPresence permaneció explícitamente distinta de Comparison, Pref
 Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
       );
 
+
+      /*
+       * ============================================================
+       * FASE 24.39
+       * ============================================================
+       *
+       * Definición semántica explícita de eje direccional del
+       * efecto deliberativo.
+       *
+       * DirectionalAxisPresence
+       * +
+       * DirectionalAxisDefinitionInput externo explícito
+       * ->
+       * DirectionalAxisDefinition
+       *
+       * DirectionalAxisPresence constituye el único fundamento
+       * interno inmediato.
+       */
+
+      const recommendationsSnapshotBeforeDirectionalAxisDefinition =
+        JSON.stringify(recommendationsAfterDeliberativeParticipation);
+
+      const decisionsSnapshotBeforeDirectionalAxisDefinition =
+        JSON.stringify(decisionsAfterDeliberativeParticipation);
+
+      const supportedDirectionalAxisPresenceASnapshotBeforeDefinition =
+        JSON.stringify(supportedDirectionalAxisPresenceA);
+
+      const secondaryDirectionalAxisPresenceASnapshotBeforeDefinition =
+        JSON.stringify(secondaryDirectionalAxisPresenceA);
+
+      const notSupportedDirectionalAxisPresenceASnapshotBeforeDefinition =
+        JSON.stringify(notSupportedDirectionalAxisPresenceA);
+
+      /*
+       * CASO A
+       *
+       * Presence todavía no equivale a Definition.
+       */
+      for (const directionalAxisPresence of [
+        supportedDirectionalAxisPresenceA,
+        supportedDirectionalAxisPresenceB,
+        secondaryDirectionalAxisPresenceA,
+        notSupportedDirectionalAxisPresenceA,
+      ]) {
+        for (const forbiddenProperty of [
+          'directionalAxisDefinition',
+          'definitionInput',
+          'definitionType',
+          'axisSubject',
+        ]) {
+          if (forbiddenProperty in directionalAxisPresence) {
+            throw new Error(
+              `FASE 24.39 detectó ${forbiddenProperty} antes de la definición explícita del eje.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO B
+       *
+       * Definición semántica explícita del eje A.
+       */
+      const directionalAxisDefinitionInputA = {
+        axisId: directionalAxisInputA.axisId,
+        axisSubject: 'deliberative-effect-direction-axis',
+      };
+
+      const directionalAxisDefinitionInputASnapshot =
+        JSON.stringify(directionalAxisDefinitionInputA);
+
+      const supportedDirectionalAxisDefinitionA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisDefinition(
+          supportedDirectionalAxisPresenceA,
+          directionalAxisDefinitionInputA
+        );
+
+      if (!supportedDirectionalAxisDefinitionA) {
+        throw new Error(
+          'FASE 24.39 no materializó DirectionalAxisDefinition para un axisId coincidente.'
+        );
+      }
+
+      if (
+        supportedDirectionalAxisDefinitionA.definitionType !==
+        'explicit-evaluation-result-deliberative-influence-effect-directional-axis-semantic-definition'
+      ) {
+        throw new Error(
+          'FASE 24.39 produjo un definitionType inesperado.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * Conservación exacta por identidad.
+       */
+      if (
+        supportedDirectionalAxisDefinitionA.directionalAxisPresence !==
+        supportedDirectionalAxisPresenceA
+      ) {
+        throw new Error(
+          'FASE 24.39 no conservó DirectionalAxisPresence por identidad.'
+        );
+      }
+
+      if (
+        supportedDirectionalAxisDefinitionA.definitionInput !==
+        directionalAxisDefinitionInputA
+      ) {
+        throw new Error(
+          'FASE 24.39 no conservó DirectionalAxisDefinitionInput por identidad.'
+        );
+      }
+
+      const directionalAxisDefinitionKeys =
+        Object.keys(supportedDirectionalAxisDefinitionA).sort();
+
+      const expectedDirectionalAxisDefinitionKeys = [
+        'directionalAxisPresence',
+        'definitionInput',
+        'definitionType',
+      ].sort();
+
+      if (
+        JSON.stringify(directionalAxisDefinitionKeys) !==
+        JSON.stringify(expectedDirectionalAxisDefinitionKeys)
+      ) {
+        throw new Error(
+          'FASE 24.39 introdujo propiedades adicionales en DirectionalAxisDefinition.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * La misma Presence puede recibir definiciones semánticas
+       * distintas.
+       *
+       * axis presence != axis semantics
+       */
+      const directionalAxisDefinitionInputB = {
+        axisId: directionalAxisInputA.axisId,
+        axisSubject: 'alternative-controlled-directional-dimension',
+      };
+
+      const directionalAxisDefinitionInputBSnapshot =
+        JSON.stringify(directionalAxisDefinitionInputB);
+
+      const supportedDirectionalAxisDefinitionB =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisDefinition(
+          supportedDirectionalAxisPresenceA,
+          directionalAxisDefinitionInputB
+        );
+
+      if (!supportedDirectionalAxisDefinitionB) {
+        throw new Error(
+          'FASE 24.39 no permitió una segunda definición semántica para la misma Presence.'
+        );
+      }
+
+      if (
+        supportedDirectionalAxisDefinitionA.directionalAxisPresence !==
+        supportedDirectionalAxisDefinitionB.directionalAxisPresence
+      ) {
+        throw new Error(
+          'FASE 24.39 perdió la misma Presence al definir semánticas distintas.'
+        );
+      }
+
+      if (
+        supportedDirectionalAxisDefinitionA.definitionInput.axisSubject ===
+        supportedDirectionalAxisDefinitionB.definitionInput.axisSubject
+      ) {
+        throw new Error(
+          'FASE 24.39 colapsó dos definiciones semánticas distintas.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * axisId distinto => null.
+       */
+      const mismatchedDirectionalAxisDefinition =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisDefinition(
+          supportedDirectionalAxisPresenceA,
+          {
+            axisId: directionalAxisInputB.axisId,
+            axisSubject: directionalAxisDefinitionInputA.axisSubject,
+          }
+        );
+
+      if (mismatchedDirectionalAxisDefinition !== null) {
+        throw new Error(
+          'FASE 24.39 materializó una definición para un axisId distinto.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * El mismo eje y la misma semántica pueden existir sobre
+       * scopes distintos sin colapsarlos.
+       */
+      const secondaryDirectionalAxisDefinitionA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisDefinition(
+          secondaryDirectionalAxisPresenceA,
+          directionalAxisDefinitionInputA
+        );
+
+      if (!secondaryDirectionalAxisDefinitionA) {
+        throw new Error(
+          'FASE 24.39 no materializó la definición sobre el mismo eje en otro scope.'
+        );
+      }
+
+      if (
+        secondaryDirectionalAxisDefinitionA.directionalAxisPresence ===
+        supportedDirectionalAxisDefinitionA.directionalAxisPresence
+      ) {
+        throw new Error(
+          'FASE 24.39 colapsó DirectionalAxisPresence pertenecientes a scopes distintos.'
+        );
+      }
+
+      if (
+        secondaryDirectionalAxisDefinitionA.definitionInput !==
+        directionalAxisDefinitionInputA
+      ) {
+        throw new Error(
+          'FASE 24.39 no conservó la misma definición externa por identidad entre scopes.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * supported / not-supported pueden recibir exactamente la
+       * misma semántica del eje.
+       */
+      const notSupportedDirectionalAxisDefinitionA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisDefinition(
+          notSupportedDirectionalAxisPresenceA,
+          directionalAxisDefinitionInputA
+        );
+
+      if (!notSupportedDirectionalAxisDefinitionA) {
+        throw new Error(
+          'FASE 24.39 no materializó la definición sobre el eje procedente de not-supported.'
+        );
+      }
+
+      if (
+        notSupportedDirectionalAxisDefinitionA.definitionInput !==
+        directionalAxisDefinitionInputA
+      ) {
+        throw new Error(
+          'FASE 24.39 reinterpretó la semántica del eje por proceder de not-supported.'
+        );
+      }
+
+      /*
+       * CASO H
+       *
+       * DirectionalReferenceDefinition y DirectionalAxisDefinition
+       * permanecen como ramas independientes.
+       */
+      for (const definition of [
+        supportedDirectionalAxisDefinitionA,
+        supportedDirectionalAxisDefinitionB,
+        secondaryDirectionalAxisDefinitionA,
+        notSupportedDirectionalAxisDefinitionA,
+      ]) {
+        for (const forbiddenProperty of [
+          'directionalReferencePresence',
+          'directionalReferenceDefinition',
+          'referenceId',
+          'referenceSemanticRole',
+          'directionalReferenceAxisCorrespondence',
+          'referenceAxisCorrespondence',
+          'belongsToAxis',
+          'referenceBelongsToAxis',
+          'directionalAxisEffectCorrespondence',
+          'axisEffectCorrespondence',
+          'directionalReferenceEffectCorrespondence',
+          'referenceEffectCorrespondence',
+          'directionalApplicability',
+          'axisApplicability',
+          'referenceApplicability',
+          'endpoints',
+          'axisEndpoints',
+          'orientation',
+          'axisOrientation',
+          'polarity',
+          'valence',
+          'positive',
+          'negative',
+          'support',
+          'opposition',
+          'directionDetermination',
+          'direction',
+          'strength',
+          'weight',
+          'importance',
+          'significance',
+          'impact',
+          'score',
+          'priority',
+          'confidence',
+          'comparison',
+          'preference',
+          'ranking',
+          'selection',
+          'decision',
+          'execution',
+        ]) {
+          if (forbiddenProperty in definition) {
+            throw new Error(
+              `FASE 24.39 promovió indebidamente DirectionalAxisDefinition hacia ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO I
+       *
+       * Inmutabilidad.
+       */
+      if (
+        JSON.stringify(supportedDirectionalAxisPresenceA) !==
+        supportedDirectionalAxisPresenceASnapshotBeforeDefinition
+      ) {
+        throw new Error(
+          'FASE 24.39 modificó DirectionalAxisPresence supported.'
+        );
+      }
+
+      if (
+        JSON.stringify(secondaryDirectionalAxisPresenceA) !==
+        secondaryDirectionalAxisPresenceASnapshotBeforeDefinition
+      ) {
+        throw new Error(
+          'FASE 24.39 modificó DirectionalAxisPresence secundaria.'
+        );
+      }
+
+      if (
+        JSON.stringify(notSupportedDirectionalAxisPresenceA) !==
+        notSupportedDirectionalAxisPresenceASnapshotBeforeDefinition
+      ) {
+        throw new Error(
+          'FASE 24.39 modificó DirectionalAxisPresence not-supported.'
+        );
+      }
+
+      if (
+        JSON.stringify(directionalAxisDefinitionInputA) !==
+        directionalAxisDefinitionInputASnapshot
+      ) {
+        throw new Error(
+          'FASE 24.39 modificó DirectionalAxisDefinitionInput A.'
+        );
+      }
+
+      if (
+        JSON.stringify(directionalAxisDefinitionInputB) !==
+        directionalAxisDefinitionInputBSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.39 modificó DirectionalAxisDefinitionInput B.'
+        );
+      }
+
+      if (
+        JSON.stringify(recommendationsAfterDeliberativeParticipation) !==
+        recommendationsSnapshotBeforeDirectionalAxisDefinition
+      ) {
+        throw new Error(
+          'FASE 24.39 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterDeliberativeParticipation) !==
+        decisionsSnapshotBeforeDirectionalAxisDefinition
+      ) {
+        throw new Error(
+          'FASE 24.39 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.39 OK: se materializó explícitamente EvaluationResultDeliberativeInfluenceEffectDirectionalAxisDefinition a partir de DirectionalAxisPresence como único fundamento interno inmediato y DirectionalAxisDefinitionInput como semántica externa explícita.
+
+DirectionalAxisPresence permaneció distinta de DirectionalAxisDefinition: la presencia previa del eje no había definido automáticamente su semántica.
+
+DirectionalAxisDefinition conservó exactamente DirectionalAxisPresence y DirectionalAxisDefinitionInput por identidad y sólo añadió definitionType.
+
+Una misma DirectionalAxisPresence pudo recibir dos axisSubject distintos, demostrando que axis presence != axis semantics y que la Presence no selecciona ni determina su definición.
+
+Un axisId distinto devolvió null sin materializar una definición artificial.
+
+La misma definición semántica pudo reutilizarse sobre el mismo eje presentado en scopes distintos sin colapsarlos.
+
+DirectionalReferenceDefinition y DirectionalAxisDefinition permanecieron como ramas arquitectónicas independientes.
+
+Effects procedentes de EvaluationResult supported y not-supported pudieron recibir exactamente la misma definición semántica del eje, manteniendo supported != positive direction y not-supported != negative direction.
+
+DirectionalAxisDefinition permaneció distinta de endpoints, orientation, polarity, valence, positive/negative, support/opposition, reference/axis correspondence, axis/Effect correspondence, reference/Effect correspondence, applicability, DirectionDetermination y Direction.
+
+No se introdujeron strength, weight, importance, significance, impact, score, priority ni confidence.
+
+DirectionalAxisDefinition permaneció explícitamente distinta de Comparison, Preference, Ranking, Selection, Decision y Execution.
+
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39.'
       );
     } finally {
       setLoading(false);
@@ -47956,6 +48379,16 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Presencia Eje Direccional Efecto Deliberativo 24.38
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Probar FASE 24.39
         </button>
 
         <button
