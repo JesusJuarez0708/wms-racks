@@ -187,6 +187,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferencePresenceService';
 
 import {
+  establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceDefinition,
+} from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceDefinitionService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -45263,6 +45267,703 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         );
       }
 
+      /*
+       * ============================================================
+       * FASE 24.37
+       * ============================================================
+       *
+       * Definición semántica explícita de referencia direccional
+       * del efecto deliberativo.
+       *
+       * DirectionalReferencePresence
+       * !=
+       * DirectionalReferenceDefinition
+       * !=
+       * DirectionalAxisPresence
+       * !=
+       * DirectionalAxisDefinition
+       * !=
+       * DirectionalReferenceAxisCorrespondence
+       * !=
+       * DirectionalReferenceEffectCorrespondence
+       * !=
+       * DirectionalReferenceApplicability
+       * !=
+       * DirectionDetermination
+       * !=
+       * Direction.
+       *
+       * DirectionalReferencePresence constituye el único
+       * fundamento interno inmediato.
+       *
+       * DirectionalReferenceDefinitionInput aporta externamente:
+       *
+       * - referenceId;
+       * - referenceSemanticRole.
+       *
+       * FASE 24.37 NO introduce:
+       *
+       * - directional axis;
+       * - pertenencia o correspondencia reference / axis;
+       * - correspondencia reference / Effect;
+       * - aplicabilidad;
+       * - direction determination;
+       * - direction;
+       * - orientation;
+       * - positive / negative;
+       * - polarity / valence;
+       * - support / opposition;
+       * - strength / weight;
+       * - importance / significance;
+       * - impact;
+       * - score / priority / confidence;
+       * - Comparison;
+       * - Preference;
+       * - Ranking;
+       * - Selection;
+       * - Decision.
+       */
+
+      const recommendationsSnapshotBeforeDirectionalReferenceDefinition =
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        );
+
+      const decisionsSnapshotBeforeDirectionalReferenceDefinition =
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        );
+
+      const supportedDirectionalReferencePresenceASnapshotBeforeDefinition =
+        JSON.stringify(
+          supportedDirectionalReferencePresenceA
+        );
+
+      const notSupportedDirectionalReferencePresenceASnapshotBeforeDefinition =
+        JSON.stringify(
+          notSupportedDirectionalReferencePresenceA
+        );
+
+      const secondaryDirectionalReferencePresenceASnapshotBeforeDefinition =
+        JSON.stringify(
+          secondaryDirectionalReferencePresenceA
+        );
+
+      /*
+       * CASO A
+       *
+       * DirectionalReferencePresence
+       * !=
+       * DirectionalReferenceDefinition.
+       *
+       * La presencia previa no contiene ni materializa
+       * automáticamente una definición semántica.
+       */
+      for (
+        const directionalReferencePresence of [
+          supportedDirectionalReferencePresenceA,
+          secondaryDirectionalReferencePresenceA,
+          notSupportedDirectionalReferencePresenceA,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of [
+            'directionalReferenceDefinition',
+            'definitionInput',
+            'definitionType',
+            'referenceSemanticRole',
+          ]
+        ) {
+          if (
+            forbiddenProperty in directionalReferencePresence
+          ) {
+            throw new Error(
+              `FASE 24.37 detectó ${forbiddenProperty} antes de la definición semántica explícita de la referencia.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO B
+       *
+       * Definición semántica explícita de reference A.
+       */
+      const directionalReferenceDefinitionInputA = {
+        referenceId:
+          directionalReferenceInputA.referenceId,
+        referenceSemanticRole:
+          'deliberative-effect-direction-reference',
+      } as const;
+
+      const directionalReferenceDefinitionInputASnapshot =
+        JSON.stringify(
+          directionalReferenceDefinitionInputA
+        );
+
+      const supportedDirectionalReferenceDefinitionA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceDefinition(
+          supportedDirectionalReferencePresenceA,
+          directionalReferenceDefinitionInputA
+        );
+
+      if (!supportedDirectionalReferenceDefinitionA) {
+        throw new Error(
+          'FASE 24.37 no materializó DirectionalReferenceDefinition para una identidad de referencia válida.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceDefinitionA.definitionType !==
+        'explicit-evaluation-result-deliberative-influence-effect-directional-reference-semantic-definition'
+      ) {
+        throw new Error(
+          'FASE 24.37 produjo un definitionType inesperado.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * Conservación exacta por identidad:
+       *
+       * - DirectionalReferencePresence
+       * - DirectionalReferenceDefinitionInput
+       */
+      if (
+        supportedDirectionalReferenceDefinitionA
+          .directionalReferencePresence !==
+        supportedDirectionalReferencePresenceA
+      ) {
+        throw new Error(
+          'FASE 24.37 no conservó DirectionalReferencePresence exactamente por identidad.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceDefinitionA
+          .definitionInput !==
+        directionalReferenceDefinitionInputA
+      ) {
+        throw new Error(
+          'FASE 24.37 no conservó DirectionalReferenceDefinitionInput exactamente por identidad.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * Forma estructural mínima exacta.
+       */
+      const supportedDirectionalReferenceDefinitionAKeys =
+        Object.keys(
+          supportedDirectionalReferenceDefinitionA
+        ).sort();
+
+      const expectedDirectionalReferenceDefinitionKeys = [
+        'definitionInput',
+        'definitionType',
+        'directionalReferencePresence',
+      ].sort();
+
+      if (
+        JSON.stringify(
+          supportedDirectionalReferenceDefinitionAKeys
+        ) !==
+        JSON.stringify(
+          expectedDirectionalReferenceDefinitionKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.37 introdujo propiedades adicionales dentro de DirectionalReferenceDefinition.'
+        );
+      }
+
+      const directionalReferenceDefinitionInputAKeys =
+        Object.keys(
+          directionalReferenceDefinitionInputA
+        ).sort();
+
+      if (
+        JSON.stringify(
+          directionalReferenceDefinitionInputAKeys
+        ) !==
+        JSON.stringify(
+          [
+            'referenceId',
+            'referenceSemanticRole',
+          ].sort()
+        )
+      ) {
+        throw new Error(
+          'FASE 24.37 permitió que DirectionalReferenceDefinitionInput transportara información adicional.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * Una definición destinada a una referencia distinta no
+       * puede definir la presencia actual.
+       *
+       * reference A presence
+       * +
+       * reference B definition input
+       * ->
+       * null
+       */
+      const directionalReferenceDefinitionInputMismatch = {
+        referenceId:
+          directionalReferenceInputB.referenceId,
+        referenceSemanticRole:
+          'deliberative-effect-direction-reference',
+      } as const;
+
+      const mismatchedDirectionalReferenceDefinition =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceDefinition(
+          supportedDirectionalReferencePresenceA,
+          directionalReferenceDefinitionInputMismatch
+        );
+
+      if (
+        mismatchedDirectionalReferenceDefinition !==
+        null
+      ) {
+        throw new Error(
+          'FASE 24.37 materializó una definición semántica utilizando un referenceId distinto del presentado.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * Una misma DirectionalReferencePresence puede recibir
+       * definiciones semánticas explícitas distintas.
+       *
+       * Presence does not determine semantics.
+       */
+      const directionalReferenceDefinitionInputB = {
+        referenceId:
+          directionalReferenceInputA.referenceId,
+        referenceSemanticRole:
+          'deliberative-effect-orientation-reference',
+      } as const;
+
+      const directionalReferenceDefinitionInputBSnapshot =
+        JSON.stringify(
+          directionalReferenceDefinitionInputB
+        );
+
+      const supportedDirectionalReferenceDefinitionB =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceDefinition(
+          supportedDirectionalReferencePresenceA,
+          directionalReferenceDefinitionInputB
+        );
+
+      if (!supportedDirectionalReferenceDefinitionB) {
+        throw new Error(
+          'FASE 24.37 no materializó la segunda definición semántica explícita.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceDefinitionB ===
+        supportedDirectionalReferenceDefinitionA
+      ) {
+        throw new Error(
+          'FASE 24.37 colapsó definiciones semánticas explícitas distintas.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceDefinitionB
+          .directionalReferencePresence !==
+        supportedDirectionalReferenceDefinitionA
+          .directionalReferencePresence
+      ) {
+        throw new Error(
+          'FASE 24.37 perdió la misma DirectionalReferencePresence al utilizar una segunda semántica.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceDefinitionB
+          .definitionInput
+          .referenceSemanticRole ===
+        supportedDirectionalReferenceDefinitionA
+          .definitionInput
+          .referenceSemanticRole
+      ) {
+        throw new Error(
+          'FASE 24.37 no conservó la pluralidad explícita de significados semánticos.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * La misma definición semántica puede utilizarse sobre
+       * presencias de la misma referencia pertenecientes a scopes
+       * distintos.
+       *
+       * La definición de la referencia no colapsa el scope.
+       */
+      const secondaryDirectionalReferenceDefinitionA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceDefinition(
+          secondaryDirectionalReferencePresenceA,
+          directionalReferenceDefinitionInputA
+        );
+
+      if (!secondaryDirectionalReferenceDefinitionA) {
+        throw new Error(
+          'FASE 24.37 no permitió definir semánticamente la misma referencia dentro de otro scope.'
+        );
+      }
+
+      if (
+        secondaryDirectionalReferenceDefinitionA ===
+        supportedDirectionalReferenceDefinitionA
+      ) {
+        throw new Error(
+          'FASE 24.37 colapsó definiciones pertenecientes a DirectionalReferencePresence distintas.'
+        );
+      }
+
+      if (
+        secondaryDirectionalReferenceDefinitionA
+          .directionalReferencePresence ===
+        supportedDirectionalReferenceDefinitionA
+          .directionalReferencePresence
+      ) {
+        throw new Error(
+          'FASE 24.37 colapsó DirectionalReferencePresence pertenecientes a scopes distintos.'
+        );
+      }
+
+      if (
+        secondaryDirectionalReferenceDefinitionA
+          .definitionInput !==
+        directionalReferenceDefinitionInputA
+      ) {
+        throw new Error(
+          'FASE 24.37 no conservó por identidad el mismo DefinitionInput reutilizado en otro scope.'
+        );
+      }
+
+      /*
+       * CASO H
+       *
+       * EvaluationResult not-supported puede recibir exactamente
+       * la misma definición semántica.
+       *
+       * not-supported
+       * != negative
+       *
+       * supported
+       * != positive
+       */
+      const notSupportedDirectionalReferenceDefinitionA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceDefinition(
+          notSupportedDirectionalReferencePresenceA,
+          directionalReferenceDefinitionInputA
+        );
+
+      if (!notSupportedDirectionalReferenceDefinitionA) {
+        throw new Error(
+          'FASE 24.37 trató de forma distinta la referencia por proceder de un EvaluationResult not-supported.'
+        );
+      }
+
+      if (
+        notSupportedDirectionalReferenceDefinitionA
+          .definitionInput !==
+        directionalReferenceDefinitionInputA
+      ) {
+        throw new Error(
+          'FASE 24.37 no conservó la misma definición semántica para el escenario not-supported.'
+        );
+      }
+
+      /*
+       * CASO I
+       *
+       * La Definition sólo conserva DirectionalReferencePresence
+       * como fundamento interno inmediato y no duplica genealogía.
+       */
+      for (
+        const directionalReferenceDefinition of [
+          supportedDirectionalReferenceDefinitionA,
+          supportedDirectionalReferenceDefinitionB,
+          secondaryDirectionalReferenceDefinitionA,
+          notSupportedDirectionalReferenceDefinitionA,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of [
+            'directionDeterminationScope',
+            'evaluationResultDeliberativeInfluenceEffect',
+            'evaluationResultDeliberativeInfluenceReach',
+            'evaluationResultDeliberativeInfluence',
+            'evaluationResultDeliberativeUtilization',
+            'deliberativeParticipation',
+            'evaluationResult',
+            'recommendation',
+            'recommendationId',
+            'deliberationId',
+            'conclusion',
+            'criterionUtilization',
+            'evaluation',
+          ]
+        ) {
+          if (
+            forbiddenProperty in
+            directionalReferenceDefinition
+          ) {
+            throw new Error(
+              `FASE 24.37 duplicó indebidamente ${forbiddenProperty} dentro de DirectionalReferenceDefinition.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO J
+       *
+       * DirectionalReferenceDefinition no introduce ningún hecho
+       * direccional posterior.
+       */
+      const forbiddenDirectionalReferenceDefinitionProperties = [
+        'directionalAxis',
+        'directionalAxisPresence',
+        'directionalAxisDefinition',
+        'axisId',
+        'referenceAxisCorrespondence',
+        'directionalReferenceAxisCorrespondence',
+        'referenceEffectCorrespondence',
+        'directionalReferenceEffectCorrespondence',
+        'applicability',
+        'directionalReferenceApplicability',
+        'directionDetermination',
+        'direction',
+        'orientation',
+        'positive',
+        'negative',
+        'polarity',
+        'valence',
+        'support',
+        'opposition',
+        'strength',
+        'weight',
+        'importance',
+        'significance',
+        'impact',
+        'score',
+        'priority',
+        'confidence',
+      ];
+
+      for (
+        const directionalReferenceDefinition of [
+          supportedDirectionalReferenceDefinitionA,
+          supportedDirectionalReferenceDefinitionB,
+          secondaryDirectionalReferenceDefinitionA,
+          notSupportedDirectionalReferenceDefinitionA,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of
+            forbiddenDirectionalReferenceDefinitionProperties
+        ) {
+          if (
+            forbiddenProperty in
+            directionalReferenceDefinition
+          ) {
+            throw new Error(
+              `FASE 24.37 adelantó indebidamente un hecho direccional posterior mediante ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO K
+       *
+       * DirectionalReferenceDefinition
+       * != Comparison
+       * != Preference
+       * != Ranking
+       * != Selection
+       * != Decision.
+       */
+      const forbiddenPostDirectionalReferenceDefinitionProperties = [
+        'comparison',
+        'comparability',
+        'preference',
+        'ranking',
+        'selection',
+        'decision',
+      ];
+
+      for (
+        const directionalReferenceDefinition of [
+          supportedDirectionalReferenceDefinitionA,
+          supportedDirectionalReferenceDefinitionB,
+          secondaryDirectionalReferenceDefinitionA,
+          notSupportedDirectionalReferenceDefinitionA,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of
+            forbiddenPostDirectionalReferenceDefinitionProperties
+        ) {
+          if (
+            forbiddenProperty in
+            directionalReferenceDefinition
+          ) {
+            throw new Error(
+              `FASE 24.37 promovió indebidamente DirectionalReferenceDefinition hacia ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO L
+       *
+       * supported / not-supported permanecen exclusivamente dentro
+       * de EvaluationResult y no son reinterpretados por la
+       * definición semántica de la referencia.
+       */
+      if (
+        supportedDirectionalReferenceDefinitionA
+          .directionalReferencePresence
+          .directionDeterminationScope
+          .evaluationResultDeliberativeInfluenceEffect
+          .evaluationResultDeliberativeInfluenceReach
+          .evaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization
+          .evaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.37 alteró o reinterpretó la conclusión supported.'
+        );
+      }
+
+      if (
+        notSupportedDirectionalReferenceDefinitionA
+          .directionalReferencePresence
+          .directionDeterminationScope
+          .evaluationResultDeliberativeInfluenceEffect
+          .evaluationResultDeliberativeInfluenceReach
+          .evaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization
+          .evaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-not-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.37 alteró o reinterpretó la conclusión not-supported.'
+        );
+      }
+
+      /*
+       * CASO M
+       *
+       * La definición semántica no modifica las Presence utilizadas
+       * como fundamento inmediato.
+       */
+      if (
+        JSON.stringify(
+          supportedDirectionalReferencePresenceA
+        ) !==
+        supportedDirectionalReferencePresenceASnapshotBeforeDefinition
+      ) {
+        throw new Error(
+          'FASE 24.37 modificó DirectionalReferencePresence supported.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          notSupportedDirectionalReferencePresenceA
+        ) !==
+        notSupportedDirectionalReferencePresenceASnapshotBeforeDefinition
+      ) {
+        throw new Error(
+          'FASE 24.37 modificó DirectionalReferencePresence not-supported.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          secondaryDirectionalReferencePresenceA
+        ) !==
+        secondaryDirectionalReferencePresenceASnapshotBeforeDefinition
+      ) {
+        throw new Error(
+          'FASE 24.37 modificó DirectionalReferencePresence secundaria.'
+        );
+      }
+
+      /*
+       * CASO N
+       *
+       * Tampoco modifica los inputs externos.
+       */
+      if (
+        JSON.stringify(
+          directionalReferenceDefinitionInputA
+        ) !==
+        directionalReferenceDefinitionInputASnapshot
+      ) {
+        throw new Error(
+          'FASE 24.37 modificó DirectionalReferenceDefinitionInput A.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          directionalReferenceDefinitionInputB
+        ) !==
+        directionalReferenceDefinitionInputBSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.37 modificó DirectionalReferenceDefinitionInput B.'
+        );
+      }
+
+      /*
+       * CASO O
+       *
+       * FASE 24.37 tampoco modifica recomendaciones ni decisiones
+       * productivas.
+       */
+      if (
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        ) !==
+        recommendationsSnapshotBeforeDirectionalReferenceDefinition
+      ) {
+        throw new Error(
+          'FASE 24.37 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        ) !==
+        decisionsSnapshotBeforeDirectionalReferenceDefinition
+      ) {
+        throw new Error(
+          'FASE 24.37 modificó decisiones productivas.'
+        );
+      }
+
       addLog(
         `FASE 24.26 OK: se materializó explícitamente CriterionApplicability a partir de CompatibilityResult como único fundamento inmediato, conservando exactamente CompatibilityResult y toda su genealogía por identidad.
 CompatibilityResult permaneció distinto de CriterionApplicability: la existencia previa de compatibilityResult=compatible o compatibilityResult=incompatible no había materializado automáticamente aplicabilidad.
@@ -45386,13 +46087,27 @@ DirectionalReferencePresence permaneció explícitamente distinta de Comparison,
 Permanecieron intactas las recomendaciones y decisiones productivas.`
       );
 
+      addLog(
+        `FASE 24.37 OK: se materializó explícitamente EvaluationResultDeliberativeInfluenceEffectDirectionalReferenceDefinition a partir de DirectionalReferencePresence como único fundamento interno inmediato y DirectionalReferenceDefinitionInput como semántica externa explícita.
+DirectionalReferencePresence permaneció distinta de DirectionalReferenceDefinition: la presencia previa de una referencia no había materializado automáticamente ningún significado semántico.
+La definición sólo se materializó cuando definitionInput.referenceId coincidió exactamente con directionalReferenceInput.referenceId; una referencia distinta devolvió null sin crear una entidad negativa artificial.
+DirectionalReferenceDefinition conservó exactamente DirectionalReferencePresence y DirectionalReferenceDefinitionInput por identidad y sólo añadió definitionType.
+Una misma DirectionalReferencePresence pudo recibir dos roles semánticos distintos, demostrando que reference presence does not determine semantics.
+La misma definición semántica pudo reutilizarse sobre la misma referencia presentada en scopes distintos sin colapsar esos ámbitos.
+Effects procedentes de EvaluationResult supported y not-supported pudieron recibir exactamente la misma definición semántica, manteniendo supported != positive direction y not-supported != negative direction.
+DirectionalReferenceDefinition permaneció distinta de DirectionalAxisPresence, DirectionalAxisDefinition, reference/axis correspondence, reference/Effect correspondence, applicability, DirectionDetermination y Direction.
+No se introdujeron orientation, positive, negative, polarity, valence, support, opposition, strength, weight, importance, significance, impact, score, priority ni confidence.
+DirectionalReferenceDefinition permaneció explícitamente distinta de Comparison, Preference, Ranking, Selection y Decision.
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37.'
       );
     } finally {
       setLoading(false);
@@ -46559,7 +47274,7 @@ Permanecieron intactas las recomendaciones y decisiones productivas.`
           disabled={loading}
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
-          Test Presencia Referencia Direccional Efecto Deliberativo 24.36
+          Test Definición Referencia Direccional Efecto Deliberativo 24.37
         </button>
 
         <button
