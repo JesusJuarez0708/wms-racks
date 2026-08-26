@@ -164,6 +164,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationDeliberativeParticipationService';
 
 import {
+  useProductiveKnowledgeRecommendationEvaluationResultInDeliberation,
+} from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeUtilizationService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -41333,14 +41337,45 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         );
       }
 
+      /*
+       * Recommendation A debe ser exactamente la misma
+       * instancia preservada genealógicamente dentro de
+       * EvaluationResult.
+       *
+       * Las regeneraciones productivas posteriores se utilizan
+       * únicamente como controles externos de no mutación y no
+       * sustituyen la identidad del objeto genealógico.
+       */
       const recommendationA =
-        recommendationsAfterEvaluationResult[0];
+        explicitEvaluationResult
+          .criterionUtilization
+          .evaluation
+          .evaluationScope
+          .relevanceBoundary
+          .relevance
+          .interpretation
+          .effect
+          .reach
+          .recommendation;
+
+      /*
+       * B y C deben representar recomendaciones lógicamente
+       * distintas de A.
+       *
+       * Las obtenemos desde la regeneración productiva excluyendo
+       * cualquier representación que corresponda al mismo id de A.
+       */
+      const alternativeRecommendationsForDeliberation =
+        recommendationsAfterEvaluationResult.filter(
+          (candidate) =>
+            candidate.id !== recommendationA.id
+        );
 
       const recommendationB =
-        recommendationsAfterEvaluationResult[1];
+        alternativeRecommendationsForDeliberation[0];
 
       const recommendationC =
-        recommendationsAfterEvaluationResult[2];
+        alternativeRecommendationsForDeliberation[1];
 
       if (
         !recommendationA ||
@@ -41348,7 +41383,7 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         !recommendationC
       ) {
         throw new Error(
-          'FASE 24.30 no pudo obtener las tres recomendaciones controladas necesarias.'
+          'FASE 24.30 no pudo obtener la Recommendation genealógica A y dos recomendaciones alternativas B/C necesarias.'
         );
       }
 
@@ -41849,6 +41884,641 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         );
       }
 
+
+      /*
+       * ============================================================
+       * FASE 24.31
+       * UTILIZACIÓN DELIBERATIVA EXPLÍCITA DE EVALUATIONRESULT
+       * ============================================================
+       *
+       * EvaluationResult
+       * +
+       * DeliberativeParticipation
+       * +
+       * misma Recommendation por identidad
+       * +
+       * invocación explícita
+       * =
+       * EvaluationResultDeliberativeUtilization
+       *
+       * Se preserva:
+       *
+       * correspondence
+       * !=
+       * utilization
+       *
+       * utilization
+       * !=
+       * Comparison
+       * !=
+       * Preference
+       * !=
+       * Selection
+       * !=
+       * Decision
+       *
+       * La conclusión supported / not-supported
+       * tampoco controla automáticamente la utilización.
+       */
+
+      /*
+       * CASO A
+       *
+       * Recuperamos desde EvaluationResult la Recommendation
+       * evaluada real mediante su genealogía preservada.
+       */
+      const evaluatedRecommendationForDeliberativeUtilization =
+        explicitEvaluationResult
+          .criterionUtilization
+          .evaluation
+          .evaluationScope
+          .relevanceBoundary
+          .relevance
+          .interpretation
+          .effect
+          .reach
+          .recommendation;
+
+      /*
+       * Ambos EvaluationResult de FASE 24.29 comparten
+       * exactamente el mismo CriterionUtilization.
+       *
+       * Por tanto deben converger sobre exactamente
+       * la misma Recommendation por identidad.
+       */
+      const notSupportedEvaluatedRecommendationForDeliberativeUtilization =
+        explicitNotSupportedEvaluationResult
+          .criterionUtilization
+          .evaluation
+          .evaluationScope
+          .relevanceBoundary
+          .relevance
+          .interpretation
+          .effect
+          .reach
+          .recommendation;
+
+      if (
+        notSupportedEvaluatedRecommendationForDeliberativeUtilization !==
+        evaluatedRecommendationForDeliberativeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.31 perdió la identidad común de Recommendation entre los EvaluationResult supported y not-supported heredados de FASE 24.29.'
+        );
+      }
+
+      /*
+       * Localizamos la participación correspondiente
+       * exclusivamente mediante identidad estructural
+       * de Recommendation.
+       *
+       * No utilizamos recommendationId ni deliberationId
+       * como sustitutos de identidad de objeto.
+       */
+      const deliberativeParticipationsForEvaluationResult = [
+        explicitDeliberativeParticipationA,
+        explicitDeliberativeParticipationB,
+        explicitDeliberativeParticipationC,
+      ];
+
+      const matchingDeliberativeParticipation =
+        deliberativeParticipationsForEvaluationResult.find(
+          (participation) =>
+            participation.recommendation ===
+            evaluatedRecommendationForDeliberativeUtilization
+        );
+
+      if (!matchingDeliberativeParticipation) {
+        throw new Error(
+          'FASE 24.31 no encontró una DeliberativeParticipation cuya Recommendation fuera exactamente la misma instancia evaluada por EvaluationResult.'
+        );
+      }
+
+      const nonMatchingDeliberativeParticipation =
+        deliberativeParticipationsForEvaluationResult.find(
+          (participation) =>
+            participation.recommendation !==
+            evaluatedRecommendationForDeliberativeUtilization
+        );
+
+      if (!nonMatchingDeliberativeParticipation) {
+        throw new Error(
+          'FASE 24.31 requiere al menos una DeliberativeParticipation perteneciente a una Recommendation distinta para demostrar la frontera de correspondencia.'
+        );
+      }
+
+      /*
+       * CASO B
+       *
+       * FRONTERA DE NO AUTOMATICIDAD.
+       *
+       * EvaluationResult exists
+       * +
+       * matching DeliberativeParticipation exists
+       * !=
+       * EvaluationResultDeliberativeUtilization exists
+       *
+       * Ninguno de ambos antecedentes debe contener
+       * utilización deliberativa embebida antes del acto explícito.
+       */
+      for (
+        const antecedent of [
+          explicitEvaluationResult,
+          explicitNotSupportedEvaluationResult,
+          matchingDeliberativeParticipation,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of [
+            'evaluationResultDeliberativeUtilization',
+            'deliberativeUtilization',
+            'utilizationType',
+          ]
+        ) {
+          if (forbiddenProperty in antecedent) {
+            throw new Error(
+              `FASE 24.31 detectó ${forbiddenProperty} antes de la utilización deliberativa explícita.`
+            );
+          }
+        }
+      }
+
+      const supportedEvaluationResultSnapshotBeforeDeliberativeUtilization =
+        JSON.stringify(explicitEvaluationResult);
+
+      const notSupportedEvaluationResultSnapshotBeforeDeliberativeUtilization =
+        JSON.stringify(explicitNotSupportedEvaluationResult);
+
+      const matchingDeliberativeParticipationSnapshotBeforeUtilization =
+        JSON.stringify(matchingDeliberativeParticipation);
+
+      const nonMatchingDeliberativeParticipationSnapshotBeforeUtilization =
+        JSON.stringify(nonMatchingDeliberativeParticipation);
+
+      const recommendationsSnapshotBeforeEvaluationResultDeliberativeUtilization =
+        JSON.stringify(recommendationsAfterDeliberativeParticipation);
+
+      const decisionsSnapshotBeforeEvaluationResultDeliberativeUtilization =
+        JSON.stringify(decisionsAfterDeliberativeParticipation);
+
+      /*
+       * CASO C
+       *
+       * EvaluationResult supported
+       * +
+       * participación correspondiente
+       * +
+       * invocación explícita
+       * =
+       * utilización deliberativa.
+       */
+      const explicitSupportedEvaluationResultDeliberativeUtilization =
+        useProductiveKnowledgeRecommendationEvaluationResultInDeliberation(
+          explicitEvaluationResult,
+          matchingDeliberativeParticipation
+        );
+
+      if (!explicitSupportedEvaluationResultDeliberativeUtilization) {
+        throw new Error(
+          'FASE 24.31 no materializó utilización deliberativa para un EvaluationResult supported perteneciente exactamente a la misma Recommendation participante.'
+        );
+      }
+
+      if (
+        explicitSupportedEvaluationResultDeliberativeUtilization
+          .utilizationType !==
+        'explicit-evaluation-result-deliberative-utilization'
+      ) {
+        throw new Error(
+          'FASE 24.31 produjo un utilizationType inesperado para el EvaluationResult supported.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * Conservación exacta por identidad.
+       */
+      if (
+        explicitSupportedEvaluationResultDeliberativeUtilization
+          .evaluationResult !==
+        explicitEvaluationResult
+      ) {
+        throw new Error(
+          'FASE 24.31 no conservó EvaluationResult supported exactamente por identidad.'
+        );
+      }
+
+      if (
+        explicitSupportedEvaluationResultDeliberativeUtilization
+          .deliberativeParticipation !==
+        matchingDeliberativeParticipation
+      ) {
+        throw new Error(
+          'FASE 24.31 no conservó DeliberativeParticipation exactamente por identidad.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * La entidad contiene exactamente:
+       *
+       * evaluationResult
+       * deliberativeParticipation
+       * utilizationType
+       */
+      const explicitSupportedDeliberativeUtilizationKeys =
+        Object.keys(
+          explicitSupportedEvaluationResultDeliberativeUtilization
+        ).sort();
+
+      const expectedEvaluationResultDeliberativeUtilizationKeys = [
+        'evaluationResult',
+        'deliberativeParticipation',
+        'utilizationType',
+      ].sort();
+
+      if (
+        JSON.stringify(
+          explicitSupportedDeliberativeUtilizationKeys
+        ) !==
+        JSON.stringify(
+          expectedEvaluationResultDeliberativeUtilizationKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.31 introdujo propiedades adicionales dentro de EvaluationResultDeliberativeUtilization.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * not-supported
+       * !=
+       * excluded from deliberative use
+       *
+       * La conclusión evaluativa no controla
+       * la posibilidad de utilización.
+       */
+      const explicitNotSupportedEvaluationResultDeliberativeUtilization =
+        useProductiveKnowledgeRecommendationEvaluationResultInDeliberation(
+          explicitNotSupportedEvaluationResult,
+          matchingDeliberativeParticipation
+        );
+
+      if (!explicitNotSupportedEvaluationResultDeliberativeUtilization) {
+        throw new Error(
+          'FASE 24.31 excluyó indebidamente de utilización deliberativa un EvaluationResult not-supported correspondiente a la misma Recommendation.'
+        );
+      }
+
+      if (
+        explicitNotSupportedEvaluationResultDeliberativeUtilization
+          .evaluationResult !==
+        explicitNotSupportedEvaluationResult
+      ) {
+        throw new Error(
+          'FASE 24.31 no conservó EvaluationResult not-supported exactamente por identidad.'
+        );
+      }
+
+      if (
+        explicitNotSupportedEvaluationResultDeliberativeUtilization
+          .deliberativeParticipation !==
+        matchingDeliberativeParticipation
+      ) {
+        throw new Error(
+          'FASE 24.31 no conservó la misma DeliberativeParticipation al utilizar el resultado not-supported.'
+        );
+      }
+
+      /*
+       * Los dos hechos de utilización son distintos,
+       * aunque pertenezcan a la misma Recommendation
+       * y a la misma participación.
+       *
+       * Esto deja abierta una futura arquitectura
+       * con múltiples EvaluationResult por Recommendation.
+       */
+      if (
+        explicitSupportedEvaluationResultDeliberativeUtilization ===
+        explicitNotSupportedEvaluationResultDeliberativeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.31 colapsó indebidamente dos EvaluationResult distintos en un único hecho de utilización deliberativa.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * CORRESPONDENCIA ESTRUCTURAL.
+       *
+       * EvaluationResult de Recommendation X
+       * +
+       * DeliberativeParticipation de Recommendation Y
+       * =
+       * null
+       *
+       * La identidad de Recommendation es una
+       * precondición real de dominio.
+       */
+      const mismatchedEvaluationResultDeliberativeUtilization =
+        useProductiveKnowledgeRecommendationEvaluationResultInDeliberation(
+          explicitEvaluationResult,
+          nonMatchingDeliberativeParticipation
+        );
+
+      if (
+        mismatchedEvaluationResultDeliberativeUtilization !==
+        null
+      ) {
+        throw new Error(
+          'FASE 24.31 permitió utilizar un EvaluationResult dentro de una DeliberativeParticipation perteneciente a otra Recommendation.'
+        );
+      }
+
+      /*
+       * CASO H
+       *
+       * correspondence
+       * !=
+       * utilization
+       *
+       * La coincidencia estructural fue utilizada
+       * únicamente como precondición de la operación.
+       *
+       * No se materializó una entidad artificial
+       * de Correspondence.
+       */
+      for (
+        const utilization of [
+          explicitSupportedEvaluationResultDeliberativeUtilization,
+          explicitNotSupportedEvaluationResultDeliberativeUtilization,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of [
+            'correspondence',
+            'correspondenceType',
+            'recommendationCorrespondence',
+            'recommendationId',
+            'deliberationId',
+          ]
+        ) {
+          if (forbiddenProperty in utilization) {
+            throw new Error(
+              `FASE 24.31 materializó o duplicó indebidamente ${forbiddenProperty} dentro de EvaluationResultDeliberativeUtilization.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO I
+       *
+       * Un mismo EvaluationResult puede utilizarse
+       * en otra participación deliberativa de la
+       * misma Recommendation pero perteneciente
+       * a otra deliberación.
+       *
+       * No existe unicidad artificial por EvaluationResult
+       * ni acoplamiento directo con deliberationId.
+       */
+      const secondaryDeliberationParticipationInput = {
+        deliberationId:
+          'controlled-deliberation-24-31-secondary',
+      };
+
+      const secondaryDeliberativeParticipation =
+        establishProductiveKnowledgeRecommendationDeliberativeParticipation(
+          evaluatedRecommendationForDeliberativeUtilization,
+          secondaryDeliberationParticipationInput
+        );
+
+      if (
+        secondaryDeliberativeParticipation.recommendation !==
+        evaluatedRecommendationForDeliberativeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.31 no conservó la Recommendation evaluada al crear la participación deliberativa secundaria.'
+        );
+      }
+
+      if (
+        secondaryDeliberativeParticipation
+          .participationInput
+          .deliberationId ===
+        matchingDeliberativeParticipation
+          .participationInput
+          .deliberationId
+      ) {
+        throw new Error(
+          'FASE 24.31 no consiguió establecer una deliberación secundaria distinta para probar reutilización.'
+        );
+      }
+
+      const secondaryEvaluationResultDeliberativeUtilization =
+        useProductiveKnowledgeRecommendationEvaluationResultInDeliberation(
+          explicitEvaluationResult,
+          secondaryDeliberativeParticipation
+        );
+
+      if (!secondaryEvaluationResultDeliberativeUtilization) {
+        throw new Error(
+          'FASE 24.31 impidió indebidamente utilizar el mismo EvaluationResult en una segunda deliberación de la misma Recommendation.'
+        );
+      }
+
+      if (
+        secondaryEvaluationResultDeliberativeUtilization
+          .evaluationResult !==
+        explicitEvaluationResult
+      ) {
+        throw new Error(
+          'FASE 24.31 no conservó el mismo EvaluationResult al reutilizarlo en otra deliberación.'
+        );
+      }
+
+      if (
+        secondaryEvaluationResultDeliberativeUtilization
+          .deliberativeParticipation !==
+        secondaryDeliberativeParticipation
+      ) {
+        throw new Error(
+          'FASE 24.31 no conservó la participación deliberativa secundaria exactamente por identidad.'
+        );
+      }
+
+      if (
+        secondaryEvaluationResultDeliberativeUtilization ===
+        explicitSupportedEvaluationResultDeliberativeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.31 colapsó indebidamente utilizaciones pertenecientes a participaciones deliberativas distintas.'
+        );
+      }
+
+      /*
+       * CASO J
+       *
+       * FRONTERA POSTERIOR.
+       *
+       * EvaluationResultDeliberativeUtilization
+       * !=
+       * Comparison
+       * !=
+       * Preference
+       * !=
+       * Selection
+       * !=
+       * Decision
+       *
+       * Tampoco introduce atributos evaluativos
+       * o de ranking.
+       */
+      const forbiddenPostDeliberativeUtilizationProperties = [
+        'comparison',
+        'comparability',
+        'comparisonResult',
+        'preference',
+        'preferred',
+        'preferenceResult',
+        'selection',
+        'selected',
+        'acceptance',
+        'accepted',
+        'rejection',
+        'rejected',
+        'decision',
+        'execution',
+        'score',
+        'priority',
+        'confidence',
+        'weight',
+        'ranking',
+      ];
+
+      for (
+        const utilization of [
+          explicitSupportedEvaluationResultDeliberativeUtilization,
+          explicitNotSupportedEvaluationResultDeliberativeUtilization,
+          secondaryEvaluationResultDeliberativeUtilization,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of
+            forbiddenPostDeliberativeUtilizationProperties
+        ) {
+          if (forbiddenProperty in utilization) {
+            throw new Error(
+              `FASE 24.31 promovió indebidamente EvaluationResultDeliberativeUtilization hacia ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO K
+       *
+       * La utilización no interpreta la conclusión.
+       *
+       * supported y not-supported permanecen exactamente
+       * dentro de sus respectivos EvaluationResult.
+       */
+      if (
+        explicitSupportedEvaluationResultDeliberativeUtilization
+          .evaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.31 alteró o reinterpretó la conclusión supported.'
+        );
+      }
+
+      if (
+        explicitNotSupportedEvaluationResultDeliberativeUtilization
+          .evaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-not-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.31 alteró o reinterpretó la conclusión not-supported.'
+        );
+      }
+
+      /*
+       * CASO L
+       *
+       * No mutación de antecedentes.
+       */
+      if (
+        JSON.stringify(explicitEvaluationResult) !==
+        supportedEvaluationResultSnapshotBeforeDeliberativeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.31 modificó EvaluationResult supported durante su utilización deliberativa.'
+        );
+      }
+
+      if (
+        JSON.stringify(explicitNotSupportedEvaluationResult) !==
+        notSupportedEvaluationResultSnapshotBeforeDeliberativeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.31 modificó EvaluationResult not-supported durante su utilización deliberativa.'
+        );
+      }
+
+      if (
+        JSON.stringify(matchingDeliberativeParticipation) !==
+        matchingDeliberativeParticipationSnapshotBeforeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.31 modificó la DeliberativeParticipation correspondiente.'
+        );
+      }
+
+      if (
+        JSON.stringify(nonMatchingDeliberativeParticipation) !==
+        nonMatchingDeliberativeParticipationSnapshotBeforeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.31 modificó la DeliberativeParticipation no correspondiente durante el control negativo.'
+        );
+      }
+
+      /*
+       * FASE 24.31 tampoco modifica el estado
+       * productivo de recomendaciones ni decisiones.
+       */
+      if (
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        ) !==
+        recommendationsSnapshotBeforeEvaluationResultDeliberativeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.31 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        ) !==
+        decisionsSnapshotBeforeEvaluationResultDeliberativeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.31 modificó decisiones productivas.'
+        );
+      }
+
       addLog(
         `FASE 24.26 OK: se materializó explícitamente CriterionApplicability a partir de CompatibilityResult como único fundamento inmediato, conservando exactamente CompatibilityResult y toda su genealogía por identidad.
 CompatibilityResult permaneció distinto de CriterionApplicability: la existencia previa de compatibilityResult=compatible o compatibilityResult=incompatible no había materializado automáticamente aplicabilidad.
@@ -41902,13 +42572,33 @@ No se introdujeron score, priority, confidence, weight ni ranking.
 Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
       );
 
+      addLog(
+        `FASE 24.31 OK: se materializó explícitamente EvaluationResultDeliberativeUtilization como relación entre un EvaluationResult concreto y una DeliberativeParticipation concreta pertenecientes exactamente a la misma instancia de Recommendation.
+
+La mera coexistencia de EvaluationResult y DeliberativeParticipation correspondiente permaneció distinta de utilización: la identidad estructural de Recommendation sólo actuó como precondición y la utilización nació únicamente mediante invocación explícita.
+
+La Recommendation evaluada fue recuperada directamente desde la genealogía preservada de EvaluationResult y comparada por identidad de objeto con DeliberativeParticipation.recommendation, sin introducir recommendationId, correspondenceId ni una entidad artificial de correspondencia.
+
+Un EvaluationResult perteneciente a una Recommendation distinta de la contenida en DeliberativeParticipation devolvió null y no materializó utilización.
+
+Los EvaluationResult supported y not-supported pudieron utilizarse legítimamente dentro de la misma participación correspondiente, demostrando que supported != used automatically y not-supported != excluded from deliberative use.
+
+EvaluationResultDeliberativeUtilization conservó exactamente EvaluationResult y DeliberativeParticipation por identidad y sólo añadió utilizationType, sin duplicar Recommendation, deliberationId, conclusion, CriterionUtilization, Evaluation ni sus genealogías.
+
+El mismo EvaluationResult pudo utilizarse también dentro de una segunda DeliberativeParticipation de la misma Recommendation perteneciente a controlled-deliberation-24-31-secondary, demostrando que la utilización no impone unicidad global por resultado ni por deliberación.
+
+EvaluationResultDeliberativeUtilization permaneció explícitamente distinto de Comparison, Preference, Selection y Decision: no se materializaron comparability, score, priority, confidence, weight, ranking, Acceptance, Rejection ni Execution.
+
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31.'
       );
     } finally {
       setLoading(false);
@@ -43015,6 +43705,16 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Participación Deliberativa 24.30
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Utilización Deliberativa Resultado Evaluativo 24.31
         </button>
 
         <button
