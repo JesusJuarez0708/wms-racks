@@ -180,6 +180,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectService';
 
 import {
+  establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionDeterminationScope,
+} from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionDeterminationScopeService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -44055,6 +44059,554 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         );
       }
 
+      /*
+       * ============================================================
+       * FASE 24.35
+       * ============================================================
+       *
+       * Ámbito explícito de determinación direccional del efecto
+       * deliberativo observable.
+       *
+       * EvaluationResultDeliberativeInfluenceEffect
+       * !=
+       * EvaluationResultDeliberativeInfluenceEffectDirectionDeterminationScope
+       * !=
+       * Direction
+       *
+       * Effect constituye el único fundamento interno inmediato.
+       *
+       * scopeInput aporta únicamente el deliberationId externo
+       * explícito que delimita el ámbito de futura determinación
+       * direccional.
+       *
+       * FASE 24.35 NO determina todavía:
+       *
+       * - eje;
+       * - referencia;
+       * - dirección;
+       * - positive / negative;
+       * - support / opposition;
+       * - strength / weight;
+       * - importance / significance;
+       * - impacto;
+       * - comparación;
+       * - preferencia;
+       * - ranking;
+       * - selección;
+       * - decisión.
+       */
+
+      const recommendationsSnapshotBeforeEffectDirectionDeterminationScope =
+        JSON.stringify(recommendationsAfterDeliberativeParticipation);
+
+      const decisionsSnapshotBeforeEffectDirectionDeterminationScope =
+        JSON.stringify(decisionsAfterDeliberativeParticipation);
+
+      const supportedEffectSnapshotBeforeDirectionDeterminationScope =
+        JSON.stringify(
+          explicitSupportedEvaluationResultDeliberativeInfluenceEffect
+        );
+
+      const notSupportedEffectSnapshotBeforeDirectionDeterminationScope =
+        JSON.stringify(
+          explicitNotSupportedEvaluationResultDeliberativeInfluenceEffect
+        );
+
+      const secondaryEffectSnapshotBeforeDirectionDeterminationScope =
+        JSON.stringify(
+          secondaryEvaluationResultDeliberativeInfluenceEffect
+        );
+
+      /*
+       * CASO A
+       *
+       * Effect exists
+       * !=
+       * DirectionDeterminationScope exists
+       *
+       * La mera existencia del efecto observable no materializa
+       * automáticamente ningún ámbito de determinación direccional.
+       */
+      for (
+        const effect of [
+          explicitSupportedEvaluationResultDeliberativeInfluenceEffect,
+          explicitNotSupportedEvaluationResultDeliberativeInfluenceEffect,
+          secondaryEvaluationResultDeliberativeInfluenceEffect,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of [
+            'directionDeterminationScope',
+            'scopeInput',
+            'scopeType',
+            'directionScope',
+          ]
+        ) {
+          if (forbiddenProperty in effect) {
+            throw new Error(
+              `FASE 24.35 detectó ${forbiddenProperty} antes del establecimiento explícito del ámbito de determinación direccional.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO B
+       *
+       * Materialización explícita del scope para el Effect supported.
+       */
+      const supportedEffectDirectionDeterminationScopeInput = {
+        deliberationId:
+          explicitSupportedEvaluationResultDeliberativeInfluenceEffect
+            .observationInput
+            .deliberationId,
+      };
+
+      const explicitSupportedEffectDirectionDeterminationScope =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionDeterminationScope(
+          explicitSupportedEvaluationResultDeliberativeInfluenceEffect,
+          supportedEffectDirectionDeterminationScopeInput
+        );
+
+      if (
+        explicitSupportedEffectDirectionDeterminationScope === null
+      ) {
+        throw new Error(
+          'FASE 24.35 no materializó DirectionDeterminationScope para un Effect y un scopeInput exactamente correspondientes.'
+        );
+      }
+
+      if (
+        explicitSupportedEffectDirectionDeterminationScope.scopeType !==
+        'explicit-evaluation-result-deliberative-influence-effect-direction-determination-scope'
+      ) {
+        throw new Error(
+          'FASE 24.35 produjo un scopeType inesperado.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * Conservación exacta por identidad:
+       *
+       * - Effect
+       * - DirectionDeterminationScopeInput
+       */
+      if (
+        explicitSupportedEffectDirectionDeterminationScope
+          .evaluationResultDeliberativeInfluenceEffect !==
+        explicitSupportedEvaluationResultDeliberativeInfluenceEffect
+      ) {
+        throw new Error(
+          'FASE 24.35 no conservó EvaluationResultDeliberativeInfluenceEffect exactamente por identidad.'
+        );
+      }
+
+      if (
+        explicitSupportedEffectDirectionDeterminationScope
+          .scopeInput !==
+        supportedEffectDirectionDeterminationScopeInput
+      ) {
+        throw new Error(
+          'FASE 24.35 no conservó DirectionDeterminationScopeInput exactamente por identidad.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * Forma estructural mínima exacta.
+       */
+      const explicitSupportedEffectDirectionDeterminationScopeKeys =
+        Object.keys(
+          explicitSupportedEffectDirectionDeterminationScope
+        ).sort();
+
+      const expectedEffectDirectionDeterminationScopeKeys = [
+        'evaluationResultDeliberativeInfluenceEffect',
+        'scopeInput',
+        'scopeType',
+      ].sort();
+
+      if (
+        JSON.stringify(
+          explicitSupportedEffectDirectionDeterminationScopeKeys
+        ) !==
+        JSON.stringify(
+          expectedEffectDirectionDeterminationScopeKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.35 introdujo propiedades adicionales dentro de EvaluationResultDeliberativeInfluenceEffectDirectionDeterminationScope.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * Effect observado en deliberación A
+       * !=
+       * scope solicitado para deliberación B.
+       *
+       * No se crea una entidad negativa artificial.
+       */
+      const mismatchingEffectDirectionDeterminationScopeInput = {
+        deliberationId:
+          'controlled-different-deliberation-24-35',
+      };
+
+      const mismatchingEffectDirectionDeterminationScope =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionDeterminationScope(
+          explicitSupportedEvaluationResultDeliberativeInfluenceEffect,
+          mismatchingEffectDirectionDeterminationScopeInput
+        );
+
+      if (mismatchingEffectDirectionDeterminationScope !== null) {
+        throw new Error(
+          'FASE 24.35 permitió establecer un DirectionDeterminationScope bajo una deliberación distinta de aquella donde fue observado el Effect.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * not-supported
+       * !=
+       * exclusión del ámbito direccional
+       * !=
+       * negative.
+       *
+       * Un Effect procedente de EvaluationResult not-supported puede
+       * entrar legítimamente en un scope de futura determinación
+       * direccional sin adquirir polaridad alguna.
+       */
+      const notSupportedEffectDirectionDeterminationScopeInput = {
+        deliberationId:
+          explicitNotSupportedEvaluationResultDeliberativeInfluenceEffect
+            .observationInput
+            .deliberationId,
+      };
+
+      const explicitNotSupportedEffectDirectionDeterminationScope =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionDeterminationScope(
+          explicitNotSupportedEvaluationResultDeliberativeInfluenceEffect,
+          notSupportedEffectDirectionDeterminationScopeInput
+        );
+
+      if (
+        explicitNotSupportedEffectDirectionDeterminationScope === null
+      ) {
+        throw new Error(
+          'FASE 24.35 excluyó indebidamente del ámbito de determinación direccional un Effect procedente de EvaluationResult not-supported.'
+        );
+      }
+
+      if (
+        explicitNotSupportedEffectDirectionDeterminationScope
+          .evaluationResultDeliberativeInfluenceEffect !==
+        explicitNotSupportedEvaluationResultDeliberativeInfluenceEffect
+      ) {
+        throw new Error(
+          'FASE 24.35 no conservó exactamente por identidad el Effect not-supported.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * Effects pertenecientes a deliberaciones distintas pueden
+       * materializar scopes distintos sin colapsarse.
+       */
+      const secondaryEffectDirectionDeterminationScopeInput = {
+        deliberationId:
+          secondaryEvaluationResultDeliberativeInfluenceEffect
+            .observationInput
+            .deliberationId,
+      };
+
+      const secondaryEffectDirectionDeterminationScope =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionDeterminationScope(
+          secondaryEvaluationResultDeliberativeInfluenceEffect,
+          secondaryEffectDirectionDeterminationScopeInput
+        );
+
+      if (secondaryEffectDirectionDeterminationScope === null) {
+        throw new Error(
+          'FASE 24.35 no materializó DirectionDeterminationScope para el Effect perteneciente a la deliberación secundaria.'
+        );
+      }
+
+      if (
+        secondaryEffectDirectionDeterminationScope
+          .evaluationResultDeliberativeInfluenceEffect !==
+        secondaryEvaluationResultDeliberativeInfluenceEffect
+      ) {
+        throw new Error(
+          'FASE 24.35 no conservó el Effect secundario exactamente por identidad.'
+        );
+      }
+
+      if (
+        secondaryEffectDirectionDeterminationScope ===
+        explicitSupportedEffectDirectionDeterminationScope
+      ) {
+        throw new Error(
+          'FASE 24.35 colapsó indebidamente scopes pertenecientes a Effects deliberativos distintos.'
+        );
+      }
+
+      /*
+       * CASO H
+       *
+       * DirectionDeterminationScope no duplica Effect ni su
+       * genealogía interna.
+       */
+      for (
+        const directionDeterminationScope of [
+          explicitSupportedEffectDirectionDeterminationScope,
+          explicitNotSupportedEffectDirectionDeterminationScope,
+          secondaryEffectDirectionDeterminationScope,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of [
+            'evaluationResultDeliberativeInfluenceReach',
+            'observationInput',
+            'effectType',
+            'evaluationResultDeliberativeInfluence',
+            'evaluationResultDeliberativeUtilization',
+            'deliberativeParticipation',
+            'evaluationResult',
+            'recommendation',
+            'recommendationId',
+            'deliberationId',
+            'conclusion',
+            'criterionUtilization',
+            'evaluation',
+          ]
+        ) {
+          if (forbiddenProperty in directionDeterminationScope) {
+            throw new Error(
+              `FASE 24.35 duplicó indebidamente ${forbiddenProperty} dentro de EvaluationResultDeliberativeInfluenceEffectDirectionDeterminationScope.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO I
+       *
+       * DirectionDeterminationScope exists
+       * !=
+       * directional reference / axis exists
+       * !=
+       * Direction exists.
+       *
+       * Tampoco existe todavía valoración ni relación de
+       * support/opposition.
+       */
+      const forbiddenDirectionDeterminationProperties = [
+        'direction',
+        'directionType',
+        'directionResult',
+        'directionAxis',
+        'axis',
+        'directionReference',
+        'reference',
+        'orientation',
+        'toward',
+        'awayFrom',
+        'positive',
+        'negative',
+        'polarity',
+        'valence',
+        'support',
+        'opposition',
+        'supports',
+        'opposes',
+        'strength',
+        'weight',
+        'importance',
+        'significance',
+        'impact',
+        'score',
+        'priority',
+        'confidence',
+      ];
+
+      for (
+        const directionDeterminationScope of [
+          explicitSupportedEffectDirectionDeterminationScope,
+          explicitNotSupportedEffectDirectionDeterminationScope,
+          secondaryEffectDirectionDeterminationScope,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of
+            forbiddenDirectionDeterminationProperties
+        ) {
+          if (forbiddenProperty in directionDeterminationScope) {
+            throw new Error(
+              `FASE 24.35 adelantó indebidamente la interpretación del efecto mediante ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO J
+       *
+       * DirectionDeterminationScope
+       * != Comparison
+       * != Preference
+       * != Ranking
+       * != Selection
+       * != Decision.
+       */
+      const forbiddenPostDirectionScopeProperties = [
+        'comparison',
+        'comparability',
+        'comparisonResult',
+        'preference',
+        'preferred',
+        'preferenceResult',
+        'ranking',
+        'selection',
+        'selected',
+        'acceptance',
+        'accepted',
+        'rejection',
+        'rejected',
+        'decision',
+        'execution',
+      ];
+
+      for (
+        const directionDeterminationScope of [
+          explicitSupportedEffectDirectionDeterminationScope,
+          explicitNotSupportedEffectDirectionDeterminationScope,
+          secondaryEffectDirectionDeterminationScope,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of
+            forbiddenPostDirectionScopeProperties
+        ) {
+          if (forbiddenProperty in directionDeterminationScope) {
+            throw new Error(
+              `FASE 24.35 promovió indebidamente DirectionDeterminationScope hacia ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO K
+       *
+       * supported / not-supported siguen perteneciendo exclusivamente
+       * a EvaluationResult y no son reinterpretados como dirección,
+       * polaridad ni support/opposition.
+       */
+      if (
+        explicitSupportedEffectDirectionDeterminationScope
+          .evaluationResultDeliberativeInfluenceEffect
+          .evaluationResultDeliberativeInfluenceReach
+          .evaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization
+          .evaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.35 alteró o reinterpretó la conclusión supported.'
+        );
+      }
+
+      if (
+        explicitNotSupportedEffectDirectionDeterminationScope
+          .evaluationResultDeliberativeInfluenceEffect
+          .evaluationResultDeliberativeInfluenceReach
+          .evaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization
+          .evaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-not-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.35 alteró o reinterpretó la conclusión not-supported.'
+        );
+      }
+
+      /*
+       * CASO L
+       *
+       * El establecimiento del scope no modifica los Effect que
+       * actúan como fundamento inmediato.
+       */
+      if (
+        JSON.stringify(
+          explicitSupportedEvaluationResultDeliberativeInfluenceEffect
+        ) !==
+        supportedEffectSnapshotBeforeDirectionDeterminationScope
+      ) {
+        throw new Error(
+          'FASE 24.35 modificó el Effect deliberativo supported.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          explicitNotSupportedEvaluationResultDeliberativeInfluenceEffect
+        ) !==
+        notSupportedEffectSnapshotBeforeDirectionDeterminationScope
+      ) {
+        throw new Error(
+          'FASE 24.35 modificó el Effect deliberativo not-supported.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          secondaryEvaluationResultDeliberativeInfluenceEffect
+        ) !==
+        secondaryEffectSnapshotBeforeDirectionDeterminationScope
+      ) {
+        throw new Error(
+          'FASE 24.35 modificó el Effect deliberativo secundario.'
+        );
+      }
+
+      /*
+       * CASO M
+       *
+       * FASE 24.35 tampoco modifica recomendaciones ni decisiones
+       * productivas.
+       */
+      if (
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        ) !==
+        recommendationsSnapshotBeforeEffectDirectionDeterminationScope
+      ) {
+        throw new Error(
+          'FASE 24.35 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        ) !==
+        decisionsSnapshotBeforeEffectDirectionDeterminationScope
+      ) {
+        throw new Error(
+          'FASE 24.35 modificó decisiones productivas.'
+        );
+      }
+
       addLog(
         `FASE 24.26 OK: se materializó explícitamente CriterionApplicability a partir de CompatibilityResult como único fundamento inmediato, conservando exactamente CompatibilityResult y toda su genealogía por identidad.
 CompatibilityResult permaneció distinto de CriterionApplicability: la existencia previa de compatibilityResult=compatible o compatibilityResult=incompatible no había materializado automáticamente aplicabilidad.
@@ -44153,13 +44705,25 @@ Effect no introdujo direction, positive, negative, support, opposition, strength
 Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
       );
 
+      addLog(
+        `FASE 24.35 OK: se materializó explícitamente EvaluationResultDeliberativeInfluenceEffectDirectionDeterminationScope a partir de EvaluationResultDeliberativeInfluenceEffect como único fundamento interno inmediato y DirectionDeterminationScopeInput como delimitación externa explícita.
+EvaluationResultDeliberativeInfluenceEffect permaneció distinto de DirectionDeterminationScope: la existencia previa de un efecto deliberativo observable no había materializado automáticamente ningún ámbito de determinación direccional.
+DirectionDeterminationScope sólo se materializó cuando scopeInput.deliberationId coincidió exactamente con observationInput.deliberationId; una deliberación distinta devolvió null sin crear una entidad negativa artificial.
+DirectionDeterminationScope conservó exactamente Effect y DirectionDeterminationScopeInput por identidad, sin duplicar Reach, EffectObservationInput, EvaluationResultDeliberativeInfluence, EvaluationResultDeliberativeUtilization, DeliberativeParticipation, EvaluationResult, Recommendation, deliberationId, conclusion, CriterionUtilization ni Evaluation.
+Los Effects procedentes de EvaluationResult supported y not-supported pudieron entrar mediante exactamente la misma estructura al ámbito de futura determinación direccional, demostrando que supported != positive direction y not-supported != negative direction.
+Effects pertenecientes a deliberaciones distintas materializaron DirectionDeterminationScope distintos sin colapsarse entre sí.
+DirectionDeterminationScope no introdujo directionAxis, directionReference, direction, orientation, positive, negative, polarity, valence, support, opposition, strength, weight, importance, significance, impact, score, priority ni confidence.
+DirectionDeterminationScope permaneció explícitamente distinto de Direction, Comparison, Preference, Ranking, Selection y Decision.
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35.'
       );
     } finally {
       setLoading(false);
@@ -45306,6 +45870,16 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Efecto Deliberativo Influencia Resultado Evaluativo 24.34
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Ámbito Determinación Direccional Efecto Deliberativo 24.35
         </button>
 
         <button
