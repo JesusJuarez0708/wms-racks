@@ -172,6 +172,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceService';
 
 import {
+  establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceReach,
+} from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceReachService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -42978,6 +42982,563 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         );
       }
 
+      /*
+       * ============================================================
+       * FASE 24.33
+       * ============================================================
+       *
+       * Alcance deliberativo explícito de influencia de resultado
+       * evaluativo utilizado.
+       *
+       * EvaluationResultDeliberativeInfluence
+       * !=
+       * EvaluationResultDeliberativeInfluenceReach
+       *
+       * La influencia deliberativa ya materializada por FASE 24.32
+       * constituye el único fundamento inmediato interno.
+       *
+       * El reachInput aporta únicamente el deliberationId externo
+       * explícito contra el cual se establece el alcance.
+       *
+       * FASE 24.33 no interpreta direction, significance, weight,
+       * comparación, preferencia, selección ni decisión.
+       */
+
+      /*
+       * CASO A
+       *
+       * Influence exists
+       * !=
+       * Reach exists
+       *
+       * Las influencias ya existen antes de cualquier alcance
+       * deliberativo explícito.
+       */
+      for (
+        const influence of [
+          explicitSupportedEvaluationResultDeliberativeInfluence,
+          explicitNotSupportedEvaluationResultDeliberativeInfluence,
+          secondaryEvaluationResultDeliberativeInfluence,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of [
+            'reach',
+            'reachType',
+            'reachInput',
+            'deliberativeInfluenceReach',
+          ]
+        ) {
+          if (forbiddenProperty in influence) {
+            throw new Error(
+              `FASE 24.33 detectó ${forbiddenProperty} antes del alcance deliberativo explícito.`
+            );
+          }
+        }
+      }
+
+      const supportedInfluenceSnapshotBeforeReach =
+        JSON.stringify(
+          explicitSupportedEvaluationResultDeliberativeInfluence
+        );
+
+      const notSupportedInfluenceSnapshotBeforeReach =
+        JSON.stringify(
+          explicitNotSupportedEvaluationResultDeliberativeInfluence
+        );
+
+      const secondaryInfluenceSnapshotBeforeReach =
+        JSON.stringify(
+          secondaryEvaluationResultDeliberativeInfluence
+        );
+
+      const recommendationsSnapshotBeforeEvaluationResultDeliberativeInfluenceReach =
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        );
+
+      const decisionsSnapshotBeforeEvaluationResultDeliberativeInfluenceReach =
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        );
+
+      /*
+       * CASO B
+       *
+       * La deliberación objetivo se obtiene de la genealogía
+       * preservada por la influencia.
+       */
+      const supportedInfluenceDeliberationId =
+        explicitSupportedEvaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization
+          .deliberativeParticipation
+          .participationInput
+          .deliberationId;
+
+      const supportedInfluenceReachInput = {
+        deliberationId: supportedInfluenceDeliberationId,
+      };
+
+      const explicitSupportedEvaluationResultDeliberativeInfluenceReach =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceReach(
+          explicitSupportedEvaluationResultDeliberativeInfluence,
+          supportedInfluenceReachInput
+        );
+
+      if (
+        explicitSupportedEvaluationResultDeliberativeInfluenceReach ===
+        null
+      ) {
+        throw new Error(
+          'FASE 24.33 no materializó alcance para una influencia y deliberación exactamente correspondientes.'
+        );
+      }
+
+      if (
+        explicitSupportedEvaluationResultDeliberativeInfluenceReach
+          .reachType !==
+        'explicit-evaluation-result-deliberative-influence-reach'
+      ) {
+        throw new Error(
+          'FASE 24.33 produjo un reachType inesperado.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * Conservación exacta por identidad de ambos fundamentos
+       * explícitos del nuevo hecho.
+       */
+      if (
+        explicitSupportedEvaluationResultDeliberativeInfluenceReach
+          .evaluationResultDeliberativeInfluence !==
+        explicitSupportedEvaluationResultDeliberativeInfluence
+      ) {
+        throw new Error(
+          'FASE 24.33 no conservó EvaluationResultDeliberativeInfluence exactamente por identidad.'
+        );
+      }
+
+      if (
+        explicitSupportedEvaluationResultDeliberativeInfluenceReach
+          .reachInput !==
+        supportedInfluenceReachInput
+      ) {
+        throw new Error(
+          'FASE 24.33 no conservó ReachInput exactamente por identidad.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * Reach contiene exactamente:
+       *
+       * evaluationResultDeliberativeInfluence
+       * reachInput
+       * reachType
+       */
+      const explicitSupportedDeliberativeInfluenceReachKeys =
+        Object.keys(
+          explicitSupportedEvaluationResultDeliberativeInfluenceReach
+        ).sort();
+
+      const expectedEvaluationResultDeliberativeInfluenceReachKeys = [
+        'evaluationResultDeliberativeInfluence',
+        'reachInput',
+        'reachType',
+      ].sort();
+
+      if (
+        JSON.stringify(
+          explicitSupportedDeliberativeInfluenceReachKeys
+        ) !==
+        JSON.stringify(
+          expectedEvaluationResultDeliberativeInfluenceReachKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.33 introdujo propiedades adicionales dentro de EvaluationResultDeliberativeInfluenceReach.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * Influence toward deliberation A
+       * !=
+       * Reach toward deliberation B
+       *
+       * Un deliberationId distinto no materializa una entidad
+       * negativa artificial: devuelve null.
+       */
+      const mismatchingInfluenceReachInput = {
+        deliberationId:
+          'controlled-different-deliberation-24-33',
+      };
+
+      const mismatchingEvaluationResultDeliberativeInfluenceReach =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceReach(
+          explicitSupportedEvaluationResultDeliberativeInfluence,
+          mismatchingInfluenceReachInput
+        );
+
+      if (
+        mismatchingEvaluationResultDeliberativeInfluenceReach !==
+        null
+      ) {
+        throw new Error(
+          'FASE 24.33 permitió que una influencia alcanzara una deliberación distinta de la preservada en su genealogía.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * not-supported
+       * !=
+       * excluded from Reach
+       *
+       * La conclusión evaluativa no participa en la condición
+       * de alcance.
+       */
+      const notSupportedInfluenceDeliberationId =
+        explicitNotSupportedEvaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization
+          .deliberativeParticipation
+          .participationInput
+          .deliberationId;
+
+      const notSupportedInfluenceReachInput = {
+        deliberationId: notSupportedInfluenceDeliberationId,
+      };
+
+      const explicitNotSupportedEvaluationResultDeliberativeInfluenceReach =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceReach(
+          explicitNotSupportedEvaluationResultDeliberativeInfluence,
+          notSupportedInfluenceReachInput
+        );
+
+      if (
+        explicitNotSupportedEvaluationResultDeliberativeInfluenceReach ===
+        null
+      ) {
+        throw new Error(
+          'FASE 24.33 excluyó indebidamente del alcance una influencia procedente de EvaluationResult not-supported.'
+        );
+      }
+
+      if (
+        explicitNotSupportedEvaluationResultDeliberativeInfluenceReach
+          .evaluationResultDeliberativeInfluence !==
+        explicitNotSupportedEvaluationResultDeliberativeInfluence
+      ) {
+        throw new Error(
+          'FASE 24.33 no conservó la influencia not-supported exactamente por identidad.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * La influencia secundaria pertenece a otra deliberación.
+       *
+       * El mismo EvaluationResult puede haber originado otra
+       * utilización, otra influencia y ahora otro Reach concreto
+       * sin convertir el alcance en una propiedad global del
+       * EvaluationResult.
+       */
+      const secondaryInfluenceDeliberationId =
+        secondaryEvaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization
+          .deliberativeParticipation
+          .participationInput
+          .deliberationId;
+
+      if (
+        secondaryInfluenceDeliberationId ===
+        supportedInfluenceDeliberationId
+      ) {
+        throw new Error(
+          'FASE 24.33 perdió la separación entre la deliberación principal y la secundaria heredada de FASE 24.31.'
+        );
+      }
+
+      const secondaryInfluenceReachInput = {
+        deliberationId: secondaryInfluenceDeliberationId,
+      };
+
+      const secondaryEvaluationResultDeliberativeInfluenceReach =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceReach(
+          secondaryEvaluationResultDeliberativeInfluence,
+          secondaryInfluenceReachInput
+        );
+
+      if (
+        secondaryEvaluationResultDeliberativeInfluenceReach ===
+        null
+      ) {
+        throw new Error(
+          'FASE 24.33 no materializó alcance para la influencia perteneciente a la deliberación secundaria.'
+        );
+      }
+
+      if (
+        secondaryEvaluationResultDeliberativeInfluenceReach
+          .evaluationResultDeliberativeInfluence !==
+        secondaryEvaluationResultDeliberativeInfluence
+      ) {
+        throw new Error(
+          'FASE 24.33 no conservó la influencia secundaria exactamente por identidad.'
+        );
+      }
+
+      if (
+        secondaryEvaluationResultDeliberativeInfluenceReach ===
+        explicitSupportedEvaluationResultDeliberativeInfluenceReach
+      ) {
+        throw new Error(
+          'FASE 24.33 colapsó indebidamente alcances pertenecientes a influencias deliberativas distintas.'
+        );
+      }
+
+      /*
+       * CASO H
+       *
+       * Reach no duplica genealogía.
+       *
+       * EvaluationResultDeliberativeUtilization,
+       * DeliberativeParticipation, EvaluationResult,
+       * Recommendation, deliberationId y conclusion continúan
+       * accesibles únicamente a través de la influencia y de su
+       * genealogía previa.
+       */
+      for (
+        const reach of [
+          explicitSupportedEvaluationResultDeliberativeInfluenceReach,
+          explicitNotSupportedEvaluationResultDeliberativeInfluenceReach,
+          secondaryEvaluationResultDeliberativeInfluenceReach,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of [
+            'evaluationResultDeliberativeUtilization',
+            'deliberativeParticipation',
+            'evaluationResult',
+            'recommendation',
+            'recommendationId',
+            'deliberationId',
+            'conclusion',
+            'criterionUtilization',
+            'evaluation',
+          ]
+        ) {
+          if (forbiddenProperty in reach) {
+            throw new Error(
+              `FASE 24.33 duplicó indebidamente ${forbiddenProperty} dentro de EvaluationResultDeliberativeInfluenceReach.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO I
+       *
+       * Reach
+       * !=
+       * direction
+       * !=
+       * significance / weight
+       *
+       * El alcance no interpreta cómo influye el resultado,
+       * cuánto influye ni con qué importancia.
+       */
+      const forbiddenInfluenceReachInterpretationProperties = [
+        'direction',
+        'positive',
+        'negative',
+        'support',
+        'opposition',
+        'strength',
+        'weight',
+        'importance',
+        'significance',
+        'impact',
+        'score',
+        'priority',
+        'confidence',
+      ];
+
+      for (
+        const reach of [
+          explicitSupportedEvaluationResultDeliberativeInfluenceReach,
+          explicitNotSupportedEvaluationResultDeliberativeInfluenceReach,
+          secondaryEvaluationResultDeliberativeInfluenceReach,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of
+            forbiddenInfluenceReachInterpretationProperties
+        ) {
+          if (forbiddenProperty in reach) {
+            throw new Error(
+              `FASE 24.33 interpretó indebidamente el alcance mediante ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO J
+       *
+       * Reach
+       * !=
+       * Comparison
+       * !=
+       * Preference
+       * !=
+       * Selection
+       * !=
+       * Decision
+       */
+      const forbiddenPostDeliberativeInfluenceReachProperties = [
+        'comparison',
+        'comparability',
+        'comparisonResult',
+        'preference',
+        'preferred',
+        'preferenceResult',
+        'ranking',
+        'selection',
+        'selected',
+        'acceptance',
+        'accepted',
+        'rejection',
+        'rejected',
+        'decision',
+        'execution',
+      ];
+
+      for (
+        const reach of [
+          explicitSupportedEvaluationResultDeliberativeInfluenceReach,
+          explicitNotSupportedEvaluationResultDeliberativeInfluenceReach,
+          secondaryEvaluationResultDeliberativeInfluenceReach,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of
+            forbiddenPostDeliberativeInfluenceReachProperties
+        ) {
+          if (forbiddenProperty in reach) {
+            throw new Error(
+              `FASE 24.33 promovió indebidamente EvaluationResultDeliberativeInfluenceReach hacia ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO K
+       *
+       * Reach no reinterpreta supported / not-supported.
+       */
+      if (
+        explicitSupportedEvaluationResultDeliberativeInfluenceReach
+          .evaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization
+          .evaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.33 alteró o reinterpretó la conclusión supported.'
+        );
+      }
+
+      if (
+        explicitNotSupportedEvaluationResultDeliberativeInfluenceReach
+          .evaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization
+          .evaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-not-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.33 alteró o reinterpretó la conclusión not-supported.'
+        );
+      }
+
+      /*
+       * CASO L
+       *
+       * La materialización de Reach no modifica ninguna de las
+       * influencias que actúan como fundamento.
+       */
+      if (
+        JSON.stringify(
+          explicitSupportedEvaluationResultDeliberativeInfluence
+        ) !==
+        supportedInfluenceSnapshotBeforeReach
+      ) {
+        throw new Error(
+          'FASE 24.33 modificó la influencia deliberativa supported.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          explicitNotSupportedEvaluationResultDeliberativeInfluence
+        ) !==
+        notSupportedInfluenceSnapshotBeforeReach
+      ) {
+        throw new Error(
+          'FASE 24.33 modificó la influencia deliberativa not-supported.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          secondaryEvaluationResultDeliberativeInfluence
+        ) !==
+        secondaryInfluenceSnapshotBeforeReach
+      ) {
+        throw new Error(
+          'FASE 24.33 modificó la influencia deliberativa secundaria.'
+        );
+      }
+
+      /*
+       * CASO M
+       *
+       * FASE 24.33 tampoco modifica recomendaciones ni
+       * decisiones productivas.
+       */
+      if (
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        ) !==
+        recommendationsSnapshotBeforeEvaluationResultDeliberativeInfluenceReach
+      ) {
+        throw new Error(
+          'FASE 24.33 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        ) !==
+        decisionsSnapshotBeforeEvaluationResultDeliberativeInfluenceReach
+      ) {
+        throw new Error(
+          'FASE 24.33 modificó decisiones productivas.'
+        );
+      }
+
       addLog(
         `FASE 24.26 OK: se materializó explícitamente CriterionApplicability a partir de CompatibilityResult como único fundamento inmediato, conservando exactamente CompatibilityResult y toda su genealogía por identidad.
 CompatibilityResult permaneció distinto de CriterionApplicability: la existencia previa de compatibilityResult=compatible o compatibilityResult=incompatible no había materializado automáticamente aplicabilidad.
@@ -43054,13 +43615,25 @@ EvaluationResultDeliberativeInfluence permaneció explícitamente distinto de Co
 Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
       );
 
+      addLog(
+        `FASE 24.33 OK: se materializó explícitamente EvaluationResultDeliberativeInfluenceReach a partir de EvaluationResultDeliberativeInfluence y un ReachInput con deliberationId explícito.
+EvaluationResultDeliberativeInfluence permaneció distinto de EvaluationResultDeliberativeInfluenceReach: la existencia previa de influencia deliberativa no había materializado automáticamente alcance.
+Reach sólo se materializó cuando reachInput.deliberationId coincidió exactamente con el deliberationId preservado genealógicamente dentro de DeliberativeParticipation; un deliberationId distinto devolvió null sin crear una entidad negativa artificial.
+EvaluationResultDeliberativeInfluenceReach conservó exactamente EvaluationResultDeliberativeInfluence y ReachInput por identidad y sólo añadió reachType, sin duplicar EvaluationResultDeliberativeUtilization, DeliberativeParticipation, EvaluationResult, Recommendation, deliberationId, conclusion, CriterionUtilization, Evaluation ni sus genealogías.
+Los EvaluationResult supported y not-supported pudieron producir Reach mediante exactamente la misma estructura, demostrando que supported != positive influence y not-supported != negative influence.
+La influencia secundaria perteneciente a controlled-deliberation-24-31-secondary produjo un Reach propio distinto del alcance principal, demostrando que Reach queda ligado a una influencia y deliberación concretas y no globalmente al EvaluationResult.
+EvaluationResultDeliberativeInfluenceReach no introdujo direction, positive, negative, support, opposition, strength, weight, importance, significance, impact, score, priority ni confidence.
+EvaluationResultDeliberativeInfluenceReach permaneció explícitamente distinto de Comparison, Preference, Ranking, Selection y Decision: no se materializaron comparability, comparisonResult, preferred, preferenceResult, Acceptance, Rejection ni Execution.
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33.'
       );
     } finally {
       setLoading(false);
@@ -44187,6 +44760,16 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Influencia Deliberativa Resultado Evaluativo 24.32
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Alcance Deliberativo Influencia Resultado Evaluativo 24.33
         </button>
 
         <button
