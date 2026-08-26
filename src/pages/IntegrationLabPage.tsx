@@ -168,6 +168,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeUtilizationService';
 
 import {
+  establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluence,
+} from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -42519,6 +42523,461 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         );
       }
 
+      /*
+       * ============================================================
+       * FASE 24.32
+       * ============================================================
+       *
+       * Influencia deliberativa explícita de resultado
+       * evaluativo utilizado.
+       *
+       * EvaluationResultDeliberativeUtilization
+       * !=
+       * EvaluationResultDeliberativeInfluence
+       *
+       * La utilización deliberativa ya materializada por
+       * FASE 24.31 constituye el único fundamento inmediato.
+       *
+       * FASE 24.32 no interpreta conclusion, no introduce
+       * dirección, fuerza, comparación, preferencia,
+       * selección ni decisión.
+       */
+
+      /*
+       * CASO A
+       *
+       * Las utilizaciones deliberativas ya existen antes
+       * de cualquier influencia explícita.
+       *
+       * Su mera existencia no contiene ni materializa
+       * influencia deliberativa.
+       */
+      for (
+        const utilization of [
+          explicitSupportedEvaluationResultDeliberativeUtilization,
+          explicitNotSupportedEvaluationResultDeliberativeUtilization,
+          secondaryEvaluationResultDeliberativeUtilization,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of [
+            'influence',
+            'influenceType',
+            'deliberativeInfluence',
+          ]
+        ) {
+          if (forbiddenProperty in utilization) {
+            throw new Error(
+              `FASE 24.32 detectó ${forbiddenProperty} antes de la influencia deliberativa explícita.`
+            );
+          }
+        }
+      }
+
+      const supportedDeliberativeUtilizationSnapshotBeforeInfluence =
+        JSON.stringify(
+          explicitSupportedEvaluationResultDeliberativeUtilization
+        );
+
+      const notSupportedDeliberativeUtilizationSnapshotBeforeInfluence =
+        JSON.stringify(
+          explicitNotSupportedEvaluationResultDeliberativeUtilization
+        );
+
+      const secondaryDeliberativeUtilizationSnapshotBeforeInfluence =
+        JSON.stringify(
+          secondaryEvaluationResultDeliberativeUtilization
+        );
+
+      const recommendationsSnapshotBeforeEvaluationResultDeliberativeInfluence =
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        );
+
+      const decisionsSnapshotBeforeEvaluationResultDeliberativeInfluence =
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        );
+
+      /*
+       * CASO B
+       *
+       * Utilización supported
+       * +
+       * invocación explícita
+       * =
+       * influencia deliberativa explícita.
+       */
+      const explicitSupportedEvaluationResultDeliberativeInfluence =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluence(
+          explicitSupportedEvaluationResultDeliberativeUtilization
+        );
+
+      if (
+        explicitSupportedEvaluationResultDeliberativeInfluence
+          .influenceType !==
+        'explicit-evaluation-result-deliberative-influence'
+      ) {
+        throw new Error(
+          'FASE 24.32 produjo un influenceType inesperado para la utilización supported.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * Conservación exacta del fundamento inmediato.
+       */
+      if (
+        explicitSupportedEvaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization !==
+        explicitSupportedEvaluationResultDeliberativeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.32 no conservó EvaluationResultDeliberativeUtilization supported exactamente por identidad.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * La entidad contiene exactamente:
+       *
+       * evaluationResultDeliberativeUtilization
+       * influenceType
+       */
+      const explicitSupportedDeliberativeInfluenceKeys =
+        Object.keys(
+          explicitSupportedEvaluationResultDeliberativeInfluence
+        ).sort();
+
+      const expectedEvaluationResultDeliberativeInfluenceKeys = [
+        'evaluationResultDeliberativeUtilization',
+        'influenceType',
+      ].sort();
+
+      if (
+        JSON.stringify(
+          explicitSupportedDeliberativeInfluenceKeys
+        ) !==
+        JSON.stringify(
+          expectedEvaluationResultDeliberativeInfluenceKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.32 introdujo propiedades adicionales dentro de EvaluationResultDeliberativeInfluence.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * not-supported
+       * !=
+       * excluded from deliberative influence
+       *
+       * FASE 24.32 no interpreta la conclusión evaluativa.
+       */
+      const explicitNotSupportedEvaluationResultDeliberativeInfluence =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluence(
+          explicitNotSupportedEvaluationResultDeliberativeUtilization
+        );
+
+      if (
+        explicitNotSupportedEvaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization !==
+        explicitNotSupportedEvaluationResultDeliberativeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.32 excluyó o sustituyó indebidamente la utilización not-supported durante la influencia deliberativa.'
+        );
+      }
+
+      /*
+       * supported y not-supported producen hechos de
+       * influencia distintos.
+       *
+       * La conclusión no colapsa ni identifica las
+       * influencias.
+       */
+      if (
+        explicitSupportedEvaluationResultDeliberativeInfluence ===
+        explicitNotSupportedEvaluationResultDeliberativeInfluence
+      ) {
+        throw new Error(
+          'FASE 24.32 colapsó indebidamente influencias pertenecientes a EvaluationResultDeliberativeUtilization distintos.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * El mismo EvaluationResult utilizado en una
+       * participación deliberativa secundaria también
+       * puede materializar una influencia propia.
+       *
+       * La influencia queda ligada a la utilización
+       * concreta, no globalmente al EvaluationResult.
+       */
+      const secondaryEvaluationResultDeliberativeInfluence =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluence(
+          secondaryEvaluationResultDeliberativeUtilization
+        );
+
+      if (
+        secondaryEvaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization !==
+        secondaryEvaluationResultDeliberativeUtilization
+      ) {
+        throw new Error(
+          'FASE 24.32 no conservó la utilización deliberativa secundaria exactamente por identidad.'
+        );
+      }
+
+      if (
+        secondaryEvaluationResultDeliberativeInfluence ===
+        explicitSupportedEvaluationResultDeliberativeInfluence
+      ) {
+        throw new Error(
+          'FASE 24.32 colapsó indebidamente influencias pertenecientes a utilizaciones deliberativas distintas.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * La influencia no duplica genealogía.
+       *
+       * EvaluationResult, DeliberativeParticipation,
+       * Recommendation, deliberationId y conclusion
+       * continúan accesibles únicamente a través de
+       * EvaluationResultDeliberativeUtilization.
+       */
+      for (
+        const influence of [
+          explicitSupportedEvaluationResultDeliberativeInfluence,
+          explicitNotSupportedEvaluationResultDeliberativeInfluence,
+          secondaryEvaluationResultDeliberativeInfluence,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of [
+            'evaluationResult',
+            'deliberativeParticipation',
+            'recommendation',
+            'recommendationId',
+            'deliberationId',
+            'conclusion',
+            'criterionUtilization',
+            'evaluation',
+          ]
+        ) {
+          if (forbiddenProperty in influence) {
+            throw new Error(
+              `FASE 24.32 duplicó indebidamente ${forbiddenProperty} dentro de EvaluationResultDeliberativeInfluence.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO H
+       *
+       * Influence
+       * !=
+       * direction
+       * !=
+       * valuation
+       *
+       * supported no significa influencia positiva.
+       * not-supported no significa influencia negativa.
+       */
+      const forbiddenInfluenceInterpretationProperties = [
+        'direction',
+        'positive',
+        'negative',
+        'support',
+        'opposition',
+        'strength',
+        'weight',
+        'importance',
+        'significance',
+        'impact',
+        'score',
+        'priority',
+        'confidence',
+      ];
+
+      for (
+        const influence of [
+          explicitSupportedEvaluationResultDeliberativeInfluence,
+          explicitNotSupportedEvaluationResultDeliberativeInfluence,
+          secondaryEvaluationResultDeliberativeInfluence,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of
+            forbiddenInfluenceInterpretationProperties
+        ) {
+          if (forbiddenProperty in influence) {
+            throw new Error(
+              `FASE 24.32 interpretó indebidamente la influencia mediante ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO I
+       *
+       * EvaluationResultDeliberativeInfluence
+       * !=
+       * Comparison
+       * !=
+       * Preference
+       * !=
+       * Selection
+       * !=
+       * Decision
+       */
+      const forbiddenPostDeliberativeInfluenceProperties = [
+        'comparison',
+        'comparability',
+        'comparisonResult',
+        'preference',
+        'preferred',
+        'preferenceResult',
+        'ranking',
+        'selection',
+        'selected',
+        'acceptance',
+        'accepted',
+        'rejection',
+        'rejected',
+        'decision',
+        'execution',
+      ];
+
+      for (
+        const influence of [
+          explicitSupportedEvaluationResultDeliberativeInfluence,
+          explicitNotSupportedEvaluationResultDeliberativeInfluence,
+          secondaryEvaluationResultDeliberativeInfluence,
+        ]
+      ) {
+        for (
+          const forbiddenProperty of
+            forbiddenPostDeliberativeInfluenceProperties
+        ) {
+          if (forbiddenProperty in influence) {
+            throw new Error(
+              `FASE 24.32 promovió indebidamente EvaluationResultDeliberativeInfluence hacia ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO J
+       *
+       * Las conclusiones supported y not-supported
+       * permanecen exactamente donde estaban.
+       *
+       * FASE 24.32 no las transforma en dirección
+       * de influencia.
+       */
+      if (
+        explicitSupportedEvaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization
+          .evaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.32 alteró o reinterpretó la conclusión supported.'
+        );
+      }
+
+      if (
+        explicitNotSupportedEvaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization
+          .evaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-not-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.32 alteró o reinterpretó la conclusión not-supported.'
+        );
+      }
+
+      /*
+       * CASO K
+       *
+       * No mutación del fundamento inmediato.
+       */
+      if (
+        JSON.stringify(
+          explicitSupportedEvaluationResultDeliberativeUtilization
+        ) !==
+        supportedDeliberativeUtilizationSnapshotBeforeInfluence
+      ) {
+        throw new Error(
+          'FASE 24.32 modificó la utilización deliberativa supported.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          explicitNotSupportedEvaluationResultDeliberativeUtilization
+        ) !==
+        notSupportedDeliberativeUtilizationSnapshotBeforeInfluence
+      ) {
+        throw new Error(
+          'FASE 24.32 modificó la utilización deliberativa not-supported.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          secondaryEvaluationResultDeliberativeUtilization
+        ) !==
+        secondaryDeliberativeUtilizationSnapshotBeforeInfluence
+      ) {
+        throw new Error(
+          'FASE 24.32 modificó la utilización deliberativa secundaria.'
+        );
+      }
+
+      /*
+       * CASO L
+       *
+       * FASE 24.32 tampoco modifica recomendaciones
+       * ni decisiones productivas.
+       */
+      if (
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        ) !==
+        recommendationsSnapshotBeforeEvaluationResultDeliberativeInfluence
+      ) {
+        throw new Error(
+          'FASE 24.32 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        ) !==
+        decisionsSnapshotBeforeEvaluationResultDeliberativeInfluence
+      ) {
+        throw new Error(
+          'FASE 24.32 modificó decisiones productivas.'
+        );
+      }
+
       addLog(
         `FASE 24.26 OK: se materializó explícitamente CriterionApplicability a partir de CompatibilityResult como único fundamento inmediato, conservando exactamente CompatibilityResult y toda su genealogía por identidad.
 CompatibilityResult permaneció distinto de CriterionApplicability: la existencia previa de compatibilityResult=compatible o compatibilityResult=incompatible no había materializado automáticamente aplicabilidad.
@@ -42574,21 +43033,24 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
 
       addLog(
         `FASE 24.31 OK: se materializó explícitamente EvaluationResultDeliberativeUtilization como relación entre un EvaluationResult concreto y una DeliberativeParticipation concreta pertenecientes exactamente a la misma instancia de Recommendation.
-
 La mera coexistencia de EvaluationResult y DeliberativeParticipation correspondiente permaneció distinta de utilización: la identidad estructural de Recommendation sólo actuó como precondición y la utilización nació únicamente mediante invocación explícita.
-
 La Recommendation evaluada fue recuperada directamente desde la genealogía preservada de EvaluationResult y comparada por identidad de objeto con DeliberativeParticipation.recommendation, sin introducir recommendationId, correspondenceId ni una entidad artificial de correspondencia.
-
 Un EvaluationResult perteneciente a una Recommendation distinta de la contenida en DeliberativeParticipation devolvió null y no materializó utilización.
-
 Los EvaluationResult supported y not-supported pudieron utilizarse legítimamente dentro de la misma participación correspondiente, demostrando que supported != used automatically y not-supported != excluded from deliberative use.
-
 EvaluationResultDeliberativeUtilization conservó exactamente EvaluationResult y DeliberativeParticipation por identidad y sólo añadió utilizationType, sin duplicar Recommendation, deliberationId, conclusion, CriterionUtilization, Evaluation ni sus genealogías.
-
 El mismo EvaluationResult pudo utilizarse también dentro de una segunda DeliberativeParticipation de la misma Recommendation perteneciente a controlled-deliberation-24-31-secondary, demostrando que la utilización no impone unicidad global por resultado ni por deliberación.
-
 EvaluationResultDeliberativeUtilization permaneció explícitamente distinto de Comparison, Preference, Selection y Decision: no se materializaron comparability, score, priority, confidence, weight, ranking, Acceptance, Rejection ni Execution.
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
 
+      addLog(
+        `FASE 24.32 OK: se materializó explícitamente EvaluationResultDeliberativeInfluence a partir de EvaluationResultDeliberativeUtilization como único fundamento inmediato.
+EvaluationResultDeliberativeUtilization permaneció distinto de EvaluationResultDeliberativeInfluence: la existencia previa de utilización deliberativa no había materializado automáticamente ninguna influencia.
+La influencia conservó exactamente EvaluationResultDeliberativeUtilization por identidad y sólo añadió influenceType, sin duplicar EvaluationResult, DeliberativeParticipation, Recommendation, deliberationId, conclusion, CriterionUtilization, Evaluation ni sus genealogías.
+Los EvaluationResult supported y not-supported pudieron materializar influencia deliberativa mediante exactamente la misma estructura, demostrando que supported != positive influence y not-supported != negative influence.
+El mismo EvaluationResult utilizado dentro de una segunda DeliberativeParticipation de la misma Recommendation produjo una influencia distinta porque la influencia quedó ligada al hecho concreto de utilización y no globalmente al EvaluationResult.
+EvaluationResultDeliberativeInfluence no introdujo direction, positive, negative, support, opposition, strength, weight, importance, significance, impact, score, priority ni confidence.
+EvaluationResultDeliberativeInfluence permaneció explícitamente distinto de Comparison, Preference, Ranking, Selection y Decision: no se materializaron comparability, comparisonResult, preferred, preferenceResult, Acceptance, Rejection ni Execution.
 Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
       );
 
@@ -42597,8 +43059,8 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32.'
       );
     } finally {
       setLoading(false);
@@ -43715,6 +44177,16 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Utilización Deliberativa Resultado Evaluativo 24.31
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Influencia Deliberativa Resultado Evaluativo 24.32
         </button>
 
         <button
