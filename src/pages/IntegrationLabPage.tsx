@@ -191,6 +191,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceDefinitionService';
 
 import {
+  establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisPresence,
+} from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisPresenceService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -382,6 +386,9 @@ function IntegrationLabPage() {
       });
 
       addLog('Estadísticas cargadas correctamente.');
+
+
+
 
 
 
@@ -44658,17 +44665,17 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
        * - Comparison / Preference / Ranking / Selection / Decision.
        */
 
-      const supportedDirectionDeterminationScopeSnapshotBeforeDirectionalReferencePresence =
+      const explicitSupportedEffectDirectionDeterminationScopeSnapshotBeforeDirectionalReferencePresence =
         JSON.stringify(
           explicitSupportedEffectDirectionDeterminationScope
         );
 
-      const notSupportedDirectionDeterminationScopeSnapshotBeforeDirectionalReferencePresence =
+      const explicitNotSupportedEffectDirectionDeterminationScopeSnapshotBeforeDirectionalReferencePresence =
         JSON.stringify(
           explicitNotSupportedEffectDirectionDeterminationScope
         );
 
-      const secondaryDirectionDeterminationScopeSnapshotBeforeDirectionalReferencePresence =
+      const secondaryEffectDirectionDeterminationScopeSnapshotBeforeDirectionalReferencePresence =
         JSON.stringify(
           secondaryEffectDirectionDeterminationScope
         );
@@ -45187,7 +45194,7 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         JSON.stringify(
           explicitSupportedEffectDirectionDeterminationScope
         ) !==
-        supportedDirectionDeterminationScopeSnapshotBeforeDirectionalReferencePresence
+        explicitSupportedEffectDirectionDeterminationScopeSnapshotBeforeDirectionalReferencePresence
       ) {
         throw new Error(
           'FASE 24.36 modificó el DirectionDeterminationScope supported.'
@@ -45198,7 +45205,7 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         JSON.stringify(
           explicitNotSupportedEffectDirectionDeterminationScope
         ) !==
-        notSupportedDirectionDeterminationScopeSnapshotBeforeDirectionalReferencePresence
+        explicitNotSupportedEffectDirectionDeterminationScopeSnapshotBeforeDirectionalReferencePresence
       ) {
         throw new Error(
           'FASE 24.36 modificó el DirectionDeterminationScope not-supported.'
@@ -45209,7 +45216,7 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         JSON.stringify(
           secondaryEffectDirectionDeterminationScope
         ) !==
-        secondaryDirectionDeterminationScopeSnapshotBeforeDirectionalReferencePresence
+        secondaryEffectDirectionDeterminationScopeSnapshotBeforeDirectionalReferencePresence
       ) {
         throw new Error(
           'FASE 24.36 modificó el DirectionDeterminationScope secundario.'
@@ -45964,6 +45971,655 @@ Permanecieron intactas ${recommendationsAfterCompatibilityResult.length} recomen
         );
       }
 
+
+      /*
+       * ============================================================
+       * FASE 24.38
+       * ============================================================
+       *
+       * Presencia explícita de eje direccional del efecto
+       * deliberativo.
+       *
+       * Hecho mínimo:
+       *
+       * DirectionDeterminationScope
+       * +
+       * DirectionalAxisInput externo explícito
+       * +
+       * invocación explícita
+       * ->
+       * DirectionalAxisPresence
+       *
+       * DirectionDeterminationScope constituye el único fundamento
+       * interno inmediato.
+       *
+       * DirectionalReferencePresence y
+       * DirectionalReferenceDefinition NO participan en la
+       * construcción de DirectionalAxisPresence.
+       *
+       * FASE 24.38 NO introduce:
+       *
+       * - DirectionalAxisDefinition;
+       * - DirectionalReferenceAxisCorrespondence;
+       * - DirectionalAxisEffectCorrespondence;
+       * - DirectionalReferenceEffectCorrespondence;
+       * - applicability;
+       * - DirectionDetermination;
+       * - Direction;
+       * - orientation;
+       * - polarity / valence;
+       * - positive / negative;
+       * - support / opposition;
+       * - strength / weight;
+       * - importance / significance;
+       * - impact;
+       * - score / priority / confidence;
+       * - Comparison;
+       * - Preference;
+       * - Ranking;
+       * - Selection;
+       * - Decision.
+       */
+
+      const recommendationsSnapshotBeforeDirectionalAxisPresence =
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        );
+
+      const decisionsSnapshotBeforeDirectionalAxisPresence =
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        );
+
+      const explicitSupportedEffectDirectionDeterminationScopeSnapshotBeforeDirectionalAxisPresence =
+        JSON.stringify(
+          explicitSupportedEffectDirectionDeterminationScope
+        );
+
+      const explicitNotSupportedEffectDirectionDeterminationScopeSnapshotBeforeDirectionalAxisPresence =
+        JSON.stringify(
+          explicitNotSupportedEffectDirectionDeterminationScope
+        );
+
+      const secondaryEffectDirectionDeterminationScopeSnapshotBeforeDirectionalAxisPresence =
+        JSON.stringify(
+          secondaryEffectDirectionDeterminationScope
+        );
+
+      /*
+       * CASO A
+       *
+       * La existencia previa de DirectionDeterminationScope y de
+       * referencias direccionales incluso ya definidas no había
+       * materializado DirectionalAxisPresence.
+       */
+      const preAxisPresenceObjects = [
+        explicitSupportedEffectDirectionDeterminationScope,
+        explicitNotSupportedEffectDirectionDeterminationScope,
+        secondaryEffectDirectionDeterminationScope,
+        supportedDirectionalReferencePresenceA,
+        supportedDirectionalReferenceDefinitionA,
+        notSupportedDirectionalReferenceDefinitionA,
+      ];
+
+      for (const candidate of preAxisPresenceObjects) {
+        for (const forbiddenProperty of [
+          'directionalAxisInput',
+          'directionalAxisPresence',
+          'axisId',
+        ]) {
+          if (forbiddenProperty in candidate) {
+            throw new Error(
+              `FASE 24.38 detectó ${forbiddenProperty} antes de la presentación explícita del eje direccional.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO B
+       *
+       * Presentación explícita del eje A.
+       */
+      const directionalAxisInputA = {
+        axisId: 'controlled-directional-axis-24-38-a',
+      };
+
+      const directionalAxisInputASnapshot =
+        JSON.stringify(directionalAxisInputA);
+
+      const supportedDirectionalAxisPresenceA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisPresence(
+          explicitSupportedEffectDirectionDeterminationScope,
+          directionalAxisInputA
+        );
+
+      if (
+        supportedDirectionalAxisPresenceA.presenceType !==
+        'explicit-evaluation-result-deliberative-influence-effect-directional-axis-present'
+      ) {
+        throw new Error(
+          'FASE 24.38 produjo un presenceType inesperado.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * AxisPresence conserva exactamente:
+       *
+       * - DirectionDeterminationScope
+       * - DirectionalAxisInput
+       *
+       * por identidad.
+       */
+      if (
+        supportedDirectionalAxisPresenceA
+          .directionDeterminationScope !==
+        explicitSupportedEffectDirectionDeterminationScope
+      ) {
+        throw new Error(
+          'FASE 24.38 no conservó DirectionDeterminationScope exactamente por identidad.'
+        );
+      }
+
+      if (
+        supportedDirectionalAxisPresenceA
+          .directionalAxisInput !==
+        directionalAxisInputA
+      ) {
+        throw new Error(
+          'FASE 24.38 no conservó DirectionalAxisInput exactamente por identidad.'
+        );
+      }
+
+      const supportedDirectionalAxisPresenceAKeys =
+        Object.keys(
+          supportedDirectionalAxisPresenceA
+        ).sort();
+
+      const expectedDirectionalAxisPresenceKeys = [
+        'directionDeterminationScope',
+        'directionalAxisInput',
+        'presenceType',
+      ].sort();
+
+      if (
+        JSON.stringify(
+          supportedDirectionalAxisPresenceAKeys
+        ) !==
+        JSON.stringify(
+          expectedDirectionalAxisPresenceKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.38 introdujo propiedades adicionales dentro de DirectionalAxisPresence.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          Object.keys(directionalAxisInputA).sort()
+        ) !==
+        JSON.stringify(['axisId'])
+      ) {
+        throw new Error(
+          'FASE 24.38 permitió que DirectionalAxisInput transportara información adicional a axisId.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * Un mismo DirectionDeterminationScope puede recibir dos
+       * ejes externos distintos.
+       *
+       * scope exists != scope determines axis
+       */
+      const directionalAxisInputB = {
+        axisId: 'controlled-directional-axis-24-38-b',
+      };
+
+      const directionalAxisInputBSnapshot =
+        JSON.stringify(directionalAxisInputB);
+
+      const supportedDirectionalAxisPresenceB =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisPresence(
+          explicitSupportedEffectDirectionDeterminationScope,
+          directionalAxisInputB
+        );
+
+      if (
+        supportedDirectionalAxisPresenceB ===
+        supportedDirectionalAxisPresenceA
+      ) {
+        throw new Error(
+          'FASE 24.38 colapsó dos presencias explícitas construidas con ejes direccionales distintos.'
+        );
+      }
+
+      if (
+        supportedDirectionalAxisPresenceB
+          .directionDeterminationScope !==
+        supportedDirectionalAxisPresenceA
+          .directionDeterminationScope
+      ) {
+        throw new Error(
+          'FASE 24.38 perdió el mismo DirectionDeterminationScope al presentar un segundo eje.'
+        );
+      }
+
+      if (
+        supportedDirectionalAxisPresenceB
+          .directionalAxisInput ===
+        supportedDirectionalAxisPresenceA
+          .directionalAxisInput
+      ) {
+        throw new Error(
+          'FASE 24.38 colapsó DirectionalAxisInput A y B.'
+        );
+      }
+
+      if (
+        supportedDirectionalAxisPresenceB
+          .directionalAxisInput.axisId ===
+        supportedDirectionalAxisPresenceA
+          .directionalAxisInput.axisId
+      ) {
+        throw new Error(
+          'FASE 24.38 no conservó la pluralidad explícita de ejes direccionales.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * El mismo eje externo puede presentarse dentro de scopes
+       * distintos sin colapsar los ámbitos.
+       */
+      const secondaryDirectionalAxisPresenceA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisPresence(
+          secondaryEffectDirectionDeterminationScope,
+          directionalAxisInputA
+        );
+
+      if (
+        secondaryDirectionalAxisPresenceA ===
+        supportedDirectionalAxisPresenceA
+      ) {
+        throw new Error(
+          'FASE 24.38 colapsó presencias pertenecientes a DirectionDeterminationScope distintos.'
+        );
+      }
+
+      if (
+        secondaryDirectionalAxisPresenceA
+          .directionDeterminationScope ===
+        supportedDirectionalAxisPresenceA
+          .directionDeterminationScope
+      ) {
+        throw new Error(
+          'FASE 24.38 colapsó DirectionDeterminationScope distintos al reutilizar el mismo eje.'
+        );
+      }
+
+      if (
+        secondaryDirectionalAxisPresenceA
+          .directionalAxisInput !==
+        directionalAxisInputA
+      ) {
+        throw new Error(
+          'FASE 24.38 no conservó por identidad el mismo eje externo reutilizado en otro scope.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * El mismo eje puede presentarse sobre el scope procedente
+       * de EvaluationResult not-supported.
+       */
+      const notSupportedDirectionalAxisPresenceA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisPresence(
+          explicitNotSupportedEffectDirectionDeterminationScope,
+          directionalAxisInputA
+        );
+
+      if (
+        notSupportedDirectionalAxisPresenceA
+          .directionDeterminationScope !==
+        explicitNotSupportedEffectDirectionDeterminationScope
+      ) {
+        throw new Error(
+          'FASE 24.38 no conservó el DirectionDeterminationScope procedente del EvaluationResult not-supported.'
+        );
+      }
+
+      if (
+        notSupportedDirectionalAxisPresenceA
+          .directionalAxisInput !==
+        directionalAxisInputA
+      ) {
+        throw new Error(
+          'FASE 24.38 trató de forma diferente el mismo eje por proceder de un EvaluationResult not-supported.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * AxisPresence sólo conserva el scope como genealogía.
+       * No duplica ReferencePresence, ReferenceDefinition ni
+       * elementos anteriores.
+       */
+      const forbiddenDuplicatedDirectionalAxisProperties = [
+        'evaluationResultDeliberativeInfluenceEffect',
+        'evaluationResultDeliberativeInfluenceReach',
+        'evaluationResultDeliberativeInfluence',
+        'evaluationResultDeliberativeUtilization',
+        'evaluationResult',
+        'deliberativeParticipation',
+        'recommendation',
+        'directionalReferencePresence',
+        'directionalReferenceDefinition',
+        'directionalReferenceInput',
+        'definitionInput',
+        'referenceId',
+        'referenceSemanticRole',
+      ];
+
+      for (const directionalAxisPresence of [
+        supportedDirectionalAxisPresenceA,
+        supportedDirectionalAxisPresenceB,
+        secondaryDirectionalAxisPresenceA,
+        notSupportedDirectionalAxisPresenceA,
+      ]) {
+        for (
+          const forbiddenProperty of
+          forbiddenDuplicatedDirectionalAxisProperties
+        ) {
+          if (
+            forbiddenProperty in
+            directionalAxisPresence
+          ) {
+            throw new Error(
+              `FASE 24.38 duplicó indebidamente ${forbiddenProperty} dentro de DirectionalAxisPresence.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO H
+       *
+       * DirectionalReferenceDefinition y DirectionalAxisPresence
+       * son ramas arquitectónicas independientes.
+       *
+       * La construcción del eje no recibe ni conserva Reference
+       * Presence/Definition.
+       */
+      if (
+        'directionalReferencePresence' in
+          supportedDirectionalAxisPresenceA ||
+        'directionalReferenceDefinition' in
+          supportedDirectionalAxisPresenceA ||
+        'definitionInput' in
+          supportedDirectionalAxisPresenceA
+      ) {
+        throw new Error(
+          'FASE 24.38 hizo depender DirectionalAxisPresence de la rama DirectionalReference.'
+        );
+      }
+
+      if (
+        supportedDirectionalAxisPresenceA
+          .directionDeterminationScope !==
+        supportedDirectionalReferenceDefinitionA
+          .directionalReferencePresence
+          .directionDeterminationScope
+      ) {
+        throw new Error(
+          'FASE 24.38 perdió el scope común entre las ramas independientes Reference y Axis.'
+        );
+      }
+
+      /*
+       * CASO I
+       *
+       * axis exists
+       * !=
+       * axis semantics are defined
+       * !=
+       * reference belongs/corresponds to axis
+       */
+      const forbiddenDirectionalAxisSemanticProperties = [
+        'axisSemanticRole',
+        'axisMeaning',
+        'axisDefinition',
+        'directionalAxisDefinition',
+        'directionalReferenceAxisCorrespondence',
+        'referenceAxisCorrespondence',
+        'belongsToAxis',
+        'referenceBelongsToAxis',
+        'axisReference',
+      ];
+
+      for (const directionalAxisPresence of [
+        supportedDirectionalAxisPresenceA,
+        supportedDirectionalAxisPresenceB,
+        secondaryDirectionalAxisPresenceA,
+        notSupportedDirectionalAxisPresenceA,
+      ]) {
+        for (
+          const forbiddenProperty of
+          forbiddenDirectionalAxisSemanticProperties
+        ) {
+          if (
+            forbiddenProperty in
+            directionalAxisPresence
+          ) {
+            throw new Error(
+              `FASE 24.38 adelantó indebidamente semántica o correspondencia del eje mediante ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO J
+       *
+       * AxisPresence tampoco establece correspondencia con Effect,
+       * aplicabilidad ni determinación/dirección.
+       */
+      const forbiddenPostDirectionalAxisPresenceProperties = [
+        'directionalAxisEffectCorrespondence',
+        'directionalReferenceEffectCorrespondence',
+        'effectCorrespondence',
+        'applicability',
+        'applicabilityResult',
+        'directionalApplicability',
+        'directionDetermination',
+        'direction',
+        'orientation',
+        'positive',
+        'negative',
+        'polarity',
+        'valence',
+        'support',
+        'opposition',
+        'strength',
+        'weight',
+        'importance',
+        'significance',
+        'impact',
+        'score',
+        'priority',
+        'confidence',
+        'comparison',
+        'comparisonResult',
+        'preference',
+        'preferenceResult',
+        'ranking',
+        'selection',
+        'decision',
+      ];
+
+      for (const directionalAxisPresence of [
+        supportedDirectionalAxisPresenceA,
+        supportedDirectionalAxisPresenceB,
+        secondaryDirectionalAxisPresenceA,
+        notSupportedDirectionalAxisPresenceA,
+      ]) {
+        for (
+          const forbiddenProperty of
+          forbiddenPostDirectionalAxisPresenceProperties
+        ) {
+          if (
+            forbiddenProperty in
+            directionalAxisPresence
+          ) {
+            throw new Error(
+              `FASE 24.38 promovió indebidamente DirectionalAxisPresence hacia ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO K
+       *
+       * supported / not-supported siguen siendo conclusiones del
+       * EvaluationResult. La misma presencia de eje no las
+       * reinterpreta como dirección o polaridad.
+       */
+      if (
+        supportedDirectionalAxisPresenceA
+          .directionDeterminationScope
+          .evaluationResultDeliberativeInfluenceEffect
+          .evaluationResultDeliberativeInfluenceReach
+          .evaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization
+          .evaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.38 alteró o reinterpretó la conclusión supported.'
+        );
+      }
+
+      if (
+        notSupportedDirectionalAxisPresenceA
+          .directionDeterminationScope
+          .evaluationResultDeliberativeInfluenceEffect
+          .evaluationResultDeliberativeInfluenceReach
+          .evaluationResultDeliberativeInfluence
+          .evaluationResultDeliberativeUtilization
+          .evaluationResult
+          .conclusionInput
+          .conclusion !==
+        'evaluated-relevance-not-supported-by-criterion'
+      ) {
+        throw new Error(
+          'FASE 24.38 alteró o reinterpretó la conclusión not-supported.'
+        );
+      }
+
+      /*
+       * CASO L
+       *
+       * La presentación del eje no modifica los scopes utilizados
+       * como fundamento inmediato.
+       */
+      if (
+        JSON.stringify(
+          explicitSupportedEffectDirectionDeterminationScope
+        ) !==
+        explicitSupportedEffectDirectionDeterminationScopeSnapshotBeforeDirectionalAxisPresence
+      ) {
+        throw new Error(
+          'FASE 24.38 modificó el DirectionDeterminationScope supported.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          explicitNotSupportedEffectDirectionDeterminationScope
+        ) !==
+        explicitNotSupportedEffectDirectionDeterminationScopeSnapshotBeforeDirectionalAxisPresence
+      ) {
+        throw new Error(
+          'FASE 24.38 modificó el DirectionDeterminationScope not-supported.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          secondaryEffectDirectionDeterminationScope
+        ) !==
+        secondaryEffectDirectionDeterminationScopeSnapshotBeforeDirectionalAxisPresence
+      ) {
+        throw new Error(
+          'FASE 24.38 modificó el DirectionDeterminationScope secundario.'
+        );
+      }
+
+      /*
+       * CASO M
+       *
+       * Tampoco modifica los inputs externos.
+       */
+      if (
+        JSON.stringify(
+          directionalAxisInputA
+        ) !==
+        directionalAxisInputASnapshot
+      ) {
+        throw new Error(
+          'FASE 24.38 modificó DirectionalAxisInput A.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          directionalAxisInputB
+        ) !==
+        directionalAxisInputBSnapshot
+      ) {
+        throw new Error(
+          'FASE 24.38 modificó DirectionalAxisInput B.'
+        );
+      }
+
+      /*
+       * CASO N
+       *
+       * FASE 24.38 tampoco modifica recomendaciones ni decisiones
+       * productivas.
+       */
+      if (
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        ) !==
+        recommendationsSnapshotBeforeDirectionalAxisPresence
+      ) {
+        throw new Error(
+          'FASE 24.38 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        ) !==
+        decisionsSnapshotBeforeDirectionalAxisPresence
+      ) {
+        throw new Error(
+          'FASE 24.38 modificó decisiones productivas.'
+        );
+      }
+
       addLog(
         `FASE 24.26 OK: se materializó explícitamente CriterionApplicability a partir de CompatibilityResult como único fundamento inmediato, conservando exactamente CompatibilityResult y toda su genealogía por identidad.
 CompatibilityResult permaneció distinto de CriterionApplicability: la existencia previa de compatibilityResult=compatible o compatibilityResult=incompatible no había materializado automáticamente aplicabilidad.
@@ -46101,13 +46757,28 @@ DirectionalReferenceDefinition permaneció explícitamente distinta de Compariso
 Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
       );
 
+      addLog(
+        `FASE 24.38 OK: se materializó explícitamente EvaluationResultDeliberativeInfluenceEffectDirectionalAxisPresence a partir de DirectionDeterminationScope como único fundamento interno inmediato y DirectionalAxisInput como eje externo explícito.
+DirectionDeterminationScope permaneció distinto de DirectionalAxisPresence: la existencia previa del ámbito de determinación direccional no había materializado automáticamente ningún eje.
+DirectionalAxisPresence conservó exactamente DirectionDeterminationScope y DirectionalAxisInput por identidad y sólo añadió presenceType.
+Un mismo DirectionDeterminationScope pudo recibir ejes A y B distintos, demostrando que scope does not determine axis.
+El mismo eje A pudo presentarse sobre scopes distintos sin colapsarlos, demostrando que axis exists no impone identidad ni unicidad global del ámbito.
+DirectionalReferenceDefinition y DirectionalAxisPresence permanecieron como ramas arquitectónicas independientes bajo DirectionDeterminationScope: la referencia definida no creó, seleccionó ni determinó el eje.
+axis exists permaneció distinto de axis semantics are defined y de reference belongs/corresponds to axis.
+Effects procedentes de EvaluationResult supported y not-supported pudieron recibir exactamente la misma presencia de eje mediante la misma estructura, manteniendo supported != positive direction y not-supported != negative direction.
+DirectionalAxisPresence permaneció distinta de DirectionalAxisDefinition, reference/axis correspondence, axis/Effect correspondence, reference/Effect correspondence, applicability, DirectionDetermination y Direction.
+No se introdujeron orientation, positive, negative, polarity, valence, support, opposition, strength, weight, importance, significance, impact, score, priority ni confidence.
+DirectionalAxisPresence permaneció explícitamente distinta de Comparison, Preference, Ranking, Selection y Decision.
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38.'
       );
     } finally {
       setLoading(false);
@@ -47275,6 +47946,16 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Test Definición Referencia Direccional Efecto Deliberativo 24.37
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Test Presencia Eje Direccional Efecto Deliberativo 24.38
         </button>
 
         <button
