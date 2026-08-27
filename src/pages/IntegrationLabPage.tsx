@@ -198,6 +198,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalAxisDefinitionService';
 
 import {
+  establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationPresence,
+} from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationPresenceService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -47171,27 +47175,681 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
 
       addLog(
         `FASE 24.39 OK: se materializó explícitamente EvaluationResultDeliberativeInfluenceEffectDirectionalAxisDefinition a partir de DirectionalAxisPresence como único fundamento interno inmediato y DirectionalAxisDefinitionInput como semántica externa explícita.
-
 DirectionalAxisPresence permaneció distinta de DirectionalAxisDefinition: la presencia previa del eje no había definido automáticamente su semántica.
-
 DirectionalAxisDefinition conservó exactamente DirectionalAxisPresence y DirectionalAxisDefinitionInput por identidad y sólo añadió definitionType.
-
 Una misma DirectionalAxisPresence pudo recibir dos axisSubject distintos, demostrando que axis presence != axis semantics y que la Presence no selecciona ni determina su definición.
-
 Un axisId distinto devolvió null sin materializar una definición artificial.
-
 La misma definición semántica pudo reutilizarse sobre el mismo eje presentado en scopes distintos sin colapsarlos.
-
 DirectionalReferenceDefinition y DirectionalAxisDefinition permanecieron como ramas arquitectónicas independientes.
-
 Effects procedentes de EvaluationResult supported y not-supported pudieron recibir exactamente la misma definición semántica del eje, manteniendo supported != positive direction y not-supported != negative direction.
-
 DirectionalAxisDefinition permaneció distinta de endpoints, orientation, polarity, valence, positive/negative, support/opposition, reference/axis correspondence, axis/Effect correspondence, reference/Effect correspondence, applicability, DirectionDetermination y Direction.
-
 No se introdujeron strength, weight, importance, significance, impact, score, priority ni confidence.
-
 DirectionalAxisDefinition permaneció explícitamente distinta de Comparison, Preference, Ranking, Selection, Decision y Execution.
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
 
+      /*
+       * ============================================================
+       * FASE 24.40
+       * ============================================================
+       *
+       * Presencia explícita de relación entre referencia direccional
+       * semánticamente definida y eje direccional semánticamente
+       * definido.
+       *
+       * DirectionalReferenceDefinition
+       * +
+       * DirectionalAxisDefinition
+       * +
+       * DirectionalReferenceAxisRelationInput externo explícito
+       * ->
+       * DirectionalReferenceAxisRelationPresence
+       *
+       * DirectionalReferenceDefinition y DirectionalAxisDefinition
+       * constituyen conjuntamente los dos fundamentos internos
+       * inmediatos.
+       *
+       * FASE 24.40 NO establece todavía:
+       *
+       * - semántica de la relación;
+       * - correspondencia reference / axis;
+       * - compatibilidad reference / axis;
+       * - pertenencia de reference al axis;
+       * - posición de reference sobre axis;
+       * - endpoints;
+       * - orientation;
+       * - polarity / valence;
+       * - positive / negative;
+       * - support / opposition;
+       * - correspondencia axis / Effect;
+       * - correspondencia reference / Effect;
+       * - aplicabilidad al Effect;
+       * - DirectionDetermination;
+       * - Direction;
+       * - strength / weight;
+       * - importance / significance;
+       * - impact;
+       * - score / priority / confidence;
+       * - Comparison;
+       * - Preference;
+       * - Ranking;
+       * - Selection;
+       * - Decision;
+       * - Execution.
+       */
+      const recommendationsSnapshotBeforeDirectionalReferenceAxisRelationPresence =
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        );
+
+      const decisionsSnapshotBeforeDirectionalReferenceAxisRelationPresence =
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        );
+
+      const supportedDirectionalReferenceDefinitionASnapshotBeforeRelationPresence =
+        JSON.stringify(
+          supportedDirectionalReferenceDefinitionA
+        );
+
+      const supportedDirectionalAxisDefinitionASnapshotBeforeRelationPresence =
+        JSON.stringify(
+          supportedDirectionalAxisDefinitionA
+        );
+
+      /*
+       * CASO A
+       *
+       * La coexistencia de DirectionalReferenceDefinition y
+       * DirectionalAxisDefinition no materializó automáticamente
+       * ninguna relación entre ambas.
+       *
+       * definitions coexist
+       * !=
+       * relation exists
+       */
+      for (const definition of [
+        supportedDirectionalReferenceDefinitionA,
+        supportedDirectionalAxisDefinitionA,
+      ]) {
+        for (const forbiddenProperty of [
+          'directionalReferenceAxisRelation',
+          'directionalReferenceAxisRelationPresence',
+          'referenceAxisRelation',
+          'relationInput',
+          'relationId',
+          'correspondence',
+          'directionalReferenceAxisCorrespondence',
+          'referenceAxisCorrespondence',
+        ]) {
+          if (forbiddenProperty in definition) {
+            throw new Error(
+              `FASE 24.40 detectó ${forbiddenProperty} antes de la presentación relacional explícita.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO B
+       *
+       * Materialización explícita de una relación entre
+       * reference A y axis A dentro del mismo
+       * DirectionDeterminationScope.
+       */
+      const directionalReferenceAxisRelationInputA = {
+        relationId:
+          'directional-reference-axis-relation-controlled-24-40-a',
+        referenceId:
+          directionalReferenceInputA.referenceId,
+        axisId:
+          directionalAxisInputA.axisId,
+      };
+
+      const directionalReferenceAxisRelationInputASnapshot =
+        JSON.stringify(
+          directionalReferenceAxisRelationInputA
+        );
+
+      const supportedDirectionalReferenceAxisRelationPresenceA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationPresence(
+          supportedDirectionalReferenceDefinitionA,
+          supportedDirectionalAxisDefinitionA,
+          directionalReferenceAxisRelationInputA
+        );
+
+      if (!supportedDirectionalReferenceAxisRelationPresenceA) {
+        throw new Error(
+          'FASE 24.40 no materializó DirectionalReferenceAxisRelationPresence para reference/axis válidos dentro del mismo scope.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceAxisRelationPresenceA.presenceType !==
+        'explicit-evaluation-result-deliberative-influence-effect-directional-reference-axis-relation-present'
+      ) {
+        throw new Error(
+          'FASE 24.40 produjo un presenceType inesperado.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * Conservación exacta por identidad de los dos fundamentos
+       * internos inmediatos y del input externo.
+       */
+      if (
+        supportedDirectionalReferenceAxisRelationPresenceA
+          .directionalReferenceDefinition !==
+        supportedDirectionalReferenceDefinitionA
+      ) {
+        throw new Error(
+          'FASE 24.40 no conservó DirectionalReferenceDefinition por identidad.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceAxisRelationPresenceA
+          .directionalAxisDefinition !==
+        supportedDirectionalAxisDefinitionA
+      ) {
+        throw new Error(
+          'FASE 24.40 no conservó DirectionalAxisDefinition por identidad.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceAxisRelationPresenceA
+          .relationInput !==
+        directionalReferenceAxisRelationInputA
+      ) {
+        throw new Error(
+          'FASE 24.40 no conservó DirectionalReferenceAxisRelationInput por identidad.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * Forma estructural mínima exacta.
+       */
+      const directionalReferenceAxisRelationPresenceKeys =
+        Object.keys(
+          supportedDirectionalReferenceAxisRelationPresenceA
+        ).sort();
+
+      const expectedDirectionalReferenceAxisRelationPresenceKeys = [
+        'directionalReferenceDefinition',
+        'directionalAxisDefinition',
+        'relationInput',
+        'presenceType',
+      ].sort();
+
+      if (
+        JSON.stringify(
+          directionalReferenceAxisRelationPresenceKeys
+        ) !==
+        JSON.stringify(
+          expectedDirectionalReferenceAxisRelationPresenceKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.40 introdujo propiedades adicionales dentro de DirectionalReferenceAxisRelationPresence.'
+        );
+      }
+
+      const directionalReferenceAxisRelationInputKeys =
+        Object.keys(
+          directionalReferenceAxisRelationInputA
+        ).sort();
+
+      if (
+        JSON.stringify(
+          directionalReferenceAxisRelationInputKeys
+        ) !==
+        JSON.stringify(
+          [
+            'relationId',
+            'referenceId',
+            'axisId',
+          ].sort()
+        )
+      ) {
+        throw new Error(
+          'FASE 24.40 permitió que DirectionalReferenceAxisRelationInput transportara información adicional.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * referenceId distinto => null.
+       *
+       * No se materializa una relación negativa artificial.
+       */
+      const mismatchedReferenceDirectionalReferenceAxisRelationPresence =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationPresence(
+          supportedDirectionalReferenceDefinitionA,
+          supportedDirectionalAxisDefinitionA,
+          {
+            relationId:
+              'directional-reference-axis-relation-controlled-24-40-reference-mismatch',
+            referenceId:
+              directionalReferenceInputB.referenceId,
+            axisId:
+              directionalAxisInputA.axisId,
+          }
+        );
+
+      if (
+        mismatchedReferenceDirectionalReferenceAxisRelationPresence !==
+        null
+      ) {
+        throw new Error(
+          'FASE 24.40 materializó una relación utilizando un referenceId distinto.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * axisId distinto => null.
+       *
+       * Tampoco se materializa una relación negativa artificial.
+       */
+      const mismatchedAxisDirectionalReferenceAxisRelationPresence =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationPresence(
+          supportedDirectionalReferenceDefinitionA,
+          supportedDirectionalAxisDefinitionA,
+          {
+            relationId:
+              'directional-reference-axis-relation-controlled-24-40-axis-mismatch',
+            referenceId:
+              directionalReferenceInputA.referenceId,
+            axisId:
+              directionalAxisInputB.axisId,
+          }
+        );
+
+      if (
+        mismatchedAxisDirectionalReferenceAxisRelationPresence !==
+        null
+      ) {
+        throw new Error(
+          'FASE 24.40 materializó una relación utilizando un axisId distinto.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * Reference y Axis pertenecientes a DirectionDeterminationScope
+       * distintos no pueden constituir una RelationPresence.
+       *
+       * Aunque sus identidades y semánticas sean reutilizables:
+       *
+       * same semantics
+       * !=
+       * same relational scope
+       */
+      const crossScopeDirectionalReferenceAxisRelationPresence =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationPresence(
+          supportedDirectionalReferenceDefinitionA,
+          secondaryDirectionalAxisDefinitionA,
+          directionalReferenceAxisRelationInputA
+        );
+
+      if (
+        crossScopeDirectionalReferenceAxisRelationPresence !==
+        null
+      ) {
+        throw new Error(
+          'FASE 24.40 relacionó DirectionalReferenceDefinition y DirectionalAxisDefinition pertenecientes a DirectionDeterminationScope distintos.'
+        );
+      }
+
+      /*
+       * CASO H
+       *
+       * Semánticas locales distintas no bloquean la mera presencia
+       * relacional.
+       *
+       * FASE 24.40 no compara:
+       *
+       * referenceSemanticRole
+       * vs
+       * axisSubject
+       *
+       * RelationPresence
+       * !=
+       * semantic compatibility assessment
+       */
+      const directionalReferenceAxisRelationInputAlternativeSemantics = {
+        relationId:
+          'directional-reference-axis-relation-controlled-24-40-alternative-semantics',
+        referenceId:
+          directionalReferenceInputA.referenceId,
+        axisId:
+          directionalAxisInputA.axisId,
+      };
+
+      const alternativeSemanticsDirectionalReferenceAxisRelationPresence =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationPresence(
+          supportedDirectionalReferenceDefinitionB,
+          supportedDirectionalAxisDefinitionB,
+          directionalReferenceAxisRelationInputAlternativeSemantics
+        );
+
+      if (
+        !alternativeSemanticsDirectionalReferenceAxisRelationPresence
+      ) {
+        throw new Error(
+          'FASE 24.40 interpretó indebidamente referenceSemanticRole o axisSubject como condición de compatibilidad relacional.'
+        );
+      }
+
+      if (
+        alternativeSemanticsDirectionalReferenceAxisRelationPresence
+          .directionalReferenceDefinition
+          .definitionInput
+          .referenceSemanticRole ===
+        supportedDirectionalReferenceAxisRelationPresenceA
+          .directionalReferenceDefinition
+          .definitionInput
+          .referenceSemanticRole
+      ) {
+        throw new Error(
+          'FASE 24.40 no conservó la pluralidad semántica explícita de DirectionalReferenceDefinition.'
+        );
+      }
+
+      if (
+        alternativeSemanticsDirectionalReferenceAxisRelationPresence
+          .directionalAxisDefinition
+          .definitionInput
+          .axisSubject ===
+        supportedDirectionalReferenceAxisRelationPresenceA
+          .directionalAxisDefinition
+          .definitionInput
+          .axisSubject
+      ) {
+        throw new Error(
+          'FASE 24.40 no conservó la pluralidad semántica explícita de DirectionalAxisDefinition.'
+        );
+      }
+
+      /*
+       * CASO I
+       *
+       * La misma pareja reference/axis puede recibir declaraciones
+       * relacionales externas distintas.
+       *
+       * reference + axis
+       * !=
+       * predetermined unique relation
+       */
+      const directionalReferenceAxisRelationInputB = {
+        relationId:
+          'directional-reference-axis-relation-controlled-24-40-b',
+        referenceId:
+          directionalReferenceInputA.referenceId,
+        axisId:
+          directionalAxisInputA.axisId,
+      };
+
+      const supportedDirectionalReferenceAxisRelationPresenceB =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationPresence(
+          supportedDirectionalReferenceDefinitionA,
+          supportedDirectionalAxisDefinitionA,
+          directionalReferenceAxisRelationInputB
+        );
+
+      if (!supportedDirectionalReferenceAxisRelationPresenceB) {
+        throw new Error(
+          'FASE 24.40 no permitió una segunda declaración relacional explícita para la misma pareja reference/axis.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceAxisRelationPresenceB ===
+        supportedDirectionalReferenceAxisRelationPresenceA
+      ) {
+        throw new Error(
+          'FASE 24.40 colapsó dos RelationPresence materializadas mediante relationId distintos.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceAxisRelationPresenceB
+          .relationInput.relationId ===
+        supportedDirectionalReferenceAxisRelationPresenceA
+          .relationInput.relationId
+      ) {
+        throw new Error(
+          'FASE 24.40 no conservó la identidad independiente de dos declaraciones relacionales explícitas.'
+        );
+      }
+
+      /*
+       * CASO J
+       *
+       * EvaluationResult supported y not-supported pueden recibir
+       * exactamente la misma declaración estructural reference/axis.
+       *
+       * supported != positive direction
+       * not-supported != negative direction
+       * relation presence != direction
+       */
+      const notSupportedDirectionalReferenceAxisRelationPresenceA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationPresence(
+          notSupportedDirectionalReferenceDefinitionA,
+          notSupportedDirectionalAxisDefinitionA,
+          directionalReferenceAxisRelationInputA
+        );
+
+      if (
+        !notSupportedDirectionalReferenceAxisRelationPresenceA
+      ) {
+        throw new Error(
+          'FASE 24.40 trató de forma distinta la relación reference/axis por proceder de EvaluationResult not-supported.'
+        );
+      }
+
+      if (
+        notSupportedDirectionalReferenceAxisRelationPresenceA
+          .relationInput !==
+        directionalReferenceAxisRelationInputA
+      ) {
+        throw new Error(
+          'FASE 24.40 reinterpretó el RelationInput por proceder de EvaluationResult not-supported.'
+        );
+      }
+
+      /*
+       * CASO K
+       *
+       * RelationPresence no introduce semántica de la relación
+       * ni hechos direccionales posteriores.
+       */
+      for (const relationPresence of [
+        supportedDirectionalReferenceAxisRelationPresenceA,
+        supportedDirectionalReferenceAxisRelationPresenceB,
+        alternativeSemanticsDirectionalReferenceAxisRelationPresence,
+        notSupportedDirectionalReferenceAxisRelationPresenceA,
+      ]) {
+        for (const forbiddenProperty of [
+          'relationDefinition',
+          'relationSemantics',
+          'relationType',
+          'directionalReferenceAxisCorrespondence',
+          'referenceAxisCorrespondence',
+          'correspondence',
+          'correspondenceResult',
+          'compatibility',
+          'semanticCompatibility',
+          'compatibilityResult',
+          'membership',
+          'belongsToAxis',
+          'referenceBelongsToAxis',
+          'position',
+          'positionOnAxis',
+          'axisPosition',
+          'coordinate',
+          'endpoint',
+          'endpoints',
+          'origin',
+          'orientation',
+          'axisOrientation',
+          'polarity',
+          'valence',
+          'positive',
+          'negative',
+          'support',
+          'opposition',
+          'directionalAxisEffectCorrespondence',
+          'axisEffectCorrespondence',
+          'directionalReferenceEffectCorrespondence',
+          'referenceEffectCorrespondence',
+          'applicability',
+          'directionalApplicability',
+          'axisApplicability',
+          'referenceApplicability',
+          'directionDetermination',
+          'direction',
+          'strength',
+          'weight',
+          'importance',
+          'significance',
+          'impact',
+          'score',
+          'priority',
+          'confidence',
+          'comparison',
+          'comparability',
+          'preference',
+          'ranking',
+          'selection',
+          'decision',
+          'execution',
+        ]) {
+          if (forbiddenProperty in relationPresence) {
+            throw new Error(
+              `FASE 24.40 promovió indebidamente DirectionalReferenceAxisRelationPresence hacia ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO L
+       *
+       * RelationPresence conserva únicamente las dos Definitions
+       * como fundamentos internos inmediatos.
+       *
+       * No duplica DirectionDeterminationScope ni genealogía
+       * interna del Effect.
+       */
+      for (const forbiddenProperty of [
+        'directionDeterminationScope',
+        'evaluationResultDeliberativeInfluenceEffect',
+        'evaluationResultDeliberativeInfluenceReach',
+        'evaluationResultDeliberativeInfluence',
+        'evaluationResultDeliberativeUtilization',
+        'deliberativeParticipation',
+        'evaluationResult',
+        'recommendation',
+        'recommendationId',
+        'conclusion',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationPresenceA
+        ) {
+          throw new Error(
+            `FASE 24.40 duplicó indebidamente ${forbiddenProperty} dentro de DirectionalReferenceAxisRelationPresence.`
+          );
+        }
+      }
+
+      /*
+       * CASO M
+       *
+       * Inmutabilidad de ambos fundamentos y del input externo.
+       */
+      if (
+        JSON.stringify(
+          supportedDirectionalReferenceDefinitionA
+        ) !==
+        supportedDirectionalReferenceDefinitionASnapshotBeforeRelationPresence
+      ) {
+        throw new Error(
+          'FASE 24.40 modificó DirectionalReferenceDefinition.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          supportedDirectionalAxisDefinitionA
+        ) !==
+        supportedDirectionalAxisDefinitionASnapshotBeforeRelationPresence
+      ) {
+        throw new Error(
+          'FASE 24.40 modificó DirectionalAxisDefinition.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          directionalReferenceAxisRelationInputA
+        ) !==
+        directionalReferenceAxisRelationInputASnapshot
+      ) {
+        throw new Error(
+          'FASE 24.40 modificó DirectionalReferenceAxisRelationInput.'
+        );
+      }
+
+      /*
+       * CASO N
+       *
+       * FASE 24.40 tampoco modifica recomendaciones ni decisiones
+       * productivas.
+       */
+      if (
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        ) !==
+        recommendationsSnapshotBeforeDirectionalReferenceAxisRelationPresence
+      ) {
+        throw new Error(
+          'FASE 24.40 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        ) !==
+        decisionsSnapshotBeforeDirectionalReferenceAxisRelationPresence
+      ) {
+        throw new Error(
+          'FASE 24.40 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.40 OK: se materializó explícitamente EvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationPresence a partir de DirectionalReferenceDefinition y DirectionalAxisDefinition como dos fundamentos internos inmediatos y DirectionalReferenceAxisRelationInput como declaración relacional externa explícita.
+La coexistencia previa de DirectionalReferenceDefinition y DirectionalAxisDefinition no había materializado automáticamente ninguna relación entre ambas: definitions coexist != relation exists.
+DirectionalReferenceAxisRelationPresence conservó exactamente ambas Definitions y RelationInput por identidad y sólo añadió presenceType.
+referenceId o axisId distintos devolvieron null sin crear hechos relacionales negativos artificiales.
+DirectionalReferenceDefinition y DirectionalAxisDefinition pertenecientes a DirectionDeterminationScope distintos no pudieron relacionarse, incluso cuando reutilizaban identidades o semánticas equivalentes. Por tanto, semantic equality != relational scope identity.
+referenceSemanticRole y axisSubject permanecieron deliberadamente opacos: semánticas locales distintas pudieron participar en RelationPresence sin que FASE 24.40 realizara comparación ni evaluación de compatibilidad.
+La misma pareja reference/axis pudo recibir relationId distintos, demostrando que reference + axis != predetermined unique relation.
+Effects procedentes de EvaluationResult supported y not-supported pudieron recibir la misma declaración relacional estructural, manteniendo supported != positive direction y not-supported != negative direction.
+DirectionalReferenceAxisRelationPresence permaneció distinta de RelationDefinition, Correspondence, semantic compatibility, membership, position on axis, endpoints, orientation, polarity, valence, positive/negative, support/opposition, axis/Effect correspondence, reference/Effect correspondence, applicability, DirectionDetermination y Direction.
+No se introdujeron strength, weight, importance, significance, impact, score, priority ni confidence.
+DirectionalReferenceAxisRelationPresence permaneció explícitamente distinta de Comparison, Preference, Ranking, Selection, Decision y Execution.
 Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
       );
 
@@ -47200,8 +47858,8 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40.'
       );
     } finally {
       setLoading(false);
@@ -48389,6 +49047,16 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Probar FASE 24.39
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Probar FASE 24.40
         </button>
 
         <button
