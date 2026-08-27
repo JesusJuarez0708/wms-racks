@@ -210,6 +210,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceService';
 
 import {
+  establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence,
+} from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -49099,13 +49103,605 @@ SemanticEvaluationOperandsPresence permaneció explícitamente distinta de Compa
 Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
       );
 
+      /*
+       * ============================================================
+       * FASE 24.43
+       * Presencia explícita de operación externa para evaluación
+       * semántica de relación reference-axis.
+       * ============================================================
+       *
+       * SemanticEvaluationOperandsPresence
+       * +
+       * SemanticEvaluationOperationInput externo explícito
+       * ->
+       * SemanticEvaluationOperationPresence
+       *
+       * Esta fase únicamente presenta una operación evaluativa.
+       *
+       * NO define qué significa la operación.
+       * NO interpreta los operandos.
+       * NO ejecuta evaluación.
+       * NO produce comparación.
+       * NO produce resultado descriptivo.
+       * NO determina satisfacción semántica.
+       * NO determina Correspondence.
+       */
+
+      const recommendationsSnapshotBeforeDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence =
+        JSON.stringify(recommendationsAfterDeliberativeParticipation);
+
+      const decisionsSnapshotBeforeDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence =
+        JSON.stringify(decisionsAfterDeliberativeParticipation);
+
+      const supportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceASnapshotBeforeOperationPresence =
+        JSON.stringify(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceA
+        );
+
+      /*
+       * CASO A
+       *
+       * Antes de presentar explícitamente una operación evaluativa,
+       * SemanticEvaluationOperandsPresence no contiene operación,
+       * definición, ejecución ni resultado.
+       *
+       * operands designated
+       * !=
+       * evaluation operation present
+       */
+
+      for (const forbiddenProperty of [
+        'semanticEvaluationOperationPresence',
+        'evaluationOperationPresence',
+        'semanticEvaluationOperation',
+        'evaluationOperation',
+        'evaluationOperationInput',
+        'operationId',
+        'operationType',
+        'operator',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceA
+        ) {
+          throw new Error(
+            `FASE 24.43 detectó ${forbiddenProperty} antes de la presentación explícita de una operación evaluativa.`
+          );
+        }
+      }
+
+      /*
+       * CASO B
+       *
+       * Presentación explícita de una operación evaluativa externa.
+       *
+       * operationId es deliberadamente opaco.
+       * Su presencia no define todavía qué debe hacerse con los
+       * operandos.
+       */
+
+      const directionalReferenceAxisRelationSemanticEvaluationOperationInputA =
+        {
+          relationId:
+            supportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceA
+              .evaluationOperandsInput.relationId,
+          operationId:
+            'directional-reference-axis-semantic-evaluation-operation-controlled-24-43-a',
+        };
+
+      const directionalReferenceAxisRelationSemanticEvaluationOperationInputASnapshot =
+        JSON.stringify(
+          directionalReferenceAxisRelationSemanticEvaluationOperationInputA
+        );
+
+      const supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceA,
+          directionalReferenceAxisRelationSemanticEvaluationOperationInputA
+        );
+
+      if (
+        !supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceA
+      ) {
+        throw new Error(
+          'FASE 24.43 no materializó SemanticEvaluationOperationPresence para operandos e input válidos.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceA
+          .presenceType !==
+        'explicit-evaluation-result-deliberative-influence-effect-directional-reference-axis-relation-semantic-evaluation-operation-present'
+      ) {
+        throw new Error(
+          'FASE 24.43 produjo un presenceType inesperado.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * Conservación exacta por identidad del único fundamento
+       * interno inmediato y del input externo explícito.
+       */
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceA
+          .semanticEvaluationOperandsPresence !==
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceA
+      ) {
+        throw new Error(
+          'FASE 24.43 no conservó SemanticEvaluationOperandsPresence por identidad.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceA
+          .evaluationOperationInput !==
+        directionalReferenceAxisRelationSemanticEvaluationOperationInputA
+      ) {
+        throw new Error(
+          'FASE 24.43 no conservó SemanticEvaluationOperationInput por identidad.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * Forma estructural mínima exacta.
+       */
+
+      const directionalReferenceAxisRelationSemanticEvaluationOperationPresenceKeys =
+        Object.keys(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceA
+        ).sort();
+
+      const expectedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceKeys =
+        [
+          'semanticEvaluationOperandsPresence',
+          'evaluationOperationInput',
+          'presenceType',
+        ].sort();
+
+      if (
+        JSON.stringify(
+          directionalReferenceAxisRelationSemanticEvaluationOperationPresenceKeys
+        ) !==
+        JSON.stringify(
+          expectedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceKeys
+        )
+      ) {
+        throw new Error(
+          'FASE 24.43 introdujo propiedades adicionales dentro de SemanticEvaluationOperationPresence.'
+        );
+      }
+
+      const directionalReferenceAxisRelationSemanticEvaluationOperationInputKeys =
+        Object.keys(
+          directionalReferenceAxisRelationSemanticEvaluationOperationInputA
+        ).sort();
+
+      if (
+        JSON.stringify(
+          directionalReferenceAxisRelationSemanticEvaluationOperationInputKeys
+        ) !==
+        JSON.stringify(['relationId', 'operationId'].sort())
+      ) {
+        throw new Error(
+          'FASE 24.43 permitió que SemanticEvaluationOperationInput transportara información adicional.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * relationId distinto => null.
+       *
+       * No se materializa un hecho negativo acerca de la operación,
+       * los operandos o la relación.
+       */
+
+      const mismatchedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceA,
+          {
+            relationId:
+              'directional-reference-axis-relation-controlled-24-43-mismatch',
+            operationId:
+              'directional-reference-axis-semantic-evaluation-operation-controlled-24-43-a',
+          }
+        );
+
+      if (
+        mismatchedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence !==
+        null
+      ) {
+        throw new Error(
+          'FASE 24.43 materializó SemanticEvaluationOperationPresence utilizando un relationId distinto.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * Los mismos operandos pueden recibir operaciones externas
+       * explícitamente identificadas de forma distinta.
+       *
+       * operand designation
+       * !=
+       * predetermined evaluation operation
+       */
+
+      const directionalReferenceAxisRelationSemanticEvaluationOperationInputB =
+        {
+          relationId:
+            supportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceA
+              .evaluationOperandsInput.relationId,
+          operationId:
+            'directional-reference-axis-semantic-evaluation-operation-controlled-24-43-b',
+        };
+
+      const supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceAlternativeOperation =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceA,
+          directionalReferenceAxisRelationSemanticEvaluationOperationInputB
+        );
+
+      if (
+        !supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceAlternativeOperation
+      ) {
+        throw new Error(
+          'FASE 24.43 trató la designación de operandos como determinación implícita de una única operación evaluativa.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceAlternativeOperation
+          .semanticEvaluationOperandsPresence !==
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceA
+      ) {
+        throw new Error(
+          'FASE 24.43 no conservó los mismos operandos al presentar una operación externa alternativa.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * RelationDefinition con relationSemanticRole distintos pueden
+       * recibir la misma operación externa.
+       *
+       * declared relation semantics
+       * !=
+       * evaluation mechanism
+       */
+
+      const supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceB =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceB,
+          directionalReferenceAxisRelationSemanticEvaluationOperationInputA
+        );
+
+      if (
+        !supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceB
+      ) {
+        throw new Error(
+          'FASE 24.43 interpretó indebidamente relationSemanticRole como mecanismo evaluativo implícito.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceB
+          .evaluationOperationInput !==
+        directionalReferenceAxisRelationSemanticEvaluationOperationInputA
+      ) {
+        throw new Error(
+          'FASE 24.43 no permitió reutilizar exactamente la misma operación externa sobre otra semántica relacional.'
+        );
+      }
+
+      /*
+       * CASO H
+       *
+       * referenceSemanticRole y axisSubject permanecen opacos.
+       *
+       * Cambiar sus valores semánticos no impide presentar la misma
+       * operación externa.
+       */
+
+      const alternativeSemanticsDirectionalReferenceAxisRelationSemanticEvaluationOperationInput =
+        {
+          relationId:
+            alternativeSemanticsDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresence
+              .evaluationOperandsInput.relationId,
+          operationId:
+            directionalReferenceAxisRelationSemanticEvaluationOperationInputA
+              .operationId,
+        };
+
+      const alternativeSemanticsDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence(
+          alternativeSemanticsDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresence,
+          alternativeSemanticsDirectionalReferenceAxisRelationSemanticEvaluationOperationInput
+        );
+
+      if (
+        !alternativeSemanticsDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence
+      ) {
+        throw new Error(
+          'FASE 24.43 interpretó indebidamente referenceSemanticRole o axisSubject al presentar la operación evaluativa.'
+        );
+      }
+
+      /*
+       * CASO I
+       *
+       * EvaluationResult supported y not-supported pueden recibir
+       * exactamente la misma operación evaluativa explícita.
+       *
+       * supported != positive direction
+       * not-supported != negative direction
+       */
+
+      const notSupportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence(
+          notSupportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceA,
+          directionalReferenceAxisRelationSemanticEvaluationOperationInputA
+        );
+
+      if (
+        !notSupportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceA
+      ) {
+        throw new Error(
+          'FASE 24.43 trató de forma distinta la operación evaluativa por proceder de EvaluationResult not-supported.'
+        );
+      }
+
+      if (
+        notSupportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceA
+          .evaluationOperationInput !==
+        directionalReferenceAxisRelationSemanticEvaluationOperationInputA
+      ) {
+        throw new Error(
+          'FASE 24.43 reinterpretó SemanticEvaluationOperationInput por proceder de EvaluationResult not-supported.'
+        );
+      }
+
+      /*
+       * CASO J
+       *
+       * OperationPresence NO define ni ejecuta la operación.
+       *
+       * Tampoco produce resultado descriptivo, satisfacción,
+       * assessment, Correspondence, Membership o PositionOnAxis.
+       */
+
+      for (const operationPresence of [
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceA,
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceAlternativeOperation,
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceB,
+        alternativeSemanticsDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence,
+        notSupportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceA,
+      ]) {
+        for (const forbiddenProperty of [
+          'operationDefinition',
+          'evaluationOperationDefinition',
+          'semanticEvaluationOperationDefinition',
+          'operationType',
+          'operator',
+          'operationSemantics',
+          'operandInterpretation',
+          'semanticEvaluation',
+          'evaluation',
+          'evaluationResult',
+          'semanticComparison',
+          'comparison',
+          'comparisonResult',
+          'exactMatch',
+          'exactMismatch',
+          'comparability',
+          'compatibility',
+          'semanticCompatibility',
+          'compatibilityAssessment',
+          'compatibilityResult',
+          'rule',
+          'rulePresence',
+          'ruleDefinition',
+          'condition',
+          'correspondenceCondition',
+          'conditionSatisfaction',
+          'correspondenceConditionSatisfaction',
+          'ruleApplication',
+          'semanticSatisfaction',
+          'satisfaction',
+          'correspondenceAssessment',
+          'correspondenceResult',
+          'directionalReferenceAxisCorrespondence',
+          'referenceAxisCorrespondence',
+          'correspondence',
+          'membership',
+          'membershipAssessment',
+          'membershipResult',
+          'belongsToAxis',
+          'referenceBelongsToAxis',
+          'position',
+          'positionOnAxis',
+          'axisPosition',
+          'coordinate',
+          'endpoint',
+          'endpoints',
+          'origin',
+          'orientation',
+          'axisOrientation',
+          'polarity',
+          'valence',
+          'positive',
+          'negative',
+          'support',
+          'opposition',
+          'directionalAxisEffectCorrespondence',
+          'axisEffectCorrespondence',
+          'directionalReferenceEffectCorrespondence',
+          'referenceEffectCorrespondence',
+          'directionalReferenceAxisRelationEffectCorrespondence',
+          'relationEffectCorrespondence',
+          'applicability',
+          'directionalApplicability',
+          'axisApplicability',
+          'referenceApplicability',
+          'relationApplicability',
+          'directionDetermination',
+          'direction',
+          'strength',
+          'weight',
+          'importance',
+          'significance',
+          'impact',
+          'score',
+          'priority',
+          'confidence',
+          'preference',
+          'ranking',
+          'selection',
+          'decision',
+          'execution',
+        ]) {
+          if (forbiddenProperty in operationPresence) {
+            throw new Error(
+              `FASE 24.43 promovió indebidamente SemanticEvaluationOperationPresence hacia ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO K
+       *
+       * OperationPresence conserva únicamente
+       * SemanticEvaluationOperandsPresence como fundamento interno
+       * inmediato.
+       *
+       * No duplica operandos, semánticas ni genealogía previa.
+       */
+
+      for (const forbiddenProperty of [
+        'directionalReferenceAxisRelationDefinition',
+        'directionalReferenceAxisRelationPresence',
+        'directionalReferenceDefinition',
+        'directionalAxisDefinition',
+        'evaluationOperandsInput',
+        'referenceOperand',
+        'axisOperand',
+        'relationInput',
+        'definitionInput',
+        'relationId',
+        'relationSemanticRole',
+        'referenceId',
+        'axisId',
+        'referenceSemanticRole',
+        'axisSubject',
+        'directionDeterminationScope',
+        'evaluationResultDeliberativeInfluenceEffect',
+        'evaluationResultDeliberativeInfluenceReach',
+        'evaluationResultDeliberativeInfluence',
+        'evaluationResultDeliberativeUtilization',
+        'deliberativeParticipation',
+        'evaluationResult',
+        'recommendation',
+        'recommendationId',
+        'conclusion',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationPresenceA
+        ) {
+          throw new Error(
+            `FASE 24.43 duplicó indebidamente ${forbiddenProperty} dentro de SemanticEvaluationOperationPresence.`
+          );
+        }
+      }
+
+      /*
+       * CASO L
+       *
+       * Inmutabilidad del fundamento y del input externo.
+       */
+
+      if (
+        JSON.stringify(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceA
+        ) !==
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperandsPresenceASnapshotBeforeOperationPresence
+      ) {
+        throw new Error(
+          'FASE 24.43 modificó SemanticEvaluationOperandsPresence.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          directionalReferenceAxisRelationSemanticEvaluationOperationInputA
+        ) !==
+        directionalReferenceAxisRelationSemanticEvaluationOperationInputASnapshot
+      ) {
+        throw new Error(
+          'FASE 24.43 modificó SemanticEvaluationOperationInput.'
+        );
+      }
+
+      /*
+       * CASO M
+       *
+       * FASE 24.43 tampoco modifica recomendaciones ni decisiones.
+       */
+
+      if (
+        JSON.stringify(
+          recommendationsAfterDeliberativeParticipation
+        ) !==
+        recommendationsSnapshotBeforeDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence
+      ) {
+        throw new Error(
+          'FASE 24.43 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          decisionsAfterDeliberativeParticipation
+        ) !==
+        decisionsSnapshotBeforeDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence
+      ) {
+        throw new Error(
+          'FASE 24.43 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.43 OK: se materializó explícitamente EvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationPresence a partir de SemanticEvaluationOperandsPresence como único fundamento interno inmediato y SemanticEvaluationOperationInput externo explícito.
+SemanticEvaluationOperandsPresence permaneció distinta de SemanticEvaluationOperationPresence: designar operandos no presentó automáticamente una operación evaluativa.
+SemanticEvaluationOperationPresence conservó exactamente SemanticEvaluationOperandsPresence y EvaluationOperationInput por identidad y sólo añadió presenceType.
+Un relationId distinto devolvió null sin materializar hechos negativos artificiales.
+Los mismos operandos pudieron recibir operationId distintos, manteniendo operand designation != predetermined evaluation operation.
+RelationDefinition con relationSemanticRole distintos pudieron recibir la misma operación externa, manteniendo declared relation semantics != evaluation mechanism.
+referenceSemanticRole y axisSubject permanecieron deliberadamente opacos y no fueron leídos, comparados ni interpretados por la presencia de la operación.
+Effects procedentes de EvaluationResult supported y not-supported pudieron recibir exactamente la misma operación evaluativa explícita, manteniendo supported != positive direction y not-supported != negative direction.
+SemanticEvaluationOperationPresence permaneció distinta de OperationDefinition, Evaluation, SemanticComparison, SemanticComparisonResult, SemanticCompatibility, SemanticSatisfaction, CorrespondenceCondition, ConditionSatisfaction, RulePresence, RuleDefinition, RuleApplication, CorrespondenceAssessment, CorrespondenceResult y DirectionalReferenceAxisCorrespondence.
+Un operationId no constituyó un algoritmo, operador, predicado, criterio de igualdad, exact-match, compatibility, inclusion, membership, correspondence, equivalence ni similarity.
+Correspondence permaneció distinta de Membership y Membership permaneció distinta de PositionOnAxis.
+No se materializó correspondencia axis/Effect, reference/Effect ni relation/Effect, tampoco aplicabilidad al Effect, DirectionDetermination o Direction.
+No se introdujeron orientation, polarity, valence, positive/negative, support/opposition, strength, weight, importance, significance, impact, score, priority ni confidence.
+SemanticEvaluationOperationPresence permaneció explícitamente distinta de Comparison, Preference, Ranking, Selection, Decision y Execution.
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43.'
       );
     } finally {
       setLoading(false);
@@ -50322,7 +50918,7 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
           disabled={loading}
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
-          Probar FASE 24.42
+          Probar FASE 24.43
         </button>
 
         <button
