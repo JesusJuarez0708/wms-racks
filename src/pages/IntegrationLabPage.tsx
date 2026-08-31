@@ -258,6 +258,10 @@ import {
 } from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationRealizationService';
 
 import {
+  interpretProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelation,
+} from '../services/operationalKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -56723,13 +56727,691 @@ No se materializó ConstituentMembership, DirectionDetermination ni Direction.
 Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
       );
 
+      /*
+       * ============================================================
+       * FASE 24.55
+       * Interpretación semántica externa explícita de la semántica
+       * declarada de la relación structure-constituent.
+       * ============================================================
+       *
+       * SemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinition
+       * +
+       * StructureConstituentRelationSemanticInterpretationInput externo explícito
+       * ->
+       * SemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretation
+       *
+       * Esta fase materializa exclusivamente una caracterización
+       * semántica interpretada externa de la semántica previamente
+       * declarada de R.
+       *
+       * RelationDefinition
+       * !=
+       * RelationSemanticInterpretation
+       * !=
+       * SemanticValidation
+       * !=
+       * RelationRealization
+       * !=
+       * ConstituentMembership.
+       */
+
+      const recommendationsSnapshotBeforeDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretation =
+        JSON.stringify(recommendationsAfterDeliberativeParticipation);
+
+      const decisionsSnapshotBeforeDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretation =
+        JSON.stringify(decisionsAfterDeliberativeParticipation);
+
+      const supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinitionASnapshotBeforeSemanticInterpretation =
+        JSON.stringify(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinitionA
+        );
+
+      /*
+       * CASO A
+       *
+       * RelationDefinition todavía NO constituye
+       * RelationSemanticInterpretation.
+       */
+      for (const forbiddenProperty of [
+        'semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretation',
+        'structureConstituentRelationSemanticInterpretationInput',
+        'semanticInterpretation',
+        'semanticInterpretationResult',
+        'interpretedStructureConstituentRelationSemanticRole',
+        'interpretationType',
+        'interpretationId',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinitionA
+        ) {
+          throw new Error(
+            `FASE 24.55 detectó ${forbiddenProperty} antes de la interpretación semántica externa explícita.`
+          );
+        }
+      }
+
+      /*
+       * CASO B
+       *
+       * Primera interpretación externa explícita.
+       *
+       * El input aporta exclusivamente la nueva caracterización
+       * interpretada.
+       */
+      const directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputA =
+        {
+          interpretedStructureConstituentRelationSemanticRole:
+            'structure-constituent-membership',
+        };
+
+      const directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputASnapshot =
+        JSON.stringify(
+          directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputA
+        );
+
+      const supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA =
+        interpretProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelation(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinitionA,
+          directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputA
+        );
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA
+          .interpretationType !==
+        'explicit-evaluation-result-deliberative-influence-effect-directional-reference-axis-relation-semantic-evaluation-operation-operand-requirements-structure-constituent-relation-semantic-interpretation'
+      ) {
+        throw new Error(
+          'FASE 24.55 produjo un interpretationType inesperado.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * Conservación exacta por identidad.
+       */
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA
+          .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinition !==
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinitionA
+      ) {
+        throw new Error(
+          'FASE 24.55 no conservó SemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinition por identidad.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA
+          .structureConstituentRelationSemanticInterpretationInput !==
+        directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputA
+      ) {
+        throw new Error(
+          'FASE 24.55 no conservó StructureConstituentRelationSemanticInterpretationInput por identidad.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * Forma estructural mínima exacta.
+       */
+      if (
+        JSON.stringify(
+          Object.keys(
+            supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA
+          ).sort()
+        ) !==
+        JSON.stringify(
+          [
+            'semanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinition',
+            'structureConstituentRelationSemanticInterpretationInput',
+            'interpretationType',
+          ].sort()
+        )
+      ) {
+        throw new Error(
+          'FASE 24.55 introdujo propiedades adicionales dentro de SemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretation.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          Object.keys(
+            directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputA
+          ).sort()
+        ) !==
+        JSON.stringify(
+          [
+            'interpretedStructureConstituentRelationSemanticRole',
+          ].sort()
+        )
+      ) {
+        throw new Error(
+          'FASE 24.55 permitió que StructureConstituentRelationSemanticInterpretationInput transportara información adicional.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * Una misma RelationDefinition puede recibir interpretaciones
+       * externas distintas.
+       *
+       * interpretation
+       * !=
+       * canonicalization
+       * !=
+       * uniqueness.
+       */
+      const directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputAlternative =
+        {
+          interpretedStructureConstituentRelationSemanticRole:
+            'alternative-structure-constituent-relation-interpretation-controlled-24-55',
+        };
+
+      const supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationAlternative =
+        interpretProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelation(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinitionA,
+          directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputAlternative
+        );
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationAlternative
+          .structureConstituentRelationSemanticInterpretationInput
+          .interpretedStructureConstituentRelationSemanticRole ===
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA
+          .structureConstituentRelationSemanticInterpretationInput
+          .interpretedStructureConstituentRelationSemanticRole
+      ) {
+        throw new Error(
+          'FASE 24.55 canonicalizó indebidamente interpretaciones semánticas distintas.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationAlternative
+          .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinition !==
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinitionA
+      ) {
+        throw new Error(
+          'FASE 24.55 no permitió múltiples interpretaciones sobre la misma RelationDefinition.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * Definitions con semánticas declaradas distintas pueden recibir
+       * exactamente la misma interpretación externa.
+       *
+       * declared semantics
+       * !=
+       * predetermined interpretation.
+       */
+      const directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputSameInterpretationForAlternativeDefinition =
+        {
+          interpretedStructureConstituentRelationSemanticRole:
+            directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputA
+              .interpretedStructureConstituentRelationSemanticRole,
+        };
+
+      const supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationAlternativeDefinition =
+        interpretProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelation(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinitionAlternativeSemanticRole,
+          directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputSameInterpretationForAlternativeDefinition
+        );
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationAlternativeDefinition
+          .structureConstituentRelationSemanticInterpretationInput
+          .interpretedStructureConstituentRelationSemanticRole !==
+        directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputA
+          .interpretedStructureConstituentRelationSemanticRole
+      ) {
+        throw new Error(
+          'FASE 24.55 hizo depender indebidamente la interpretación explícita de structureConstituentRelationSemanticRole.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationAlternativeDefinition
+          .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinition !==
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinitionAlternativeSemanticRole
+      ) {
+        throw new Error(
+          'FASE 24.55 no conservó por identidad la RelationDefinition con semántica declarada alternativa.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * SemanticInterpretation
+       * !=
+       * SemanticValidation
+       * !=
+       * canonicalization.
+       */
+      for (const semanticInterpretation of [
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA,
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationAlternative,
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationAlternativeDefinition,
+      ]) {
+        for (const forbiddenProperty of [
+          'interpretationId',
+          'canonicalSemanticRole',
+          'canonicalRelationSemanticRole',
+          'semanticValidation',
+          'semanticValidationResult',
+          'semanticCorrectness',
+          'semanticConfidence',
+          'semanticCompatibility',
+          'compatibility',
+          'compatible',
+          'incompatible',
+          'validationResult',
+          'interpretationValidity',
+          'preferredInterpretation',
+          'canonicalInterpretation',
+          'interpretationConflict',
+          'interpretationConsistency',
+        ]) {
+          if (forbiddenProperty in semanticInterpretation) {
+            throw new Error(
+              `FASE 24.55 convirtió indebidamente SemanticInterpretation en validación o canonicalización mediante ${forbiddenProperty}.`
+            );
+          }
+        }
+      }
+
+      /*
+       * CASO H
+       *
+       * SemanticInterpretation permanece completamente independiente de
+       * ParticipantsPresence y RelationRealization.
+       */
+      for (const forbiddenProperty of [
+        'semanticEvaluationOperationOperandRequirementsStructureConstituentRelationParticipantsPresence',
+        'structureConstituentRelationParticipantsInput',
+        'participantsPresence',
+        'participants',
+        'structureParticipant',
+        'constituentParticipant',
+        'semanticEvaluationOperationOperandRequirementsStructureConstituentRelationRealization',
+        'structureConstituentRelationRealizationInput',
+        'relationRealization',
+        'realization',
+        'realizationId',
+        'realizationType',
+        'relationObtains',
+        'obtains',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA
+        ) {
+          throw new Error(
+            `FASE 24.55 hizo depender indebidamente SemanticInterpretation de participación o realización mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO I
+       *
+       * Interpretation("membership")
+       * !=
+       * ConstituentMembership.
+       */
+      for (const forbiddenProperty of [
+        'constituentMembership',
+        'structureConstituentMembership',
+        'membership',
+        'membershipId',
+        'membershipType',
+        'memberOf',
+        'belongsTo',
+        'partOf',
+        'isMember',
+        'isMemberOf',
+        'membershipResult',
+        'membershipAssessment',
+        'membershipEstablished',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA
+        ) {
+          throw new Error(
+            `FASE 24.55 convirtió indebidamente RelationSemanticInterpretation en ConstituentMembership mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO J
+       *
+       * SemanticInterpretation NO introduce roles de participantes,
+       * source/target, dirección ni orientación.
+       */
+      for (const forbiddenProperty of [
+        'structureParticipantRole',
+        'constituentParticipantRole',
+        'participantRole',
+        'participantRoles',
+        'memberRole',
+        'containerRole',
+        'source',
+        'sourceId',
+        'target',
+        'targetId',
+        'from',
+        'to',
+        'direction',
+        'orientation',
+        'directedRelation',
+        'relationDirection',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA
+        ) {
+          throw new Error(
+            `FASE 24.55 introdujo prematuramente roles, source/target o dirección mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO K
+       *
+       * SemanticInterpretation NO define ni promueve al Constituent hacia:
+       *
+       * ConstituentDefinition
+       * Requirement
+       * Slot
+       * OperandRole.
+       */
+      for (const forbiddenProperty of [
+        'constituentDefinition',
+        'semanticEvaluationOperationOperandRequirementsStructureConstituentDefinition',
+        'constituentSemanticRole',
+        'requirement',
+        'requirements',
+        'requirementId',
+        'requirementPresence',
+        'requirementDefinition',
+        'requirementSemanticRole',
+        'slot',
+        'slots',
+        'slotId',
+        'operand',
+        'operandId',
+        'operandRole',
+        'operandRoles',
+        'expectedOperandRole',
+        'expectedSemanticRole',
+        'expectedSemanticRoles',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA
+        ) {
+          throw new Error(
+            `FASE 24.55 promovió prematuramente el Constituent mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO L
+       *
+       * La rama continúa completamente separada de
+       * SemanticEvaluationOperandsPresence.
+       */
+      for (const forbiddenProperty of [
+        'semanticEvaluationOperandsPresence',
+        'evaluationOperandsInput',
+        'referenceOperand',
+        'axisOperand',
+        'referenceSemanticRole',
+        'axisSubject',
+        'operandMapping',
+        'requirementsOperandsMapping',
+        'constituentOperandMapping',
+        'requirementOperandMapping',
+        'operandAssociation',
+        'requirementsOperandsAssociation',
+        'operandCorrespondence',
+        'requirementsOperandsCorrespondence',
+        'operationOperandsCorrespondence',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA
+        ) {
+          throw new Error(
+            `FASE 24.55 reencontró prematuramente RelationSemanticInterpretation con operandos concretos mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO M
+       *
+       * SemanticInterpretation NO promueve hacia:
+       *
+       * RequirementsOperandsCorrespondence
+       * RequirementsSatisfaction
+       * OperationApplicability
+       * OperationExecution.
+       */
+      for (const forbiddenProperty of [
+        'requirementsOperandsCorrespondence',
+        'operandCorrespondence',
+        'correspondence',
+        'requirementsSatisfaction',
+        'operandRequirementsSatisfaction',
+        'satisfied',
+        'notSatisfied',
+        'condition',
+        'conditionSatisfaction',
+        'applicabilityRule',
+        'operationApplicability',
+        'applicability',
+        'applicable',
+        'notApplicable',
+        'executionAuthorization',
+        'operationExecution',
+        'execution',
+        'algorithm',
+        'operator',
+        'predicate',
+        'evaluation',
+        'comparison',
+        'comparisonResult',
+        'descriptiveResult',
+        'exactMatch',
+        'exactMismatch',
+        'exact-match',
+        'exact-mismatch',
+        'semanticSatisfaction',
+        'correspondenceAssessment',
+        'correspondenceResult',
+        'positionOnAxis',
+        'directionDetermination',
+        'score',
+        'priority',
+        'confidence',
+        'preference',
+        'ranking',
+        'selection',
+        'decision',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA
+        ) {
+          throw new Error(
+            `FASE 24.55 promovió indebidamente RelationSemanticInterpretation hacia ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO N
+       *
+       * RelationSemanticInterpretation conserva únicamente
+       * RelationDefinition como fundamento interno inmediato.
+       *
+       * NO aplana genealogía previa.
+       */
+      for (const forbiddenProperty of [
+        'semanticEvaluationOperationOperandRequirementsStructureConstituentRelationPresence',
+        'semanticEvaluationOperationOperandRequirementsStructureConstituentPresence',
+        'semanticEvaluationOperationOperandRequirementsStructureConstituentsPresence',
+        'semanticEvaluationOperationOperandRequirementsStructureDefinition',
+        'semanticEvaluationOperationOperandRequirementsStructurePresence',
+        'semanticEvaluationOperationOperandRequirementsDefinition',
+        'semanticEvaluationOperationOperandRequirementsPresence',
+        'semanticEvaluationOperationDefinition',
+        'semanticEvaluationOperationPresence',
+        'semanticEvaluationOperandsPresence',
+        'structureConstituentRelationDefinitionInput',
+        'structureConstituentRelationPresenceInput',
+        'structureConstituentPresenceInput',
+        'structureConstituentsPresenceInput',
+        'structureDefinitionInput',
+        'structurePresenceInput',
+        'evaluationOperationOperandRequirementsInput',
+        'definitionInput',
+        'evaluationOperationDefinitionInput',
+        'evaluationOperationInput',
+        'evaluationOperandsInput',
+        'structureConstituentRelationId',
+        'structureConstituentRelationSemanticRole',
+        'structureId',
+        'constituentId',
+        'requirementsId',
+        'requirementsSemanticRole',
+        'operationId',
+        'operationSemanticRole',
+        'relationId',
+        'relationSemanticRole',
+        'directionDeterminationScope',
+        'evaluationResultDeliberativeInfluenceEffect',
+        'evaluationResult',
+        'recommendation',
+        'recommendationId',
+        'conclusion',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA
+        ) {
+          throw new Error(
+            `FASE 24.55 duplicó indebidamente ${forbiddenProperty} dentro de SemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretation.`
+          );
+        }
+      }
+
+      /*
+       * CASO O
+       *
+       * interpretedStructureConstituentRelationSemanticRole aparece
+       * únicamente dentro del SemanticInterpretationInput conservado.
+       */
+      if (
+        'interpretedStructureConstituentRelationSemanticRole' in
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationA
+      ) {
+        throw new Error(
+          'FASE 24.55 duplicó indebidamente interpretedStructureConstituentRelationSemanticRole en el nivel superior.'
+        );
+      }
+
+      /*
+       * CASO P
+       *
+       * Inmutabilidad del fundamento inmediato y del input externo.
+       */
+      if (
+        JSON.stringify(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinitionA
+        ) !==
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinitionASnapshotBeforeSemanticInterpretation
+      ) {
+        throw new Error(
+          'FASE 24.55 modificó SemanticEvaluationOperationOperandRequirementsStructureConstituentRelationDefinition.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputA
+        ) !==
+        directionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationInputASnapshot
+      ) {
+        throw new Error(
+          'FASE 24.55 modificó StructureConstituentRelationSemanticInterpretationInput.'
+        );
+      }
+
+      /*
+       * CASO Q
+       *
+       * FASE 24.55 tampoco modifica recomendaciones ni decisiones.
+       */
+      if (
+        JSON.stringify(recommendationsAfterDeliberativeParticipation) !==
+        recommendationsSnapshotBeforeDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretation
+      ) {
+        throw new Error(
+          'FASE 24.55 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterDeliberativeParticipation) !==
+        decisionsSnapshotBeforeDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretation
+      ) {
+        throw new Error(
+          'FASE 24.55 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.55 OK: se materializó explícitamente EvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretation a partir de StructureConstituentRelationDefinition como único fundamento interno inmediato y StructureConstituentRelationSemanticInterpretationInput externo explícito.
+StructureConstituentRelationDefinition permaneció distinta de RelationSemanticInterpretation: poseer una semántica declarada NO produjo automáticamente una interpretación.
+StructureConstituentRelationSemanticInterpretationInput aportó exclusivamente interpretedStructureConstituentRelationSemanticRole como nueva caracterización semántica externa explícita.
+No se repitieron structureConstituentRelationId ni structureConstituentRelationSemanticRole dentro del input externo porque ambos permanecen determinados genealógicamente por RelationDefinition.
+RelationSemanticInterpretation conservó exactamente StructureConstituentRelationDefinition y StructureConstituentRelationSemanticInterpretationInput por identidad y sólo añadió interpretationType.
+La misma RelationDefinition pudo recibir interpretaciones externas distintas sin canonicalización, unicidad ni resolución implícita de conflicto.
+RelationDefinitions con structureConstituentRelationSemanticRole distintos pudieron recibir exactamente la misma interpretación explícita, demostrando declared semantics != predetermined interpretation.
+RelationSemanticInterpretation permaneció distinta de SemanticValidation, SemanticCorrectness, SemanticCompatibility y canonical semantic meaning.
+No se introdujo interpretationId ni ningún individuo Interpretation independiente.
+RelationSemanticInterpretation permaneció completamente independiente de RelationParticipantsPresence y RelationRealization.
+Una interpretación equivalente a membership NO produjo ConstituentMembership.
+No se introdujeron membershipId, member-of, belongs-to, part-of, source, target, roles participativos, dirección ni orientación.
+RelationSemanticInterpretation permaneció distinta de ConstituentDefinition.
+Constituent permaneció distinto de Requirement, Slot y OperandRole.
+No se introdujeron requirementId, requirementSemanticRole, slotId, operandRole ni expectedSemanticRole.
+La rama permaneció completamente independiente de SemanticEvaluationOperandsPresence.
+Todavía no existe mapping entre requerimientos/constituyentes y operandos concretos.
+RelationSemanticInterpretation permaneció distinta de RequirementsOperandsCorrespondence, RequirementsSatisfaction, OperationApplicability y OperationExecution.
+No se produjo exact-match ni exact-mismatch.
+No se materializó ConstituentMembership, DirectionDetermination ni Direction.
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55.'
       );
     } finally {
       setLoading(false);
@@ -58037,6 +58719,16 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Probar FASE 24.54
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Probar FASE 24.55
         </button>
 
         <button
