@@ -278,6 +278,10 @@ import {
 } from '../services/participationSemanticStructureConstitutionElementPresenceService';
 
 import {
+  establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterization,
+} from '../services/participationSemanticStructureConstitutionElementSemanticCharacterizationService';
+
+import {
   generateRecommendationsFromPatterns,
   type IntelligenceRecommendation,
 } from '../services/recommendationIntelligenceService';
@@ -59344,13 +59348,583 @@ No se produjo exact-match ni exact-mismatch.
 Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
       );
 
+      /*
+       * ============================================================
+       * FASE 24.60
+       *
+       * ParticipationSemanticStructureConstitutionElementPresence(E)
+       * +
+       * ElementSemanticCharacterizationInput(M)
+       * +
+       * invocación explícita
+       * ->
+       * ParticipationSemanticStructureConstitutionElementSemanticCharacterization(E,M)
+       * ============================================================
+       */
+
+      const recommendationsSnapshotBeforeParticipationSemanticStructureConstitutionElementSemanticCharacterization =
+        JSON.stringify(recommendationsAfterDeliberativeParticipation);
+
+      const decisionsSnapshotBeforeParticipationSemanticStructureConstitutionElementSemanticCharacterization =
+        JSON.stringify(decisionsAfterDeliberativeParticipation);
+
+      const participationSemanticStructureConstitutionElementPresenceSnapshotBeforeSemanticCharacterization =
+        JSON.stringify(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementPresenceA
+        );
+
+      /*
+       * CASO A
+       *
+       * ElementPresence NO produce automáticamente
+       * ElementSemanticCharacterization.
+       */
+      for (const forbiddenProperty of [
+        'participationSemanticStructureConstitutionElementSemanticCharacterization',
+        'participationSemanticStructureConstitutionElementSemanticCharacterizationInput',
+        'participationSemanticStructureConstitutionElementSemanticCharacterizationType',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementPresenceA
+        ) {
+          throw new Error(
+            `FASE 24.60 detectó ${forbiddenProperty} antes de la caracterización semántica explícita.`
+          );
+        }
+      }
+
+      /*
+       * CASO B
+       *
+       * Primera caracterización semántica explícita.
+       */
+      const participationSemanticStructureConstitutionElementSemanticCharacterizationInputA =
+        {
+          participationSemanticStructureConstitutionElementSemanticCharacterization:
+            'member',
+        };
+
+      const participationSemanticStructureConstitutionElementSemanticCharacterizationInputASnapshot =
+        JSON.stringify(
+          participationSemanticStructureConstitutionElementSemanticCharacterizationInputA
+        );
+
+      const supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterization(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementPresenceA,
+          participationSemanticStructureConstitutionElementSemanticCharacterizationInputA
+        );
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+          .participationSemanticStructureConstitutionElementSemanticCharacterizationType !==
+        'explicit-evaluation-result-deliberative-influence-effect-directional-reference-axis-relation-semantic-evaluation-operation-operand-requirements-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-constitution-element-semantic-characterization'
+      ) {
+        throw new Error(
+          'FASE 24.60 produjo un participationSemanticStructureConstitutionElementSemanticCharacterizationType inesperado.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * Conservación exacta por identidad.
+       */
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+          .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementPresence !==
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementPresenceA
+      ) {
+        throw new Error(
+          'FASE 24.60 no conservó ElementPresence por identidad.'
+        );
+      }
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+          .participationSemanticStructureConstitutionElementSemanticCharacterizationInput !==
+        participationSemanticStructureConstitutionElementSemanticCharacterizationInputA
+      ) {
+        throw new Error(
+          'FASE 24.60 no conservó SemanticCharacterizationInput por identidad.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * Forma estructural mínima exacta.
+       */
+      if (
+        JSON.stringify(
+          Object.keys(
+            supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+          ).sort()
+        ) !==
+        JSON.stringify(
+          [
+            'semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementPresence',
+            'participationSemanticStructureConstitutionElementSemanticCharacterizationInput',
+            'participationSemanticStructureConstitutionElementSemanticCharacterizationType',
+          ].sort()
+        )
+      ) {
+        throw new Error(
+          'FASE 24.60 introdujo propiedades adicionales en ElementSemanticCharacterization.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          Object.keys(
+            participationSemanticStructureConstitutionElementSemanticCharacterizationInputA
+          ).sort()
+        ) !==
+        JSON.stringify([
+          'participationSemanticStructureConstitutionElementSemanticCharacterization',
+        ])
+      ) {
+        throw new Error(
+          'FASE 24.60 permitió información adicional en SemanticCharacterizationInput.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * Una misma ElementPresence puede recibir múltiples
+       * caracterizaciones explícitas.
+       */
+      const participationSemanticStructureConstitutionElementSemanticCharacterizationInputB =
+        {
+          participationSemanticStructureConstitutionElementSemanticCharacterization:
+            'container',
+        };
+
+      const supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationB =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterization(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementPresenceA,
+          participationSemanticStructureConstitutionElementSemanticCharacterizationInputB
+        );
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+          .participationSemanticStructureConstitutionElementSemanticCharacterizationInput
+          .participationSemanticStructureConstitutionElementSemanticCharacterization ===
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationB
+          .participationSemanticStructureConstitutionElementSemanticCharacterizationInput
+          .participationSemanticStructureConstitutionElementSemanticCharacterization
+      ) {
+        throw new Error(
+          'FASE 24.60 canonicalizó indebidamente la caracterización semántica.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * El valor se conserva literalmente.
+       */
+      const participationSemanticStructureConstitutionElementSemanticCharacterizationInputLiteral =
+        {
+          participationSemanticStructureConstitutionElementSemanticCharacterization:
+            'MEMBER',
+        };
+
+      const supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationLiteral =
+        establishProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterization(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementPresenceA,
+          participationSemanticStructureConstitutionElementSemanticCharacterizationInputLiteral
+        );
+
+      if (
+        supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationLiteral
+          .participationSemanticStructureConstitutionElementSemanticCharacterizationInput
+          .participationSemanticStructureConstitutionElementSemanticCharacterization !==
+        'MEMBER'
+      ) {
+        throw new Error(
+          'FASE 24.60 normalizó o transformó indebidamente la caracterización semántica.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * "member" sigue SIN ser SemanticRole.
+       */
+      for (const forbiddenProperty of [
+        'semanticRole',
+        'semanticRoleId',
+        'semanticRolePresence',
+        'semanticRoleDefinition',
+        'participantSemanticRole',
+        'participantSemanticRolePresence',
+        'participantSemanticRoleDefinition',
+        'memberRole',
+        'containerRole',
+        'sourceRole',
+        'targetRole',
+        'roleAvailability',
+        'roleAssignment',
+        'roleAssignments',
+        'interpretedParticipantRole',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+        ) {
+          throw new Error(
+            `FASE 24.60 promovió indebidamente "member" a una semántica de role mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO H
+       *
+       * "container" tampoco constituye ContainerRole.
+       */
+      for (const forbiddenProperty of [
+        'containerRole',
+        'containerRoleId',
+        'formalContainerRole',
+        'memberRole',
+        'memberRoleId',
+        'formalMemberRole',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationB
+        ) {
+          throw new Error(
+            `FASE 24.60 promovió indebidamente una caracterización declarativa mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO I
+       *
+       * Sin asignación o correspondencia con participantes reales.
+       */
+      for (const forbiddenProperty of [
+        'participant',
+        'participantId',
+        'participantRole',
+        'participantRoleAssignment',
+        'participantCorrespondence',
+        'elementParticipantCorrespondence',
+        'semanticCorrespondence',
+        'correspondence',
+        'assignedParticipant',
+        'occupant',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+        ) {
+          throw new Error(
+            `FASE 24.60 conectó prematuramente ElementSemanticCharacterization con participantes mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO J
+       *
+       * Sin cardinalidad, aridad ni completitud del esquema.
+       */
+      for (const forbiddenProperty of [
+        'cardinality',
+        'count',
+        'arity',
+        'collection',
+        'enumeration',
+        'order',
+        'position',
+        'index',
+        'ordinal',
+        'complete',
+        'completeness',
+        'schemaComplete',
+        'semanticStructureComplete',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+        ) {
+          throw new Error(
+            `FASE 24.60 introdujo prematuramente estructura cuantitativa o completitud mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO K
+       *
+       * Sigue siendo distinto del OperandRequirementsStructureConstituent.
+       */
+      for (const forbiddenProperty of [
+        'semanticEvaluationOperationOperandRequirementsStructureConstituentPresence',
+        'operandRequirementsStructureConstituentPresence',
+        'operandRequirementsStructureConstituentDefinition',
+        'constituentDefinition',
+        'constituentSemanticRole',
+        'constituentId',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+        ) {
+          throw new Error(
+            `FASE 24.60 colapsó indebidamente ElementSemanticCharacterization con OperandRequirementsStructureConstituent mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO L
+       *
+       * Sin Requirement, Slot ni OperandRole.
+       */
+      for (const forbiddenProperty of [
+        'requirement',
+        'requirements',
+        'requirementId',
+        'requirementSemanticRole',
+        'slot',
+        'slots',
+        'slotId',
+        'operandRole',
+        'operandRoles',
+        'expectedSemanticRole',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+        ) {
+          throw new Error(
+            `FASE 24.60 promovió prematuramente la caracterización hacia ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO M
+       *
+       * Sin ConstituentMembership ni domain fact.
+       */
+      for (const forbiddenProperty of [
+        'constituentMembership',
+        'structureConstituentMembership',
+        'membership',
+        'membershipId',
+        'memberOf',
+        'belongsTo',
+        'partOf',
+        'domainFact',
+        'interpretedDomainFact',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+        ) {
+          throw new Error(
+            `FASE 24.60 produjo prematuramente membership o domain fact mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO N
+       *
+       * Sin Compatibility / Applicability / Application.
+       */
+      for (const forbiddenProperty of [
+        'semanticCompatibility',
+        'compatibility',
+        'compatible',
+        'incompatible',
+        'semanticApplicability',
+        'applicability',
+        'applicable',
+        'notApplicable',
+        'semanticApplication',
+        'application',
+        'applicationId',
+        'semanticValidation',
+        'semanticCorrectness',
+        'semanticConfidence',
+        'interpretedRelationRealization',
+        'interpretedRelationalFact',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+        ) {
+          throw new Error(
+            `FASE 24.60 promovió indebidamente ElementSemanticCharacterization mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO O
+       *
+       * Sigue independiente de RelationRealization y MediationPresence.
+       */
+      for (const forbiddenProperty of [
+        'semanticEvaluationOperationOperandRequirementsStructureConstituentRelationRealization',
+        'realizationId',
+        'mediationPresence',
+        'mediationId',
+        'mediationPresenceType',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+        ) {
+          throw new Error(
+            `FASE 24.60 dependió indebidamente de Realization o Mediation mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO P
+       *
+       * Sin reencuentro con SemanticEvaluationOperandsPresence.
+       */
+      for (const forbiddenProperty of [
+        'semanticEvaluationOperandsPresence',
+        'evaluationOperandsInput',
+        'requirementsOperandsCorrespondence',
+        'requirementsSatisfaction',
+        'operationApplicability',
+        'operationExecution',
+        'exactMatch',
+        'exactMismatch',
+        'exact-match',
+        'exact-mismatch',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+        ) {
+          throw new Error(
+            `FASE 24.60 reencontró prematuramente la caracterización con operandos mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO Q
+       *
+       * No aplanamiento genealógico.
+       */
+      for (const forbiddenProperty of [
+        'participationSemanticStructureConstitutionElementId',
+        'participationSemanticStructureConstitutionId',
+        'participationSemanticStructureId',
+        'structureConstituentRelationId',
+        'structureConstituentRelationSemanticRole',
+        'interpretedStructureConstituentRelationSemanticRole',
+        'structureId',
+        'constituentsId',
+        'constituentId',
+        'participantsId',
+        'realizationId',
+        'mediationId',
+      ]) {
+        if (
+          forbiddenProperty in
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterizationA
+        ) {
+          throw new Error(
+            `FASE 24.60 duplicó indebidamente ${forbiddenProperty} en el nivel superior.`
+          );
+        }
+      }
+
+      /*
+       * CASO R
+       *
+       * Inmutabilidad del fundamento y del input.
+       */
+      if (
+        JSON.stringify(
+          supportedDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementPresenceA
+        ) !==
+        participationSemanticStructureConstitutionElementPresenceSnapshotBeforeSemanticCharacterization
+      ) {
+        throw new Error(
+          'FASE 24.60 modificó ElementPresence.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          participationSemanticStructureConstitutionElementSemanticCharacterizationInputA
+        ) !==
+        participationSemanticStructureConstitutionElementSemanticCharacterizationInputASnapshot
+      ) {
+        throw new Error(
+          'FASE 24.60 modificó SemanticCharacterizationInput.'
+        );
+      }
+
+      /*
+       * CASO S
+       *
+       * Estado productivo intacto.
+       */
+      if (
+        JSON.stringify(recommendationsAfterDeliberativeParticipation) !==
+        recommendationsSnapshotBeforeParticipationSemanticStructureConstitutionElementSemanticCharacterization
+      ) {
+        throw new Error(
+          'FASE 24.60 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterDeliberativeParticipation) !==
+        decisionsSnapshotBeforeParticipationSemanticStructureConstitutionElementSemanticCharacterization
+      ) {
+        throw new Error(
+          'FASE 24.60 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 24.60 OK: se materializó explícitamente ParticipationSemanticStructureConstitutionElementSemanticCharacterization a partir de ElementPresence como único fundamento interno inmediato y SemanticCharacterizationInput externo explícito.
+SemanticCharacterizationInput aportó exclusivamente participationSemanticStructureConstitutionElementSemanticCharacterization.
+ElementPresence permaneció distinto de ElementSemanticCharacterization: la existencia del elemento NO produjo automáticamente significado semántico.
+ElementSemanticCharacterization conservó exactamente ElementPresence y SemanticCharacterizationInput por identidad y sólo añadió participationSemanticStructureConstitutionElementSemanticCharacterizationType.
+Las caracterizaciones se conservaron literalmente y no fueron normalizadas, canonicalizadas, interpretadas ni clasificadas.
+La misma ElementPresence pudo recibir caracterizaciones distintas, demostrando semantic characterization != uniqueness ni canonical meaning.
+Las cadenas "member" y "container" permanecieron exclusivamente como caracterizaciones declarativas y NO produjeron SemanticRolePresence, MemberRole, ContainerRole, role availability ni participant-role assignment.
+ElementSemanticCharacterization permaneció estrictamente distinta del OperandRequirementsStructureConstituent previo.
+No se introdujeron cardinalidad, aridad, completitud semántica, Requirement, Slot ni OperandRole.
+No se produjo correspondence con participantes reales ni ConstituentMembership.
+ElementSemanticCharacterization permaneció independiente de RelationRealization y MediationPresence.
+No se introdujeron SemanticCompatibility, SemanticApplicability ni SemanticApplication.
+No se produjeron InterpretedRelationRealization, InterpretedRelationalFact ni DomainFact.
+La rama continúa separada de SemanticEvaluationOperandsPresence.
+RequirementsOperandsCorrespondence permaneció distinta de RequirementsSatisfaction, OperationApplicability y OperationExecution.
+No se produjo exact-match ni exact-mismatch.
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
+
     } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55/24.56/24.57/24.58/24.59: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55/24.56/24.57/24.58/24.59.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55/24.56/24.57/24.58/24.59/24.60: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55/24.56/24.57/24.58/24.59/24.60.'
       );
     } finally {
       setLoading(false);
@@ -60708,6 +61282,16 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Probar FASE 24.59
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Probar FASE 24.60
         </button>
 
         <button
