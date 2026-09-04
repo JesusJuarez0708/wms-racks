@@ -1,0 +1,90 @@
+import type {
+  ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentDefinition,
+} from './participationSemanticStructureParticipantRoleCompatibilityCriterionContentDefinitionService';
+
+/**
+ * FASE 24.84
+ *
+ * ParticipantRoleCompatibilityCriterionContentStructurePresence
+ *
+ * Declara explícitamente la presencia de un individuo Structure
+ * asociado a un ParticipantRoleCompatibilityCriterionContentDefinition
+ * previamente existente.
+ *
+ * Fronteras ontológicas:
+ *
+ * - CriterionContentDefinition ≠ CriterionContentStructurePresence.
+ * - CriterionContentConstitutionPresence ≠ CriterionContentStructurePresence.
+ * - CriterionContentStructurePresence ≠ CriterionContentStructureDefinition.
+ * - ElementSemanticRoleAvailabilityDefinition no implica StructurePresence.
+ *
+ * La identidad de Structure es externa, explícita y opaca.
+ *
+ * Esta fase NO interpreta lexicalmente structureId.
+ * Esta fase NO normaliza, recorta, canonicaliza ni parsea structureId.
+ *
+ * StructurePresence NO implica:
+ *
+ * - StructureDefinition
+ * - collection
+ * - membership
+ * - constituent
+ * - operand
+ * - operand role
+ * - slot
+ * - position
+ * - order
+ * - cardinality
+ * - arity
+ * - correspondence
+ * - comparison
+ * - compatibility
+ * - eligibility
+ * - applicability
+ * - evaluation
+ * - assignment
+ * - score
+ * - priority
+ * - ranking
+ * - preference
+ * - selection
+ * - decision
+ *
+ * Constitution y Structure permanecen como ramas ontológicas
+ * independientes del mismo CriterionContent.
+ */
+
+export type ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceInput =
+  {
+    participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureId:
+      string;
+  };
+
+export type ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresence =
+  {
+    semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentDefinition:
+      ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentDefinition;
+
+    participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceInput:
+      ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceInput;
+
+    participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceType:
+      'explicit-evaluation-result-deliberative-influence-effect-directional-reference-axis-relation-semantic-evaluation-operation-operand-requirements-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-role-compatibility-criterion-content-structure-presence';
+  };
+
+export function presentProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructure(
+  semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentDefinition:
+    ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentDefinition,
+
+  participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceInput:
+    ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceInput
+): ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresence {
+  return {
+    semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentDefinition,
+
+    participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceInput,
+
+    participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceType:
+      'explicit-evaluation-result-deliberative-influence-effect-directional-reference-axis-relation-semantic-evaluation-operation-operand-requirements-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-role-compatibility-criterion-content-structure-presence',
+  };
+}
