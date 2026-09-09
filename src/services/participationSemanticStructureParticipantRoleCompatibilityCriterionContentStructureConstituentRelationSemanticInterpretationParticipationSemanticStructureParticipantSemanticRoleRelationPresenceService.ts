@@ -1,0 +1,218 @@
+import type {
+  ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantPresence,
+} from './participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantPresenceService';
+
+import type {
+  ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticRoleDefinition,
+} from './participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticRoleDefinitionService';
+
+/**
+ * FASE 25.04
+ *
+ * Presencia externa explícita mínima de una relación individual Q entre:
+ *
+ * - un Participant P previamente presente;
+ * - un SemanticRole R previamente definido.
+ *
+ * Ambos relata deben pertenecer genealógicamente a la misma
+ * ParticipationSemanticStructurePresence.
+ *
+ * La relación introduce exclusivamente una nueva identidad externa:
+ *
+ * participationSemanticStructureParticipantSemanticRoleRelationId
+ *
+ * Además, el input declara explícitamente las identidades de los dos
+ * extremos que pretende relacionar:
+ *
+ * - participationSemanticStructureParticipantId;
+ * - participationSemanticStructureConstitutionElementId.
+ *
+ * IMPORTANTE:
+ *
+ * participationSemanticStructureParticipantSemanticRoleRelationId
+ * es completamente opaco.
+ *
+ * Su contenido NO constituye:
+ *
+ * - correspondence;
+ * - compatibility;
+ * - eligibility;
+ * - assignment;
+ * - occupation;
+ * - fulfillment;
+ * - membership.
+ *
+ * Incluso si relationId = "member", "assigned-role" o "compatible",
+ * dichos valores permanecen exclusivamente como identificadores
+ * externos literales.
+ *
+ * RelationPresence NO constituye todavía:
+ *
+ * - ParticipantRoleCorrespondence;
+ * - ParticipantRoleCompatibility;
+ * - ParticipantRoleEligibility;
+ * - ParticipantRoleAssignment;
+ * - RoleOccupation;
+ * - RoleFulfillment;
+ * - ParticipantMembership;
+ * - ConstituentMembership;
+ * - Requirement;
+ * - Slot;
+ * - OperandRole;
+ * - cardinalidad;
+ * - aridad;
+ * - capacity;
+ * - vacancy;
+ * - status operacional;
+ * - evaluación operacional.
+ *
+ * Availability NO constituye fundamento inmediato de esta fase.
+ */
+export type ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantSemanticRoleRelationPresenceInput =
+  {
+    participationSemanticStructureParticipantSemanticRoleRelationId: string;
+    participationSemanticStructureParticipantId: string;
+    participationSemanticStructureConstitutionElementId: string;
+  };
+
+/**
+ * FASE 25.04
+ *
+ * Materialización explícita del hecho:
+ *
+ * ParticipantPresence(S,P)
+ * +
+ * ElementSemanticRoleDefinition(S,E,R)
+ * +
+ * explicit ParticipantSemanticRoleRelationPresenceInput(Q,P,E)
+ * +
+ * identity match de P
+ * +
+ * identity match de E
+ * +
+ * misma ParticipationSemanticStructurePresence S
+ * +
+ * invocación explícita
+ * ->
+ * ParticipantSemanticRoleRelationPresence(S,P,E,Q)
+ *
+ * Esta entidad conserva exactamente por identidad:
+ *
+ * - participantPresence;
+ * - semanticRoleDefinition;
+ * - relationPresenceInput;
+ *
+ * y sólo añade:
+ *
+ * - participationSemanticStructureParticipantSemanticRoleRelationPresenceType.
+ *
+ * La presencia relacional NO interpreta la naturaleza de Q.
+ */
+export type ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantSemanticRoleRelationPresence =
+  {
+    semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantPresence:
+      ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantPresence;
+
+    semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticRoleDefinition:
+      ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticRoleDefinition;
+
+    participationSemanticStructureParticipantSemanticRoleRelationPresenceInput:
+      ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantSemanticRoleRelationPresenceInput;
+
+    participationSemanticStructureParticipantSemanticRoleRelationPresenceType:
+      'explicit-evaluation-result-deliberative-influence-effect-directional-reference-axis-relation-semantic-evaluation-operation-operand-requirements-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-role-compatibility-criterion-content-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-semantic-role-relation-presence';
+  };
+
+/**
+ * FASE 25.04
+ *
+ * Establece explícitamente la presencia de una relación Q entre
+ * Participant P y SemanticRole R/E.
+ *
+ * Se comprueba exclusivamente:
+ *
+ * 1. que P solicitado coincide con el ParticipantPresence recibido;
+ * 2. que E solicitado coincide con el ConstitutionElement que porta
+ *    el SemanticRoleDefinition recibido;
+ * 3. que ambas ramas proceden exactamente de la misma
+ *    ParticipationSemanticStructurePresence.
+ *
+ * Estas comprobaciones son exclusivamente genealógicas/de identidad.
+ *
+ * NO constituyen:
+ *
+ * - semantic correspondence;
+ * - compatibility;
+ * - eligibility;
+ * - assignment;
+ * - occupation;
+ * - fulfillment;
+ * - membership.
+ */
+export function presentProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantSemanticRoleRelation(
+  semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantPresence:
+    ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantPresence,
+
+  semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticRoleDefinition:
+    ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticRoleDefinition,
+
+  participationSemanticStructureParticipantSemanticRoleRelationPresenceInput:
+    ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantSemanticRoleRelationPresenceInput
+): ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantSemanticRoleRelationPresence | null {
+  const participantId =
+    semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantPresence
+      .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantPresenceInput
+      .participationSemanticStructureParticipantId;
+
+  const semanticRoleElementPresence =
+    semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticRoleDefinition
+      .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticRolePresence
+      .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticCharacterization
+      .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementDefinition
+      .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementPresence;
+
+  const semanticRoleElementId =
+    semanticRoleElementPresence
+      .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementPresenceInput
+      .participationSemanticStructureConstitutionElementId;
+
+  if (
+    participantId !==
+    participationSemanticStructureParticipantSemanticRoleRelationPresenceInput
+      .participationSemanticStructureParticipantId
+  ) {
+    return null;
+  }
+
+  if (
+    semanticRoleElementId !==
+    participationSemanticStructureParticipantSemanticRoleRelationPresenceInput
+      .participationSemanticStructureConstitutionElementId
+  ) {
+    return null;
+  }
+
+  const participantStructurePresence =
+    semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantPresence
+      .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructurePresence;
+
+  const semanticRoleStructurePresence =
+    semanticRoleElementPresence
+      .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionPresence
+      .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructurePresence;
+
+  if (participantStructurePresence !== semanticRoleStructurePresence) {
+    return null;
+  }
+
+  return {
+    semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantPresence,
+
+    semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureConstitutionElementSemanticRoleDefinition,
+
+    participationSemanticStructureParticipantSemanticRoleRelationPresenceInput,
+
+    participationSemanticStructureParticipantSemanticRoleRelationPresenceType:
+      'explicit-evaluation-result-deliberative-influence-effect-directional-reference-axis-relation-semantic-evaluation-operation-operand-requirements-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-role-compatibility-criterion-content-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-semantic-role-relation-presence',
+  };
+}
