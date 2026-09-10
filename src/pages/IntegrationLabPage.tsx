@@ -385,6 +385,13 @@ import {
 } from '../services/participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityDeterminationScopeService';
 
 import {
+
+  presentProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterion as presentParticipantRoleCompatibilityCriterion2509,
+
+} from '../services/participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionPresenceService';
+
+
+import {
   presentProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterion,
 } from '../services/participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceService';
 
@@ -80017,13 +80024,419 @@ La genealogía completa Q, P, E y S permaneció encapsulada sin aplanamiento.
 Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
       );
 
+
+      /*
+       * ============================================================
+       * FASE 25.09
+       *
+       * ParticipantRoleCompatibilityDeterminationScope
+       * +
+       * explicit CompatibilityCriterionPresenceInput(C)
+       * +
+       * invocación explícita
+       * ->
+       * ParticipantRoleCompatibilityCriterionPresence
+       * ============================================================
+       */
+
+      const recommendationsSnapshotBeforeParticipantRoleCompatibilityCriterionPresence2509 =
+        JSON.stringify(recommendationsAfterDeliberativeParticipation);
+
+      const decisionsSnapshotBeforeParticipantRoleCompatibilityCriterionPresence2509 =
+        JSON.stringify(decisionsAfterDeliberativeParticipation);
+
+      const participantRoleCompatibilityDeterminationScope2508SnapshotBeforeCriterionPresence =
+        JSON.stringify(participantRoleCompatibilityDeterminationScope2508);
+
+      /*
+       * CASO A
+       *
+       * DeterminationScope NO produce automáticamente CriterionPresence.
+       */
+      for (const forbiddenProperty of [
+        'participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceInput',
+        'participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceType',
+        'participantRoleCompatibilityCriterionPresence',
+        'compatibilityCriterionPresence',
+      ]) {
+        if (
+          forbiddenProperty in
+          participantRoleCompatibilityDeterminationScope2508
+        ) {
+          throw new Error(
+            `FASE 25.09 detectó ${forbiddenProperty} antes de CriterionPresence explícita.`
+          );
+        }
+      }
+
+      /*
+       * CASO B
+       *
+       * CriterionPresence explícita válida.
+       */
+      const participantRoleCompatibilityCriterionPresenceInput2509 = {
+        participationSemanticStructureParticipantRoleCompatibilityCriterionId:
+          'criterion-25-09-a',
+      };
+
+      const participantRoleCompatibilityCriterionPresenceInput2509Snapshot =
+        JSON.stringify(participantRoleCompatibilityCriterionPresenceInput2509);
+
+      const participantRoleCompatibilityCriterionPresence2509 =
+        presentParticipantRoleCompatibilityCriterion2509(
+          participantRoleCompatibilityDeterminationScope2508,
+          participantRoleCompatibilityCriterionPresenceInput2509
+        );
+
+      if (
+        participantRoleCompatibilityCriterionPresence2509
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceType !==
+        'explicit-evaluation-result-deliberative-influence-effect-directional-reference-axis-relation-semantic-evaluation-operation-operand-requirements-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-role-compatibility-criterion-content-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-role-compatibility-criterion-presence'
+      ) {
+        throw new Error(
+          'FASE 25.09 produjo un ParticipantRoleCompatibilityCriterionPresenceType inesperado.'
+        );
+      }
+
+      /*
+       * CASO C
+       *
+       * Conservación exacta por identidad.
+       */
+      if (
+        participantRoleCompatibilityCriterionPresence2509
+          .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityDeterminationScope !==
+        participantRoleCompatibilityDeterminationScope2508
+      ) {
+        throw new Error(
+          'FASE 25.09 no conservó ParticipantRoleCompatibilityDeterminationScope por identidad.'
+        );
+      }
+
+      if (
+        participantRoleCompatibilityCriterionPresence2509
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceInput !==
+        participantRoleCompatibilityCriterionPresenceInput2509
+      ) {
+        throw new Error(
+          'FASE 25.09 no conservó CompatibilityCriterionPresenceInput por identidad.'
+        );
+      }
+
+      /*
+       * CASO D
+       *
+       * Forma estructural mínima exacta.
+       */
+      if (
+        JSON.stringify(
+          Object.keys(participantRoleCompatibilityCriterionPresence2509).sort()
+        ) !==
+        JSON.stringify(
+          [
+            'semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityDeterminationScope',
+            'participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceInput',
+            'participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceType',
+          ].sort()
+        )
+      ) {
+        throw new Error(
+          'FASE 25.09 introdujo propiedades adicionales en ParticipantRoleCompatibilityCriterionPresence.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          Object.keys(
+            participantRoleCompatibilityCriterionPresenceInput2509
+          ).sort()
+        ) !==
+        JSON.stringify(
+          [
+            'participationSemanticStructureParticipantRoleCompatibilityCriterionId',
+          ].sort()
+        )
+      ) {
+        throw new Error(
+          'FASE 25.09 permitió información adicional en CompatibilityCriterionPresenceInput.'
+        );
+      }
+
+      /*
+       * CASO E
+       *
+       * Un mismo Scope puede contener otro Criterion C explícito distinto.
+       */
+      const participantRoleCompatibilityCriterionPresence2509B =
+        presentParticipantRoleCompatibilityCriterion2509(
+          participantRoleCompatibilityDeterminationScope2508,
+          {
+            participationSemanticStructureParticipantRoleCompatibilityCriterionId:
+              'criterion-25-09-b',
+          }
+        );
+
+      if (
+        participantRoleCompatibilityCriterionPresence2509B
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceInput
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionId ===
+        participantRoleCompatibilityCriterionPresence2509
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceInput
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionId
+      ) {
+        throw new Error(
+          'FASE 25.09 colapsó indebidamente criterionId distintos.'
+        );
+      }
+
+      /*
+       * CASO F
+       *
+       * criterionId permanece lexicalmente opaco.
+       */
+      const participantRoleCompatibilityCriterionPresenceMember2509 =
+        presentParticipantRoleCompatibilityCriterion2509(
+          participantRoleCompatibilityDeterminationScope2508,
+          {
+            participationSemanticStructureParticipantRoleCompatibilityCriterionId:
+              'member',
+          }
+        );
+
+      const participantRoleCompatibilityCriterionPresenceCompatible2509 =
+        presentParticipantRoleCompatibilityCriterion2509(
+          participantRoleCompatibilityDeterminationScope2508,
+          {
+            participationSemanticStructureParticipantRoleCompatibilityCriterionId:
+              'compatible',
+          }
+        );
+
+      if (
+        participantRoleCompatibilityCriterionPresenceMember2509
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceInput
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionId !==
+          'member' ||
+        participantRoleCompatibilityCriterionPresenceCompatible2509
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceInput
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionId !==
+          'compatible'
+      ) {
+        throw new Error(
+          'FASE 25.09 transformó indebidamente el contenido literal de criterionId.'
+        );
+      }
+
+      /*
+       * CASO G
+       *
+       * CriterionPresence NO constituye Definition, Compatibility,
+       * Evaluation, Assessment ni Result.
+       */
+      for (const forbiddenProperty of [
+        'participantRoleCompatibilityCriterionDefinition',
+        'compatibilityCriterionDefinition',
+        'criterionDefinition',
+        'criterionSubject',
+        'criterionSemanticRole',
+        'criterionMeaning',
+        'participantRoleCompatibility',
+        'roleCompatibility',
+        'compatibility',
+        'compatible',
+        'incompatible',
+        'participantRoleCompatibilityEvaluation',
+        'compatibilityEvaluation',
+        'evaluation',
+        'participantRoleCompatibilityAssessment',
+        'compatibilityAssessment',
+        'assessment',
+        'participantRoleCompatibilityResult',
+        'compatibilityResult',
+        'result',
+      ]) {
+        if (
+          forbiddenProperty in
+          participantRoleCompatibilityCriterionPresence2509
+        ) {
+          throw new Error(
+            `FASE 25.09 promovió prematuramente CriterionPresence mediante ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO H
+       *
+       * Sin Rule, Satisfaction, Applicability ni Utilization.
+       */
+      for (const forbiddenProperty of [
+        'compatibilityRule',
+        'rulePresence',
+        'ruleDefinition',
+        'condition',
+        'conditionSatisfaction',
+        'satisfaction',
+        'criterionApplicability',
+        'applicability',
+        'criterionUtilization',
+        'utilization',
+      ]) {
+        if (
+          forbiddenProperty in
+          participantRoleCompatibilityCriterionPresence2509
+        ) {
+          throw new Error(
+            `FASE 25.09 introdujo prematuramente ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO I
+       *
+       * Sin Requirement, Slot, OperandRole, cardinalidad,
+       * aridad, capacity ni vacancy.
+       */
+      for (const forbiddenProperty of [
+        'requirement',
+        'requirements',
+        'requirementId',
+        'slot',
+        'slots',
+        'slotId',
+        'operandRole',
+        'operandRoles',
+        'expectedSemanticRole',
+        'cardinality',
+        'count',
+        'arity',
+        'capacity',
+        'vacancy',
+        'availabilityStatus',
+      ]) {
+        if (
+          forbiddenProperty in
+          participantRoleCompatibilityCriterionPresence2509
+        ) {
+          throw new Error(
+            `FASE 25.09 introdujo prematuramente ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO J
+       *
+       * Sin Eligibility, Assignment, Occupation, Fulfillment
+       * ni Membership.
+       */
+      for (const forbiddenProperty of [
+        'participantRoleEligibility',
+        'eligibility',
+        'participantRoleAssignment',
+        'assignment',
+        'roleOccupation',
+        'occupation',
+        'roleFulfillment',
+        'fulfillment',
+        'membership',
+      ]) {
+        if (
+          forbiddenProperty in
+          participantRoleCompatibilityCriterionPresence2509
+        ) {
+          throw new Error(
+            `FASE 25.09 introdujo prematuramente ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO K
+       *
+       * La genealogía permanece encapsulada.
+       */
+      for (const forbiddenProperty of [
+        'participationSemanticStructureParticipantId',
+        'participationSemanticStructureConstitutionElementId',
+        'participationSemanticStructureId',
+        'semanticRoleId',
+        'roleId',
+        'scopeId',
+        'compatibilityId',
+      ]) {
+        if (
+          forbiddenProperty in
+          participantRoleCompatibilityCriterionPresence2509
+        ) {
+          throw new Error(
+            `FASE 25.09 aplanó indebidamente ${forbiddenProperty}.`
+          );
+        }
+      }
+
+      /*
+       * CASO L
+       *
+       * Inmutabilidad y estado productivo intacto.
+       */
+      if (
+        JSON.stringify(participantRoleCompatibilityDeterminationScope2508) !==
+        participantRoleCompatibilityDeterminationScope2508SnapshotBeforeCriterionPresence
+      ) {
+        throw new Error(
+          'FASE 25.09 modificó ParticipantRoleCompatibilityDeterminationScope.'
+        );
+      }
+
+      if (
+        JSON.stringify(participantRoleCompatibilityCriterionPresenceInput2509) !==
+        participantRoleCompatibilityCriterionPresenceInput2509Snapshot
+      ) {
+        throw new Error(
+          'FASE 25.09 modificó CompatibilityCriterionPresenceInput.'
+        );
+      }
+
+      if (
+        JSON.stringify(recommendationsAfterDeliberativeParticipation) !==
+        recommendationsSnapshotBeforeParticipantRoleCompatibilityCriterionPresence2509
+      ) {
+        throw new Error(
+          'FASE 25.09 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterDeliberativeParticipation) !==
+        decisionsSnapshotBeforeParticipantRoleCompatibilityCriterionPresence2509
+      ) {
+        throw new Error(
+          'FASE 25.09 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 25.09 OK: se materializó explícitamente ParticipantRoleCompatibilityCriterionPresence sobre ParticipantRoleCompatibilityDeterminationScope de FASE 25.08.
+ParticipantRoleCompatibilityDeterminationScope NO produjo automáticamente CriterionPresence.
+CriterionPresenceInput introdujo exclusivamente un nuevo Criterion C mediante criterionId.
+criterionId permaneció completamente opaco y sin interpretación lexical.
+Un mismo DeterminationScope admitió distintos Criterion C explícitos sin colapsarlos.
+ParticipantRoleCompatibilityDeterminationScope y CriterionPresenceInput fueron preservados exactamente por identidad.
+CriterionPresence permaneció distinto de CriterionDefinition, Compatibility, Evaluation, Assessment y Result.
+No se introdujeron Rule, Satisfaction, Applicability, Utilization, Requirement, Slot, OperandRole, cardinalidad, aridad, capacity, vacancy, Eligibility, Assignment, RoleOccupation, RoleFulfillment ni Membership.
+La genealogía completa P, E, Q y S permaneció encapsulada en ParticipantRoleCompatibilityDeterminationScope sin aplanamiento.
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
+
       } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55/24.56/24.57/24.58/24.59/24.60/24.61/24.62/24.63/24.64/24.65/24.66/24.67/24.68/24.69/24.70/24.71/24.72/24.73/24.74/24.75/24.76/24.77/24.78/24.79/24.80/24.81/24.82/24.83/24.84/24.85/24.86/24.87/24.88/24.89/24.90/24.91/24.92/24.93/24.94/24.95/24.96/24.97/24.98/24.99/25.00/25.01/25.02/25.03/25.04/25.05/25.06/25.07: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55/24.56/24.57/24.58/24.59/24.60/24.61/24.62/24.63/24.64/24.65/24.66/24.67/24.68/24.69/24.70/24.71/24.72/24.73/24.74/24.75/24.76/24.77/24.78/24.79/24.80/24.81/24.82/24.83/24.84/24.85/24.86/24.87/24.88/24.89/24.90/24.91/24.92/24.93/24.94/24.95/24.96/24.97/24.98/24.99/25.00/25.01/25.02/25.03/25.04/25.05/25.06/25.07.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55/24.56/24.57/24.58/24.59/24.60/24.61/24.62/24.63/24.64/24.65/24.66/24.67/24.68/24.69/24.70/24.71/24.72/24.73/24.74/24.75/24.76/24.77/24.78/24.79/24.80/24.81/24.82/24.83/24.84/24.85/24.86/24.87/24.88/24.89/24.90/24.91/24.92/24.93/24.94/24.95/24.96/24.97/24.98/24.99/25.00/25.01/25.02/25.03/25.04/25.05/25.06/25.07/25.08/25.09: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55/24.56/24.57/24.58/24.59/24.60/24.61/24.62/24.63/24.64/24.65/24.66/24.67/24.68/24.69/24.70/24.71/24.72/24.73/24.74/24.75/24.76/24.77/24.78/24.79/24.80/24.81/24.82/24.83/24.84/24.85/24.86/24.87/24.88/24.89/24.90/24.91/24.92/24.93/24.94/24.95/24.96/24.97/24.98/24.99/25.00/25.01/25.02/25.03/25.04/25.05/25.06/25.07/25.08/25.09.'
       );
     } finally {
       setLoading(false);
@@ -81872,6 +82285,16 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Probar FASE 25.08
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Probar FASE 25.09
         </button>
 
 
