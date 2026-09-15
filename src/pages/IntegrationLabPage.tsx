@@ -458,6 +458,15 @@ import {
 
 
 import {
+
+  presentProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructure as presentParticipantRoleCompatibilityCriterionContentStructure2522,
+
+  type ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceInput as ParticipantRoleCompatibilityCriterionContentStructurePresenceInput2522,
+
+} from '../services/participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceService';
+
+
+import {
   presentProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterion,
 } from '../services/participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceService';
 
@@ -85664,13 +85673,337 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
       );
 
 
+      /**
+       * FASE 25.22
+       *
+       * ParticipantRoleCompatibilityCriterionContentStructurePresence
+       *
+       * CriterionContentDefinition de FASE 25.12
+       * +
+       * StructurePresenceInput(S)
+       * +
+       * invocación explícita
+       * →
+       * StructurePresence
+       *
+       * Constitution ≠ Structure.
+       * StructurePresence ≠ StructureDefinition.
+       *
+       * La rama Structure nace directamente desde el mismo
+       * CriterionContentDefinition de FASE 25.12.
+       *
+       * FASE 25.21 SemanticRoleAvailabilityDefinition es una hoja
+       * de la rama Constitution y NO fundamenta FASE 25.22.
+       */
+
+      const recommendationsSnapshotBeforeParticipantRoleCompatibilityCriterionContentStructurePresence2522 =
+        JSON.stringify(recommendationsAfterDeliberativeParticipation);
+
+      const decisionsSnapshotBeforeParticipantRoleCompatibilityCriterionContentStructurePresence2522 =
+        JSON.stringify(decisionsAfterDeliberativeParticipation);
+
+      const participantRoleCompatibilityCriterionContentDefinitionSnapshotBeforeStructurePresence2522 =
+        JSON.stringify(participantRoleCompatibilityCriterionContentDefinition2512);
+
+      const participantRoleCompatibilityCriterionContentStructurePresenceInput2522: ParticipantRoleCompatibilityCriterionContentStructurePresenceInput2522 =
+        {
+          participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureId:
+            'criterion-content-structure-controlled-25-22',
+        };
+
+      const participantRoleCompatibilityCriterionContentStructurePresenceInputSnapshot2522 =
+        JSON.stringify(
+          participantRoleCompatibilityCriterionContentStructurePresenceInput2522
+        );
+
+      const participantRoleCompatibilityCriterionContentStructurePresence2522 =
+        presentParticipantRoleCompatibilityCriterionContentStructure2522(
+          participantRoleCompatibilityCriterionContentDefinition2512,
+          participantRoleCompatibilityCriterionContentStructurePresenceInput2522
+        );
+
+      if (
+        participantRoleCompatibilityCriterionContentStructurePresence2522
+          .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentDefinition !==
+        participantRoleCompatibilityCriterionContentDefinition2512
+      ) {
+        throw new Error(
+          'FASE 25.22 no preservó ParticipantRoleCompatibilityCriterionContentDefinition de FASE 25.12 por identidad.'
+        );
+      }
+
+      if (
+        participantRoleCompatibilityCriterionContentStructurePresence2522
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceInput !==
+        participantRoleCompatibilityCriterionContentStructurePresenceInput2522
+      ) {
+        throw new Error(
+          'FASE 25.22 no preservó CriterionContentStructurePresenceInput por identidad.'
+        );
+      }
+
+      const participantRoleCompatibilityCriterionContentStructurePresenceKeys2522 =
+        Object.keys(
+          participantRoleCompatibilityCriterionContentStructurePresence2522
+        );
+
+      if (
+        participantRoleCompatibilityCriterionContentStructurePresenceKeys2522.length !==
+          3 ||
+        !participantRoleCompatibilityCriterionContentStructurePresenceKeys2522.includes(
+          'semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentDefinition'
+        ) ||
+        !participantRoleCompatibilityCriterionContentStructurePresenceKeys2522.includes(
+          'participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceInput'
+        ) ||
+        !participantRoleCompatibilityCriterionContentStructurePresenceKeys2522.includes(
+          'participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceType'
+        )
+      ) {
+        throw new Error(
+          'FASE 25.22 produjo una forma estructural distinta del contrato mínimo de tres propiedades.'
+        );
+      }
+
+      if (
+        participantRoleCompatibilityCriterionContentStructurePresence2522
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceType !==
+        'explicit-evaluation-result-deliberative-influence-effect-directional-reference-axis-relation-semantic-evaluation-operation-operand-requirements-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-role-compatibility-criterion-content-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-role-compatibility-criterion-content-structure-presence'
+      ) {
+        throw new Error(
+          'FASE 25.22 produjo CriterionContentStructurePresenceType incorrecto.'
+        );
+      }
+
+      const opaqueCriterionContentStructureIds2522 = [
+        '  STRUCTURE  ',
+        'two-operands',
+        'member',
+        'compatible',
+        'operand',
+        'banana',
+      ];
+
+      for (const opaqueCriterionContentStructureId2522 of opaqueCriterionContentStructureIds2522) {
+        const opaqueParticipantRoleCompatibilityCriterionContentStructurePresenceInput2522: ParticipantRoleCompatibilityCriterionContentStructurePresenceInput2522 =
+          {
+            participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureId:
+              opaqueCriterionContentStructureId2522,
+          };
+
+        const opaqueParticipantRoleCompatibilityCriterionContentStructurePresence2522 =
+          presentParticipantRoleCompatibilityCriterionContentStructure2522(
+            participantRoleCompatibilityCriterionContentDefinition2512,
+            opaqueParticipantRoleCompatibilityCriterionContentStructurePresenceInput2522
+          );
+
+        if (
+          opaqueParticipantRoleCompatibilityCriterionContentStructurePresence2522
+            .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceInput
+            .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureId !==
+          opaqueCriterionContentStructureId2522
+        ) {
+          throw new Error(
+            `FASE 25.22 modificó o interpretó lexicalmente S="${opaqueCriterionContentStructureId2522}".`
+          );
+        }
+
+        if (
+          opaqueParticipantRoleCompatibilityCriterionContentStructurePresence2522
+            .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceInput !==
+          opaqueParticipantRoleCompatibilityCriterionContentStructurePresenceInput2522
+        ) {
+          throw new Error(
+            `FASE 25.22 no preservó por identidad PresenceInput para S="${opaqueCriterionContentStructureId2522}".`
+          );
+        }
+      }
+
+      const forbiddenCriterionContentStructurePresenceIdentityKeys2522 = [
+        'contentId',
+        'criterionId',
+        'elementId',
+        'semanticRoleId',
+        'roleId',
+        'participantRoleId',
+        'structureDefinitionId',
+        'constituentId',
+        'operandId',
+        'slotId',
+        'relationId',
+        'membershipId',
+      ];
+
+      const forbiddenCriterionContentStructurePresenceIdentityKey2522 =
+        forbiddenCriterionContentStructurePresenceIdentityKeys2522.find((key) =>
+          participantRoleCompatibilityCriterionContentStructurePresenceKeys2522.includes(
+            key
+          )
+        );
+
+      if (forbiddenCriterionContentStructurePresenceIdentityKey2522) {
+        throw new Error(
+          `FASE 25.22 aplanó genealogía o introdujo identidad indebida: ${forbiddenCriterionContentStructurePresenceIdentityKey2522}.`
+        );
+      }
+
+      const forbiddenCriterionContentStructurePresencePromotionKeys2522 = [
+        'structureDefinition',
+        'collection',
+        'membership',
+        'member',
+        'constituent',
+        'operand',
+        'operandRole',
+        'slot',
+        'position',
+        'order',
+        'cardinality',
+        'arity',
+        'operandCount',
+        'correspondence',
+        'comparison',
+        'match',
+        'mismatch',
+        'compatibility',
+        'incompatibility',
+        'eligibility',
+        'applicability',
+        'rule',
+        'condition',
+        'satisfaction',
+        'evaluation',
+        'assessment',
+        'assignment',
+        'score',
+        'weight',
+        'priority',
+        'confidence',
+        'ranking',
+        'preference',
+        'selection',
+        'decision',
+      ];
+
+      const forbiddenCriterionContentStructurePresencePromotionKey2522 =
+        forbiddenCriterionContentStructurePresencePromotionKeys2522.find(
+          (key) =>
+            participantRoleCompatibilityCriterionContentStructurePresenceKeys2522.includes(
+              key
+            )
+        );
+
+      if (forbiddenCriterionContentStructurePresencePromotionKey2522) {
+        throw new Error(
+          `FASE 25.22 introdujo promoción semántica u operacional indebida: ${forbiddenCriterionContentStructurePresencePromotionKey2522}.`
+        );
+      }
+
+      const secondParticipantRoleCompatibilityCriterionContentStructurePresenceInput2522: ParticipantRoleCompatibilityCriterionContentStructurePresenceInput2522 =
+        {
+          participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureId:
+            'banana',
+        };
+
+      const secondParticipantRoleCompatibilityCriterionContentStructurePresence2522 =
+        presentParticipantRoleCompatibilityCriterionContentStructure2522(
+          participantRoleCompatibilityCriterionContentDefinition2512,
+          secondParticipantRoleCompatibilityCriterionContentStructurePresenceInput2522
+        );
+
+      if (
+        secondParticipantRoleCompatibilityCriterionContentStructurePresence2522
+          .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentDefinition !==
+        participantRoleCompatibilityCriterionContentDefinition2512
+      ) {
+        throw new Error(
+          'FASE 25.22 no permitió reutilizar el mismo CriterionContentDefinition de FASE 25.12 por identidad.'
+        );
+      }
+
+      if (
+        secondParticipantRoleCompatibilityCriterionContentStructurePresence2522
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceInput !==
+        secondParticipantRoleCompatibilityCriterionContentStructurePresenceInput2522
+      ) {
+        throw new Error(
+          'FASE 25.22 no preservó el segundo StructurePresenceInput por identidad.'
+        );
+      }
+
+      if (
+        secondParticipantRoleCompatibilityCriterionContentStructurePresence2522
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresenceInput
+          .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureId !==
+        'banana'
+      ) {
+        throw new Error(
+          'FASE 25.22 interpretó o rechazó una segunda StructurePresence opaca.'
+        );
+      }
+
+      if (
+        JSON.stringify(participantRoleCompatibilityCriterionContentDefinition2512) !==
+        participantRoleCompatibilityCriterionContentDefinitionSnapshotBeforeStructurePresence2522
+      ) {
+        throw new Error(
+          'FASE 25.22 modificó ParticipantRoleCompatibilityCriterionContentDefinition de FASE 25.12.'
+        );
+      }
+
+      if (
+        JSON.stringify(
+          participantRoleCompatibilityCriterionContentStructurePresenceInput2522
+        ) !==
+        participantRoleCompatibilityCriterionContentStructurePresenceInputSnapshot2522
+      ) {
+        throw new Error(
+          'FASE 25.22 modificó CriterionContentStructurePresenceInput.'
+        );
+      }
+
+      if (
+        JSON.stringify(recommendationsAfterDeliberativeParticipation) !==
+        recommendationsSnapshotBeforeParticipantRoleCompatibilityCriterionContentStructurePresence2522
+      ) {
+        throw new Error(
+          'FASE 25.22 modificó recomendaciones productivas.'
+        );
+      }
+
+      if (
+        JSON.stringify(decisionsAfterDeliberativeParticipation) !==
+        decisionsSnapshotBeforeParticipantRoleCompatibilityCriterionContentStructurePresence2522
+      ) {
+        throw new Error(
+          'FASE 25.22 modificó decisiones productivas.'
+        );
+      }
+
+      addLog(
+        `FASE 25.22 OK: se materializó explícitamente ParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructurePresence a partir del ParticipantRoleCompatibilityCriterionContentDefinition previamente existente de FASE 25.12.
+CriterionContentDefinition permaneció como único fundamento interno inmediato y fue preservado por identidad.
+CriterionContentStructurePresenceInput aportó exclusivamente S y fue preservado por identidad.
+S permaneció completamente opaco, sin trim, canonicalización, parsing, normalización ni interpretación lexical.
+Los valores "  STRUCTURE  ", "two-operands", "member", "compatible", "operand" y "banana" fueron preservados literalmente.
+Un mismo CriterionContentDefinition aceptó múltiples StructurePresence mediante invocaciones independientes.
+Constitution y Structure permanecieron como ramas ontológicas independientes del mismo CriterionContentDefinition de FASE 25.12.
+FASE 25.21 SemanticRoleAvailabilityDefinition permaneció como hoja de la rama Constitution y no fue utilizada como fundamento de StructurePresence.
+No se creó automáticamente StructureDefinition, Collection, Membership, Constituent, Operand, OperandRole, Slot, Position, Order, Cardinality ni Arity.
+No se introdujeron Correspondence, Comparison, Compatibility, Eligibility, Applicability, Evaluation ni Assignment.
+No se introdujeron Score, Weight, Priority, Confidence, Ranking, Preference, Selection ni Decision.
+La genealogía completa permaneció encapsulada y sin aplanamiento.
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
+      );
+
+
       } catch (error) {
       console.error(error);
 
       addLog(
         error instanceof Error
-        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55/24.56/24.57/24.58/24.59/24.60/24.61/24.62/24.63/24.64/24.65/24.66/24.67/24.68/24.69/24.70/24.71/24.72/24.73/24.74/24.75/24.76/24.77/24.78/24.79/24.80/24.81/24.82/24.83/24.84/24.85/24.86/24.87/24.88/24.89/24.90/24.91/24.92/24.93/24.94/24.95/24.96/24.97/24.98/24.99/25.00/25.01/25.02/25.03/25.04/25.05/25.06/25.07/25.08/25.09/25.10/25.11/25.12/25.13/25.14/25.15/25.16/25.17/25.18/25.19/25.20/25.21: ${error.message}`
-        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55/24.56/24.57/24.58/24.59/24.60/24.61/24.62/24.63/24.64/24.65/24.66/24.67/24.68/24.69/24.70/24.71/24.72/24.73/24.74/24.75/24.76/24.77/24.78/24.79/24.80/24.81/24.82/24.83/24.84/24.85/24.86/24.87/24.88/24.89/24.90/24.91/24.92/24.93/24.94/24.95/24.96/24.97/24.98/24.99/25.00/25.01/25.02/25.03/25.04/25.05/25.06/25.07/25.08/25.09/25.10/25.11/25.12/25.13/25.14/25.15/25.16/25.17/25.18/25.19/25.20/25.21.'
+        ? `Error en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55/24.56/24.57/24.58/24.59/24.60/24.61/24.62/24.63/24.64/24.65/24.66/24.67/24.68/24.69/24.70/24.71/24.72/24.73/24.74/24.75/24.76/24.77/24.78/24.79/24.80/24.81/24.82/24.83/24.84/24.85/24.86/24.87/24.88/24.89/24.90/24.91/24.92/24.93/24.94/24.95/24.96/24.97/24.98/24.99/25.00/25.01/25.02/25.03/25.04/25.05/25.06/25.07/25.08/25.09/25.10/25.11/25.12/25.13/25.14/25.15/25.16/25.17/25.18/25.19/25.20/25.21/25.22: ${error.message}`
+        : 'Error inesperado en contrato productivo de criterio evaluativo 24.16/24.17/24.18/24.19/24.20/24.21/24.22/24.23/24.24/24.25/24.26/24.27/24.28/24.29/24.30/24.31/24.32/24.33/24.34/24.35/24.36/24.37/24.38/24.39/24.40/24.41/24.42/24.43/24.44/24.45/24.46/24.47/24.48/24.49/24.50/24.51/24.52/24.53/24.54/24.55/24.56/24.57/24.58/24.59/24.60/24.61/24.62/24.63/24.64/24.65/24.66/24.67/24.68/24.69/24.70/24.71/24.72/24.73/24.74/24.75/24.76/24.77/24.78/24.79/24.80/24.81/24.82/24.83/24.84/24.85/24.86/24.87/24.88/24.89/24.90/24.91/24.92/24.93/24.94/24.95/24.96/24.97/24.98/24.99/25.00/25.01/25.02/25.03/25.04/25.05/25.06/25.07/25.08/25.09/25.10/25.11/25.12/25.13/25.14/25.15/25.16/25.17/25.18/25.19/25.20/25.21/25.22.'
       );
     } finally {
       setLoading(false);
@@ -87649,6 +87982,16 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Probar FASE 25.21
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Probar FASE 25.22
         </button>
 
         <button
