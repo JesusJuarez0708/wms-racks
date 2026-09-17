@@ -493,6 +493,7 @@ import {
 import {
   presentProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipants as presentParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipants2528,
   type ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsInput as ParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsInput2528,
+  type ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence as ParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence2528,
 } from '../services/participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsService';
 
 
@@ -593,8 +594,12 @@ import {
 } from '../services/participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresenceService';
 
 import {
-  realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelation,
-  type ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput,
+  realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelation,
+  type ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput,
+} from '../services/participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationService';
+import {
+  realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelation as realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureConstituentRelation2491,
+  type ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput as ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureConstituentRelationRealizationInput2491,
 } from '../services/participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationService';
 
 import {
@@ -735,6 +740,304 @@ function validateSeederResult(result: SeederResult): string[] {
   }
 
   return errors;
+}
+
+
+function validateParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529(
+  participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence2528:
+    ParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence2528,
+  participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsInput2528:
+    ParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsInput2528,
+  participantRoleCompatibilityCriterionContentStructureId2529: string,
+  participantRoleCompatibilityCriterionContentStructureConstituentId2529: string,
+  recommendationsAfterDeliberativeParticipation:
+    ReturnType<typeof generateRecommendationsFromPatterns>,
+  decisionsAfterDeliberativeParticipation:
+    ReturnType<typeof generateOperationalDecisions>
+): string {
+/**
+ * FASE 25.29
+ *
+ * ParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealization
+ *
+ * ParticipantsPresence(S,U)
+ * +
+ * explicit RealizationInput(S,U)
+ * +
+ * identidad exacta de S
+ * +
+ * identidad exacta de U
+ * +
+ * invocación explícita
+ * ->
+ * Realization
+ *
+ * El match de identidades NO constituye realización.
+ */
+
+const recommendationsSnapshotBeforeParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529 =
+  JSON.stringify(recommendationsAfterDeliberativeParticipation);
+
+const decisionsSnapshotBeforeParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529 =
+  JSON.stringify(decisionsAfterDeliberativeParticipation);
+
+const participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresenceSnapshotBeforeRealization2529 =
+  JSON.stringify(
+    participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence2528
+  );
+
+const participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsInputSnapshotBeforeRealization2529 =
+  JSON.stringify(
+    participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsInput2528
+  );
+
+const participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput2529:
+  ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput =
+  {
+    participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureId:
+      participantRoleCompatibilityCriterionContentStructureId2529,
+    participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentId:
+      participantRoleCompatibilityCriterionContentStructureConstituentId2529,
+  };
+
+const participantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529 =
+  realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelation(
+    participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence2528,
+    participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput2529
+  );
+
+if (
+  participantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529 ===
+  null
+) {
+  throw new Error(
+    'FASE 25.29 rechazó una realización explícita cuyos participantes S/U coinciden exactamente con ParticipantsPresence.'
+  );
+}
+
+if (
+  participantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529
+    .semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence !==
+  participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence2528
+) {
+  throw new Error(
+    'FASE 25.29 no preservó ParticipantsPresence por identidad.'
+  );
+}
+
+if (
+  participantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529
+    .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput !==
+  participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput2529
+) {
+  throw new Error(
+    'FASE 25.29 no preservó RealizationInput por identidad.'
+  );
+}
+
+if (
+  participantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529
+    .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationType !==
+  'explicit-evaluation-result-deliberative-influence-effect-directional-reference-axis-relation-semantic-evaluation-operation-operand-requirements-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-role-compatibility-criterion-content-structure-constituent-relation-realization'
+) {
+  throw new Error(
+    'FASE 25.29 produjo RealizationType incorrecto.'
+  );
+}
+
+const participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationTopLevelKeys2529 =
+  Object.keys(
+    participantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529
+  ).sort();
+
+if (
+  JSON.stringify(
+    participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationTopLevelKeys2529
+  ) !==
+  JSON.stringify([
+    'participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput',
+    'participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationType',
+    'semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence',
+  ].sort())
+) {
+  throw new Error(
+    'FASE 25.29 produjo una forma estructural inesperada de Realization.'
+  );
+}
+
+const mismatchedStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput2529 = {
+  ...participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput2529,
+  participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureId:
+    'mismatched-structure-25-29',
+};
+
+if (
+  realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelation(
+    participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence2528,
+    mismatchedStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput2529
+  ) !== null
+) {
+  throw new Error(
+    'FASE 25.29 aceptó Structure S incompatible con ParticipantsPresence.'
+  );
+}
+
+const mismatchedConstituentParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput2529 = {
+  ...participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput2529,
+  participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentId:
+    'mismatched-constituent-25-29',
+};
+
+if (
+  realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelation(
+    participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence2528,
+    mismatchedConstituentParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput2529
+  ) !== null
+) {
+  throw new Error(
+    'FASE 25.29 aceptó Constituent U incompatible con ParticipantsPresence.'
+  );
+}
+
+const secondParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529 =
+  realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelation(
+    participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence2528,
+    {
+      ...participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput2529,
+    }
+  );
+
+if (
+  secondParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529 ===
+  null
+) {
+  throw new Error(
+    'FASE 25.29 rechazó una segunda declaración explícita válida de realización S/U.'
+  );
+}
+
+if (
+  secondParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529 ===
+  participantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529
+) {
+  throw new Error(
+    'FASE 25.29 colapsó dos invocaciones explícitas independientes en una misma materialización.'
+  );
+}
+
+const forbiddenParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationPromotionKeys2529 = [
+  'realizationId',
+  'relationRealizationId',
+  'membership',
+  'memberOf',
+  'partOf',
+  'source',
+  'target',
+  'direction',
+  'orientation',
+  'participantRole',
+  'constituentDefinition',
+  'requirement',
+  'operand',
+  'operandRole',
+  'slot',
+  'position',
+  'order',
+  'cardinality',
+  'arity',
+  'mapping',
+  'correspondence',
+  'comparison',
+  'compatibility',
+  'eligibility',
+  'applicability',
+  'rule',
+  'condition',
+  'satisfaction',
+  'evaluation',
+  'assessment',
+  'assignment',
+  'score',
+  'weight',
+  'priority',
+  'confidence',
+  'ranking',
+  'preference',
+  'selection',
+  'decision',
+];
+
+const participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationPromotionKey2529 =
+  forbiddenParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationPromotionKeys2529.find(
+    (key) =>
+      Object.prototype.hasOwnProperty.call(
+        participantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529,
+        key
+      )
+  );
+
+if (
+  participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationPromotionKey2529
+) {
+  throw new Error(
+    `FASE 25.29 introdujo promoción semántica u operacional indebida: ${participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationPromotionKey2529}.`
+  );
+}
+
+if (
+  JSON.stringify(
+    participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence2528
+  ) !==
+  participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresenceSnapshotBeforeRealization2529
+) {
+  throw new Error(
+    'FASE 25.29 modificó ParticipantsPresence de FASE 25.28.'
+  );
+}
+
+if (
+  JSON.stringify(
+    participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsInput2528
+  ) !==
+  participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsInputSnapshotBeforeRealization2529
+) {
+  throw new Error(
+    'FASE 25.29 modificó ParticipantsInput de FASE 25.28.'
+  );
+}
+
+if (
+  JSON.stringify(recommendationsAfterDeliberativeParticipation) !==
+  recommendationsSnapshotBeforeParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529
+) {
+  throw new Error(
+    'FASE 25.29 modificó recomendaciones productivas.'
+  );
+}
+
+if (
+  JSON.stringify(decisionsAfterDeliberativeParticipation) !==
+  decisionsSnapshotBeforeParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529
+) {
+  throw new Error(
+    'FASE 25.29 modificó decisiones productivas.'
+  );
+}
+
+  return `FASE 25.29 OK: se materializó explícitamente ParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealization a partir de ParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence de FASE 25.28 y una nueva declaración externa explícita de realización S/U.
+ParticipantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence permaneció como único fundamento interno inmediato y fue preservada por identidad.
+ParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput aportó exclusivamente S/U y fue preservado por identidad.
+El match de identidades S/U no constituyó realización; la realización procedió exclusivamente de la invocación explícita de RealizationInput.
+Un mismatch de S produjo null y un mismatch de U produjo null.
+Una misma ParticipantsPresence aceptó múltiples materializaciones explícitas independientes de Realization; no hubo unicidad, canonicalidad, equivalencia, deduplicación, preferencia ni selección.
+Realization permaneció distinto de RelationSemanticInterpretation, Membership y ConstituentDefinition.
+No se introdujeron realizationId, source, target, direction, orientation ni participant role.
+No se introdujeron Requirement, Operand, OperandRole, Slot, Position, Order, Cardinality ni Arity.
+No se introdujeron Mapping, Correspondence, Comparison, Compatibility, Eligibility, Applicability, Rule, Condition, Satisfaction, Evaluation, Assessment ni Assignment.
+No se introdujeron Score, Weight, Priority, Confidence, Ranking, Preference, Selection ni Decision.
+M permaneció completamente opaco y no fue inspeccionado ni interpretado.
+La genealogía completa permaneció encapsulada y sin aplanamiento.
+Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`;
 }
 
 function IntegrationLabPage() {
@@ -72738,7 +73041,7 @@ No se introdujo Correspondence, Compatibility, Eligibility, Applicability, Evalu
        * M permanece completamente opaco.
        */
 
-      const participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput: ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput =
+      const participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput: ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureConstituentRelationRealizationInput2491 =
         {
           participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureId:
             participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsInput
@@ -72749,7 +73052,7 @@ No se introdujo Correspondence, Compatibility, Eligibility, Applicability, Evalu
         };
 
       const participantRoleCompatibilityCriterionContentStructureConstituentRelationRealization =
-        realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelation(
+        realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureConstituentRelation2491(
           participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence,
           participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput
         );
@@ -72815,7 +73118,7 @@ No se introdujo Correspondence, Compatibility, Eligibility, Applicability, Evalu
         );
       }
 
-      const mismatchedStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput: ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput =
+      const mismatchedStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput: ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureConstituentRelationRealizationInput2491 =
         {
           ...participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput,
           participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureId:
@@ -72823,7 +73126,7 @@ No se introdujo Correspondence, Compatibility, Eligibility, Applicability, Evalu
         };
 
       if (
-        realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelation(
+        realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureConstituentRelation2491(
           participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence,
           mismatchedStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput
         ) !== null
@@ -72833,7 +73136,7 @@ No se introdujo Correspondence, Compatibility, Eligibility, Applicability, Evalu
         );
       }
 
-      const mismatchedConstituentParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput: ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput =
+      const mismatchedConstituentParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput: ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureConstituentRelationRealizationInput2491 =
         {
           ...participantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput,
           participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentId:
@@ -72841,7 +73144,7 @@ No se introdujo Correspondence, Compatibility, Eligibility, Applicability, Evalu
         };
 
       if (
-        realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelation(
+        realizeProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureConstituentRelation2491(
           participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence,
           mismatchedConstituentParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealizationInput
         ) !== null
@@ -87990,6 +88293,19 @@ La genealogía completa permaneció encapsulada y sin aplanamiento.
 Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} recomendaciones y ${decisionsAfterDeliberativeParticipation.length} decisiones productivas.`
       );
 
+      addLog(
+        validateParticipantRoleCompatibilityCriterionContentStructureConstituentRelationRealization2529(
+          participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsPresence2528,
+          participantRoleCompatibilityCriterionContentStructureConstituentRelationParticipantsInput2528,
+          participantRoleCompatibilityCriterionContentStructurePresenceInput2522
+            .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureId,
+          participantRoleCompatibilityCriterionContentStructureConstituentPresenceInput2525
+            .participationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentId,
+          recommendationsAfterDeliberativeParticipation,
+          decisionsAfterDeliberativeParticipation
+        )
+      );
+
       } catch (error) {
       console.error(error);
 
@@ -90045,6 +90361,16 @@ Permanecieron intactas ${recommendationsAfterDeliberativeParticipation.length} r
           className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
           Probar FASE 25.28
+        </button>
+
+        <button
+          onClick={
+            testOperationalKnowledgeProductiveRecommendationEffectRelevanceEvaluationCriterionDefinitionContract
+          }
+          disabled={loading}
+          className="rounded-xl bg-slate-800 px-4 py-3 font-semibold text-white disabled:opacity-50"
+        >
+          Probar FASE 25.29
         </button>
 
         <button
