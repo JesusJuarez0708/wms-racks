@@ -1,0 +1,110 @@
+import type {
+  ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureParticipantRoleCompatibilityDeterminationScope,
+} from "./participantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureParticipantRoleCompatibilityDeterminationScopeService";
+
+/**
+ * FASE 25.47
+ *
+ * Presencia externa explícita mínima de un Criterion C dentro de un
+ * ParticipantRoleCompatibilityDeterminationScope previamente establecido
+ * en FASE 25.46.
+ *
+ * participationSemanticStructureParticipantRoleCompatibilityCriterionId
+ * identifica exclusivamente un nuevo individuo Criterion C.
+ *
+ * ParticipantRoleCompatibilityDeterminationScope
+ * NO produce automáticamente CriterionPresence.
+ *
+ * CriterionPresence requiere una nueva invocación externa explícita.
+ *
+ * criterionId permanece completamente opaco.
+ */
+export type ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureParticipantRoleCompatibilityCriterionPresenceInput = {
+  participationSemanticStructureParticipantRoleCompatibilityCriterionId: string;
+};
+
+/**
+ * FASE 25.47
+ *
+ * ParticipantRoleCompatibilityDeterminationScope(P,R) [25.46]
+ * +
+ * explicit ParticipantRoleCompatibilityCriterionPresenceInput(C)
+ * +
+ * invocación explícita
+ * ->
+ * ParticipantRoleCompatibilityCriterionPresence(P,R,C)
+ *
+ * El único fundamento interno inmediato es el Scope exacto de FASE 25.46.
+ *
+ * Conserva exactamente por identidad:
+ *
+ * - ParticipantRoleCompatibilityDeterminationScope;
+ * - ParticipantRoleCompatibilityCriterionPresenceInput;
+ *
+ * y sólo añade CriterionPresenceType.
+ *
+ * La genealogía P, E, R, S, Q, M e I permanece encapsulada en el Scope.
+ *
+ * NO constituye todavía:
+ *
+ * - ParticipantRoleCompatibilityCriterionDefinition;
+ * - ParticipantRoleCompatibility;
+ * - ParticipantRoleCompatibilityEvaluation;
+ * - ParticipantRoleCompatibilityAssessment;
+ * - ParticipantRoleCompatibilityResult;
+ * - ParticipantRoleEligibility;
+ * - ParticipantRoleAssignment;
+ * - RoleOccupation;
+ * - RoleFulfillment;
+ * - Membership;
+ * - Availability;
+ * - Requirement;
+ * - Slot;
+ * - OperandRole.
+ */
+export type ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureParticipantRoleCompatibilityCriterionPresence = {
+  semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureParticipantRoleCompatibilityDeterminationScope:
+    ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureParticipantRoleCompatibilityDeterminationScope;
+
+  participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceInput:
+    ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureParticipantRoleCompatibilityCriterionPresenceInput;
+
+  participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceType:
+    "explicit-evaluation-result-deliberative-influence-effect-directional-reference-axis-relation-semantic-evaluation-operation-operand-requirements-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-role-compatibility-criterion-content-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-role-compatibility-criterion-content-structure-participant-role-compatibility-criterion-presence";
+};
+
+/**
+ * FASE 25.47
+ *
+ * Presenta explícitamente un nuevo Criterion C dentro del Scope 25.46.
+ *
+ * No existe aquí comprobación adicional de participantId,
+ * ConstitutionElementId, SemanticRole, ParticipationSemanticStructure,
+ * SemanticInterpretation ni Correspondence.
+ *
+ * criterionId:
+ *
+ * - NO se normaliza;
+ * - NO se canonicaliza;
+ * - NO se transforma;
+ * - NO se interpreta lexicalmente;
+ * - NO se compara;
+ * - NO se valida semánticamente.
+ *
+ * No devuelve null: esta fase introduce una identidad externa nueva
+ * y no posee una condición previa legítima de correspondencia que falle.
+ */
+export function presentProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureParticipantRoleCompatibilityCriterion(
+  semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureParticipantRoleCompatibilityDeterminationScope:
+    ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureParticipantRoleCompatibilityDeterminationScope,
+
+  participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceInput:
+    ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureParticipantRoleCompatibilityCriterionPresenceInput
+): ProductiveKnowledgeRecommendationEvaluationResultDeliberativeInfluenceEffectDirectionalReferenceAxisRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureParticipantRoleCompatibilityCriterionPresence {
+  return {
+    semanticEvaluationOperationOperandRequirementsStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureConstituentRelationSemanticInterpretationParticipationSemanticStructureParticipantRoleCompatibilityCriterionContentStructureParticipantRoleCompatibilityDeterminationScope,
+    participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceInput,
+    participationSemanticStructureParticipantRoleCompatibilityCriterionPresenceType:
+      "explicit-evaluation-result-deliberative-influence-effect-directional-reference-axis-relation-semantic-evaluation-operation-operand-requirements-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-role-compatibility-criterion-content-structure-constituent-relation-semantic-interpretation-participation-semantic-structure-participant-role-compatibility-criterion-content-structure-participant-role-compatibility-criterion-presence",
+  };
+}
